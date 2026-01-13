@@ -1,4 +1,4 @@
-import styles from './MatchGrid.module.css'
+import styles from './MatchGrid.module.css';
 
 function MatchGrid({ matches }) {
   if (!matches || matches.length === 0) {
@@ -6,21 +6,29 @@ function MatchGrid({ matches }) {
       <div className={styles.emptyState}>
         <p>No match records available</p>
       </div>
-    )
+    );
   }
 
   const getResultDisplay = (result) => {
-    if (result === 'win') return 'Win'
-    if (result === 'loss') return 'Loss'
-    if (result === 'fusen loss' || result === '') return 'Forfeit'
-    return result || 'Unknown'
-  }
+    switch (result) {
+      case 'win':
+        return 'Win';
+      case 'loss':
+        return 'Loss';
+      case 'fusen loss':
+        return 'Forfeit';
+      case '':
+        return 'Result pending';
+      default:
+        return result || 'Unknown';
+    }
+  };
 
   const getResultClass = (result) => {
-    if (result === 'win') return styles.resultWin
-    if (result === 'loss') return styles.resultLoss
-    return styles.resultForfeit
-  }
+    if (result === 'win') return styles.resultWin;
+    if (result === 'loss') return styles.resultLoss;
+    return styles.resultForfeit;
+  };
 
   return (
     <div className={styles.matchGridContainer}>
@@ -41,14 +49,12 @@ function MatchGrid({ matches }) {
             <div className={styles.cell}>
               {match.opponentShikonaEn || 'Unknown'}
             </div>
-            <div className={styles.cell}>
-              {match.kimarite || '—'}
-            </div>
+            <div className={styles.cell}>{match.kimarite || '—'}</div>
           </div>
         ))}
       </div>
     </div>
-  )
+  );
 }
 
-export default MatchGrid
+export default MatchGrid;
