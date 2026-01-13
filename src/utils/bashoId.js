@@ -90,6 +90,11 @@ export function isValidBashoId(bashoId) {
     return false
   }
 
+  // Check if bashoId contains only numeric characters
+  if (!/^\d{6}$/.test(bashoId)) {
+    return false
+  }
+
   const { year, month } = parseBashoId(bashoId)
 
   // Check if year is reasonable (between 1900 and 2100)
