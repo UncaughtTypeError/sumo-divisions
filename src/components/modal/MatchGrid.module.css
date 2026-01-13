@@ -1,0 +1,110 @@
+.matchGridContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.matchGridHeader {
+  display: grid;
+  grid-template-columns: 100px 1fr 150px;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--color-primary);
+  color: white;
+  font-weight: 600;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.headerCell {
+  text-align: center;
+}
+
+.matchList {
+  display: flex;
+  flex-direction: column;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.matchRow {
+  display: grid;
+  grid-template-columns: 100px 1fr 150px;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  transition: background var(--transition-fast);
+}
+
+.matchRow:hover {
+  background: #f8f8f8;
+}
+
+.matchRow:last-child {
+  border-bottom: none;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.resultWin {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.resultLoss {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.resultForfeit {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: #999;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .matchGridHeader,
+  .matchRow {
+    grid-template-columns: 80px 1fr 120px;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .cell {
+    font-size: 0.75rem;
+  }
+
+  .matchList {
+    max-height: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  .matchGridHeader,
+  .matchRow {
+    grid-template-columns: 70px 1fr 100px;
+    gap: 0.25rem;
+    padding: 0.5rem 0.25rem;
+  }
+
+  .cell {
+    font-size: 0.7rem;
+  }
+
+  .headerCell {
+    font-size: 0.75rem;
+  }
+}

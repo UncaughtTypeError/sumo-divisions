@@ -1,0 +1,51 @@
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.columnHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.columnHeader h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.count {
+  font-size: 0.875rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.wrestlerList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.emptyColumn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #999;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .columnHeader h3 {
+    font-size: 1.1rem;
+  }
+
+  .count {
+    font-size: 0.75rem;
+  }
+}

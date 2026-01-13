@@ -1,0 +1,51 @@
+.legendContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem 1rem;
+  justify-content: space-around;
+  height: 100%;
+}
+
+.legendItem {
+  display: flex;
+  flex-direction: column;
+  padding-left: 1rem;
+  border-left: 4px solid;
+  min-height: 60px;
+  justify-content: center;
+}
+
+.legendName {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--color-text);
+}
+
+.legendDescription {
+  font-size: 0.875rem;
+  color: #666;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .legendContainer {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .legendItem {
+    flex: 1 1 45%;
+    min-height: 40px;
+  }
+
+  .legendName {
+    font-size: 0.875rem;
+  }
+
+  .legendDescription {
+    font-size: 0.75rem;
+  }
+}
