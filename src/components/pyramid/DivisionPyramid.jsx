@@ -1,16 +1,16 @@
-import { PYRAMID_LEVELS } from '../../utils/constants'
-import useDivisionStore from '../../store/divisionStore'
-import RankCard from './RankCard'
-import PyramidLegend from './PyramidLegend'
-import WrestlerSidebar from '../sidebar/WrestlerSidebar'
-import styles from './DivisionPyramid.module.css'
+import { PYRAMID_LEVELS, RANKS } from '../../utils/constants';
+import useDivisionStore from '../../store/divisionStore';
+import RankCard from './RankCard';
+import PyramidLegend from './PyramidLegend';
+import WrestlerSidebar from '../sidebar/WrestlerSidebar';
+import styles from './DivisionPyramid.module.css';
 
 function DivisionPyramid() {
-  const selectRank = useDivisionStore((state) => state.selectRank)
+  const selectRank = useDivisionStore((state) => state.selectRank);
 
   const handleRankClick = (level) => {
-    selectRank(level.rank, level.division, level.apiDivision)
-  }
+    selectRank(level.rank, level.division, level.apiDivision);
+  };
 
   return (
     <div className={styles.pyramidWrapper}>
@@ -20,9 +20,11 @@ function DivisionPyramid() {
           {PYRAMID_LEVELS.map((level, index) => (
             <div
               key={level.id}
-              className={styles.pyramidLevel}
+              className={`${styles.pyramidLevel} ${
+                level.rank === RANKS.YOKOZUNA ? styles.pyramidApex : ''
+              }`}
               style={{
-                '--level-width': `${100 - (index * 8)}%`,
+                '--level-width': `${15 + index * 8}%`,
               }}
             >
               <RankCard
@@ -43,7 +45,7 @@ function DivisionPyramid() {
       {/* Sidebar */}
       <WrestlerSidebar />
     </div>
-  )
+  );
 }
 
-export default DivisionPyramid
+export default DivisionPyramid;
