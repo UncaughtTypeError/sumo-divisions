@@ -1,7 +1,8 @@
 import { PYRAMID_LEVELS, RANKS } from '../../utils/constants';
 import useDivisionStore from '../../store/divisionStore';
 import RankCard from './RankCard';
-import PyramidLegend from './PyramidLegend';
+import DivisionLegend from './DivisionLegend';
+import RankGroupLegend from './RankGroupLegend';
 import WrestlerSidebar from '../sidebar/WrestlerSidebar';
 import styles from './DivisionPyramid.module.css';
 
@@ -15,6 +16,9 @@ function DivisionPyramid() {
   return (
     <div className={styles.pyramidWrapper}>
       <div className={styles.pyramidContainer}>
+        {/* Rank Group Legend (Left) */}
+        <RankGroupLegend />
+
         {/* Pyramid Levels */}
         <div className={styles.pyramid}>
           {PYRAMID_LEVELS.map((level, index) => (
@@ -36,9 +40,9 @@ function DivisionPyramid() {
           ))}
         </div>
 
-        {/* Y-axis Legend */}
+        {/* Division Legend (Right) */}
         <div className={styles.legendWrapper}>
-          <PyramidLegend />
+          <DivisionLegend />
         </div>
       </div>
 

@@ -1,0 +1,35 @@
+.legendWrapper {
+  position: absolute;
+  width: 200px;
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.legendContainer {
+  padding: 0;
+  width: 100%;
+}
+
+.legendItem {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  position: absolute;
+  border-left: 4px solid;
+  padding-left: var(--spacing-md);
+}
+
+.legendName {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
+.legendDescription {
+  font-size: 0.8rem;
+  color: #666;
+  font-style: italic;
+}

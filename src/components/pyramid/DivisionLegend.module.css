@@ -1,9 +1,9 @@
 .legendContainer {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 2px;
   padding: 2rem 1rem;
-  justify-content: space-around;
+  justify-content: space-between;
   height: 100%;
 }
 
@@ -12,8 +12,12 @@
   flex-direction: column;
   padding-left: 1rem;
   border-left: 4px solid;
-  min-height: 60px;
+  min-height: 63px;
   justify-content: center;
+}
+
+.legendItemTopDiv {
+  min-height: 393px;
 }
 
 .legendName {

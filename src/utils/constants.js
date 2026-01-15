@@ -1,7 +1,7 @@
 // Sumo division and rank constants
 
 // Valid basho months (tournaments occur in odd months only)
-export const VALID_BASHO_MONTHS = [1, 3, 5, 7, 9, 11]
+export const VALID_BASHO_MONTHS = [1, 3, 5, 7, 9, 11];
 
 // Division hierarchy (top to bottom)
 export const DIVISIONS = {
@@ -11,7 +11,7 @@ export const DIVISIONS = {
   SANDANME: 'Sandanme',
   JONIDAN: 'Jonidan',
   JONOKUCHI: 'Jonokuchi',
-}
+};
 
 // Ranks within divisions (pyramid levels)
 export const RANKS = {
@@ -25,7 +25,7 @@ export const RANKS = {
   SANDANME: 'Sandanme',
   JONIDAN: 'Jonidan',
   JONOKUCHI: 'Jonokuchi',
-}
+};
 
 // Pyramid structure (10 levels from top to bottom)
 export const PYRAMID_LEVELS = [
@@ -33,7 +33,7 @@ export const PYRAMID_LEVELS = [
     id: 1,
     rank: RANKS.YOKOZUNA,
     division: DIVISIONS.MAKUUCHI,
-    color: 'sanyaku',
+    color: 'yokozuna',
     apiDivision: 'Makuuchi',
   },
   {
@@ -99,35 +99,66 @@ export const PYRAMID_LEVELS = [
     color: 'jonokuchi',
     apiDivision: 'Jonokuchi',
   },
-]
+];
+
+// Grouping labels for Y-axis legend
+export const DIVISION_LEGEND = [
+  {
+    name: DIVISIONS.MAKUUCHI,
+    description: 'Division 1',
+    color: '#c5c5c5',
+  },
+  {
+    name: DIVISIONS.JURYO,
+    description: 'Division 2',
+    color: '#c5c5c5',
+  },
+  {
+    name: DIVISIONS.MAKUSHITA,
+    description: 'Division 3',
+    color: '#c5c5c5',
+  },
+  {
+    name: DIVISIONS.SANDANME,
+    description: 'Division 4',
+    color: '#c5c5c5',
+  },
+  {
+    name: DIVISIONS.JONIDAN,
+    description: 'Division 5',
+    color: '#c5c5c5',
+  },
+  {
+    name: DIVISIONS.JONOKUCHI,
+    description: 'Division 6',
+    color: '#c5c5c5',
+  },
+];
 
 // Grouping labels for Y-axis legend
 export const RANK_GROUPS = [
   {
+    id: 'sanyaku',
     name: "San'yaku",
     description: 'Three Ranks',
     levelIds: [1, 2, 3, 4], // Yokozuna, Ozeki, Sekiwake, Komusubi
     color: '#ff6b6b',
   },
   {
-    name: 'Maku-uchi',
-    description: 'Division 1',
-    levelIds: [1, 2, 3, 4, 5], // San'yaku + Maegashira
-    color: '#ffa07a',
-  },
-  {
+    id: 'sekitori',
     name: 'Sekitori',
     description: 'Professionals',
     levelIds: [1, 2, 3, 4, 5, 6], // Maku-uchi + Juryo
     color: '#daa520',
   },
   {
+    id: 'minarai',
     name: 'Minarai',
     description: 'Apprentices',
     levelIds: [7, 8, 9, 10], // Makushita, Sandanme, Jonidan, Jonokuchi
     color: '#b8a88a',
   },
-]
+];
 
 // Match result types
 export const MATCH_RESULTS = {
@@ -135,4 +166,4 @@ export const MATCH_RESULTS = {
   LOSS: 'loss',
   FUSEN_LOSS: 'fusen loss',
   EMPTY: '',
-}
+};
