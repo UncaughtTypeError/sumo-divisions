@@ -1,22 +1,23 @@
+import styles from './ErrorMessage.module.css';
+
 function ErrorMessage({ error, onRetry }) {
-  const errorMessage = error?.message || 'An error occurred'
+  const errorMessage =
+    error?.message ||
+    'An error has occurred attempting to fetch the Banzuke data.';
 
   return (
-    <div className="flex flex-col items-center justify-center p-8">
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-        <h3 className="text-red-800 font-semibold mb-2">Error</h3>
-        <p className="text-red-600 mb-4">{errorMessage}</p>
+    <div className={styles.errorContainer}>
+      <div className={styles.errorBox}>
+        <h3 className={styles.errorTitle}>Error</h3>
+        <p className={styles.errorMessage}>{errorMessage}</p>
         {onRetry && (
-          <button
-            onClick={onRetry}
-            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
-          >
+          <button onClick={onRetry} className={styles.retryButton}>
             Try Again
           </button>
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default ErrorMessage
+export default ErrorMessage;
