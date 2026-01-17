@@ -1,13 +1,9 @@
 import { create } from 'zustand'
-import { getCurrentBashoId } from '../utils/bashoId'
 
 /**
  * Zustand store for managing app state
  */
 const useDivisionStore = create((set) => ({
-  // Current basho ID
-  bashoId: getCurrentBashoId(),
-
   // Selected pyramid level/rank
   selectedRank: null,
   selectedDivision: null,
@@ -21,8 +17,6 @@ const useDivisionStore = create((set) => ({
   selectedWrestler: null,
 
   // Actions
-  setBashoId: (bashoId) => set({ bashoId }),
-
   selectRank: (rank, division, apiDivision) =>
     set({
       selectedRank: rank,

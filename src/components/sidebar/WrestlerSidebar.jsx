@@ -1,8 +1,9 @@
 import { useMemo, useState, useEffect } from 'react';
 import useDivisionStore from '../../store/divisionStore';
 import useBanzuke from '../../hooks/useBanzuke';
-import { formatBashoDate } from '../../utils/bashoId';
+import { getCurrentBashoId } from '../../utils/bashoId';
 import WrestlerGrid from './WrestlerGrid';
+import BashoSelector from './BashoSelector';
 import MatchHistoryModal from '../modal/MatchHistoryModal';
 import Loading from '../common/Loading';
 import ErrorMessage from '../common/ErrorMessage';
@@ -11,7 +12,6 @@ import styles from './WrestlerSidebar.module.css';
 function WrestlerSidebar() {
   const {
     isSidebarOpen,
-    bashoId,
     selectedRank,
     selectedApiDivision,
     closeSidebar,
@@ -20,9 +20,10 @@ function WrestlerSidebar() {
 
   const [isVisible, setIsVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [currentBashoId, setCurrentBashoId] = useState(getCurrentBashoId());
 
   const { data, isLoading, error, refetch } = useBanzuke(
-    bashoId,
+    currentBashoId,
     selectedApiDivision,
     {
       enabled: isSidebarOpen && !!selectedApiDivision,
@@ -56,6 +57,8 @@ function WrestlerSidebar() {
     if (isSidebarOpen) {
       setIsVisible(true);
       setIsClosing(false);
+      // Reset to current basho when sidebar opens
+      setCurrentBashoId(getCurrentBashoId());
     }
   }, [isSidebarOpen]);
 
@@ -65,6 +68,10 @@ function WrestlerSidebar() {
       setIsVisible(false);
       closeSidebar();
     }, 150); // Match the animation duration
+  };
+
+  const handleBashoChange = (newBashoId) => {
+    setCurrentBashoId(newBashoId);
   };
 
   if (!isVisible) {
@@ -84,7 +91,10 @@ function WrestlerSidebar() {
         <div className={styles.sidebarHeader}>
           <div>
             <h2>{selectedRank}</h2>
-            <p className={styles.bashoInfo}>{formatBashoDate(bashoId)}</p>
+            <BashoSelector
+              selectedBashoId={currentBashoId}
+              onBashoChange={handleBashoChange}
+            />
           </div>
           <button
             onClick={handleClose}

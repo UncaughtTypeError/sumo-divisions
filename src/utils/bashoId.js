@@ -119,3 +119,36 @@ export function formatBashoDate(bashoId) {
 
   return `${monthNames[month - 1]} ${year}`
 }
+
+/**
+ * Generate all valid bashoids from a start date to current/most recent basho
+ * @param {string} startBashoId - Starting bashoId (e.g., "195803")
+ * @param {string} [endBashoId] - Optional ending bashoId (defaults to current basho)
+ * @returns {string[]} Array of bashoIds in descending order (newest first)
+ */
+export function generateBashoIdList(startBashoId = '195803', endBashoId = getCurrentBashoId()) {
+  const start = parseBashoId(startBashoId)
+  const end = parseBashoId(endBashoId)
+
+  const bashoids = []
+
+  // Iterate from end to start (descending order)
+  for (let year = end.year; year >= start.year; year--) {
+    // Determine which months to include for this year
+    const monthsToInclude = VALID_BASHO_MONTHS.filter(month => {
+      // For the end year, only include months <= end month
+      if (year === end.year && month > end.month) return false
+      // For the start year, only include months >= start month
+      if (year === start.year && month < start.month) return false
+      return true
+    })
+
+    // Add bashoids for this year in descending order
+    for (let i = monthsToInclude.length - 1; i >= 0; i--) {
+      const month = monthsToInclude[i]
+      bashoids.push(formatBashoId(year, month))
+    }
+  }
+
+  return bashoids
+}
