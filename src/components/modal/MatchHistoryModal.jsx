@@ -36,12 +36,12 @@ function MatchHistoryModal() {
         {/* Backdrop with fade transition */}
         <Transition.Child
           as={Fragment}
-          enter="transition-opacity duration-150"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="transition-opacity duration-150"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
+          enter={styles.backdropEnter}
+          enterFrom={styles.backdropEnterFrom}
+          enterTo={styles.backdropEnterTo}
+          leave={styles.backdropLeave}
+          leaveFrom={styles.backdropLeaveFrom}
+          leaveTo={styles.backdropLeaveTo}
         >
           <div className={styles.backdrop} aria-hidden="true" />
         </Transition.Child>
@@ -50,12 +50,12 @@ function MatchHistoryModal() {
         <div className={styles.modalContainer}>
           <Transition.Child
             as={Fragment}
-            enter="transition-all duration-200"
-            enterFrom="opacity-0 scale-95"
-            enterTo="opacity-100 scale-100"
-            leave="transition-all duration-150"
-            leaveFrom="opacity-100 scale-100"
-            leaveTo="opacity-0 scale-95"
+            enter={styles.panelEnter}
+            enterFrom={styles.panelEnterFrom}
+            enterTo={styles.panelEnterTo}
+            leave={styles.panelLeave}
+            leaveFrom={styles.panelLeaveFrom}
+            leaveTo={styles.panelLeaveTo}
           >
             <Dialog.Panel className={styles.modalPanel}>
               {/* Header */}

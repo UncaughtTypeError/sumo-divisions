@@ -97,7 +97,7 @@ function WrestlerSidebar() {
 
         {/* Content */}
         <div className={styles.sidebarContent}>
-          {isLoading && <Loading message="Loading wrestlers..." />}
+          {isLoading && <Loading message="Loading rikishi..." />}
 
           {error && <ErrorMessage error={error} onRetry={refetch} />}
 

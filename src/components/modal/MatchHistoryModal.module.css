@@ -136,3 +136,57 @@
     padding: 0.75rem 1rem;
   }
 }
+
+/* Backdrop transitions */
+.backdropEnter {
+  transition: opacity 150ms ease-out;
+}
+
+.backdropEnterFrom {
+  opacity: 0;
+}
+
+.backdropEnterTo {
+  opacity: 1;
+}
+
+.backdropLeave {
+  transition: opacity 150ms ease-in;
+}
+
+.backdropLeaveFrom {
+  opacity: 1;
+}
+
+.backdropLeaveTo {
+  opacity: 0;
+}
+
+/* Panel transitions */
+.panelEnter {
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
+}
+
+.panelEnterFrom {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.panelEnterTo {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.panelLeave {
+  transition: opacity 150ms ease-in, transform 150ms ease-in;
+}
+
+.panelLeaveFrom {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.panelLeaveTo {
+  opacity: 0;
+  transform: scale(0.95);
+}
