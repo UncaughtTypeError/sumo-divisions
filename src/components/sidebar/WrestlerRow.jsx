@@ -1,8 +1,9 @@
-import { calculateAndFormatRecord } from '../../utils/recordCalculator'
 import styles from './WrestlerRow.module.css'
 
 function WrestlerRow({ wrestler, onClick }) {
-  const record = calculateAndFormatRecord(wrestler.record)
+  // Use the wins, losses, and absences from the API response
+  const { wins = 0, losses = 0, absences = 0 } = wrestler
+  const record = `${wins}-${losses}-${absences}`
 
   return (
     <div className={styles.wrestlerRow} onClick={() => onClick(wrestler)}>

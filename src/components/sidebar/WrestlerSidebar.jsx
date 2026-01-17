@@ -1,11 +1,12 @@
-import { useMemo } from 'react'
-import useDivisionStore from '../../store/divisionStore'
-import useBanzuke from '../../hooks/useBanzuke'
-import WrestlerGrid from './WrestlerGrid'
-import MatchHistoryModal from '../modal/MatchHistoryModal'
-import Loading from '../common/Loading'
-import ErrorMessage from '../common/ErrorMessage'
-import styles from './WrestlerSidebar.module.css'
+import { useMemo, useState, useEffect } from 'react';
+import useDivisionStore from '../../store/divisionStore';
+import useBanzuke from '../../hooks/useBanzuke';
+import { formatBashoDate } from '../../utils/bashoId';
+import WrestlerGrid from './WrestlerGrid';
+import MatchHistoryModal from '../modal/MatchHistoryModal';
+import Loading from '../common/Loading';
+import ErrorMessage from '../common/ErrorMessage';
+import styles from './WrestlerSidebar.module.css';
 
 function WrestlerSidebar() {
   const {
@@ -15,7 +16,10 @@ function WrestlerSidebar() {
     selectedApiDivision,
     closeSidebar,
     openModal,
-  } = useDivisionStore()
+  } = useDivisionStore();
+
+  const [isVisible, setIsVisible] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   const { data, isLoading, error, refetch } = useBanzuke(
     bashoId,
@@ -23,47 +27,67 @@ function WrestlerSidebar() {
     {
       enabled: isSidebarOpen && !!selectedApiDivision,
     }
-  )
+  );
 
   // Filter wrestlers by selected rank
   const { eastWrestlers, westWrestlers } = useMemo(() => {
     if (!data || !selectedRank) {
-      return { eastWrestlers: [], westWrestlers: [] }
+      return { eastWrestlers: [], westWrestlers: [] };
     }
 
     // Filter function: check if wrestler's rank starts with selected rank
     const filterByRank = (wrestler) => {
-      return wrestler.rank.startsWith(selectedRank)
-    }
+      return wrestler.rank.startsWith(selectedRank);
+    };
 
-    const east = data.east?.filter(filterByRank) || []
-    const west = data.west?.filter(filterByRank) || []
+    const east = data.east?.filter(filterByRank) || [];
+    const west = data.west?.filter(filterByRank) || [];
 
     // Sort by rankValue (lower is better)
-    const sortByRank = (a, b) => a.rankValue - b.rankValue
+    const sortByRank = (a, b) => a.rankValue - b.rankValue;
 
     return {
       eastWrestlers: east.sort(sortByRank),
       westWrestlers: west.sort(sortByRank),
-    }
-  }, [data, selectedRank])
+    };
+  }, [data, selectedRank]);
 
-  if (!isSidebarOpen) {
-    return null
+  useEffect(() => {
+    if (isSidebarOpen) {
+      setIsVisible(true);
+      setIsClosing(false);
+    }
+  }, [isSidebarOpen]);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsVisible(false);
+      closeSidebar();
+    }, 150); // Match the animation duration
+  };
+
+  if (!isVisible) {
+    return null;
   }
 
   return (
     <>
-      <div className={styles.sidebarOverlay} onClick={closeSidebar} />
-      <div className={styles.sidebar}>
+      <div
+        className={`${styles.sidebarOverlay} ${
+          isClosing ? styles.closing : ''
+        }`}
+        onClick={handleClose}
+      />
+      <div className={`${styles.sidebar} ${isClosing ? styles.closing : ''}`}>
         {/* Header */}
         <div className={styles.sidebarHeader}>
           <div>
             <h2>{selectedRank}</h2>
-            <p className={styles.bashoInfo}>Basho {bashoId}</p>
+            <p className={styles.bashoInfo}>{formatBashoDate(bashoId)}</p>
           </div>
           <button
-            onClick={closeSidebar}
+            onClick={handleClose}
             className={styles.closeButton}
             aria-label="Close sidebar"
           >
@@ -75,9 +99,7 @@ function WrestlerSidebar() {
         <div className={styles.sidebarContent}>
           {isLoading && <Loading message="Loading wrestlers..." />}
 
-          {error && (
-            <ErrorMessage error={error} onRetry={refetch} />
-          )}
+          {error && <ErrorMessage error={error} onRetry={refetch} />}
 
           {data && !isLoading && !error && (
             <div className={styles.gridContainer}>
@@ -94,19 +116,22 @@ function WrestlerSidebar() {
             </div>
           )}
 
-          {data && !isLoading && !error &&
-           eastWrestlers.length === 0 && westWrestlers.length === 0 && (
-            <div className={styles.noData}>
-              <p>No wrestlers found for {selectedRank}</p>
-            </div>
-          )}
+          {data &&
+            !isLoading &&
+            !error &&
+            eastWrestlers.length === 0 &&
+            westWrestlers.length === 0 && (
+              <div className={styles.noData}>
+                <p>No wrestlers found for {selectedRank}</p>
+              </div>
+            )}
         </div>
       </div>
 
       {/* Modal */}
       <MatchHistoryModal />
     </>
-  )
+  );
 }
 
-export default WrestlerSidebar
+export default WrestlerSidebar;

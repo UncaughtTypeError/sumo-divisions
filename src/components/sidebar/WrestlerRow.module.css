@@ -1,5 +1,6 @@
 .wrestlerRow {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
   padding: 0.75rem;
   background: white;
@@ -21,6 +22,7 @@
   color: #666;
   min-width: 80px;
   font-weight: 500;
+  flex-basis: 100%;
 }
 
 .name {
@@ -30,6 +32,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex-grow: 2;
 }
 
 .record {

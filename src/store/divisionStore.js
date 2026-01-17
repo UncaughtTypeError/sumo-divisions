@@ -48,6 +48,10 @@ const useDivisionStore = create((set) => ({
   closeModal: () =>
     set({
       isModalOpen: false,
+    }),
+
+  clearSelectedWrestler: () =>
+    set({
       selectedWrestler: null,
     }),
 

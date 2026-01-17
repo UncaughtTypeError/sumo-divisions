@@ -10,18 +10,7 @@ function MatchGrid({ matches }) {
   }
 
   const getResultDisplay = (result) => {
-    switch (result) {
-      case 'win':
-        return 'Win';
-      case 'loss':
-        return 'Loss';
-      case 'fusen loss':
-        return 'Forfeit';
-      case '':
-        return 'Result pending';
-      default:
-        return result || 'Unknown';
-    }
+    return result ? result.toUpperCase() : 'Result pending' || 'Unknown';
   };
 
   const getResultClass = (result) => {

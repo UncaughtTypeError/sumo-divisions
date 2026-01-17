@@ -105,3 +105,17 @@ export function isValidBashoId(bashoId) {
   // Check if month is a valid basho month
   return VALID_BASHO_MONTHS.includes(month)
 }
+
+/**
+ * Format a bashoId into a readable date string
+ * @param {string} bashoId - BashoId in YYYYMM format
+ * @returns {string} Formatted date string (e.g., "Jan 2026")
+ */
+export function formatBashoDate(bashoId) {
+  if (!bashoId) return ''
+
+  const { year, month } = parseBashoId(bashoId)
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+  return `${monthNames[month - 1]} ${year}`
+}
