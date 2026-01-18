@@ -1,6 +1,7 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import useDivisionStore from '../../store/divisionStore';
+import { AWARD_INFO, AWARD_TYPES } from '../../utils/awards';
 import MatchGrid from './MatchGrid';
 import styles from './MatchHistoryModal.module.css';
 
@@ -22,7 +23,7 @@ function MatchHistoryModal() {
     return null;
   }
 
-  const { wins = 0, losses = 0, absences = 0 } = selectedWrestler;
+  const { wins = 0, losses = 0, absences = 0, awards = [] } = selectedWrestler;
   const record = `${wins}W-${losses}L-${absences}A`;
 
   return (
@@ -63,6 +64,23 @@ function MatchHistoryModal() {
                 <div>
                   <Dialog.Title className={styles.modalTitle}>
                     {selectedWrestler.shikonaEn}
+                    {awards.length > 0 && (
+                      <span className={styles.awardsInline}>
+                        {awards.map((award) => {
+                          const info = AWARD_INFO[award];
+                          if (!info) return null;
+                          return (
+                            <span
+                              key={award}
+                              className={`${styles.awardBadge} ${award === AWARD_TYPES.YUSHO ? styles.yushoBadge : ''}`}
+                            >
+                              {award === AWARD_TYPES.YUSHO && '🏆 '}
+                              {info.nameEn}
+                            </span>
+                          );
+                        })}
+                      </span>
+                    )}
                   </Dialog.Title>
                   <p className={styles.modalSubtitle}>
                     {selectedWrestler.rank} • <strong>{record}</strong>{' '}

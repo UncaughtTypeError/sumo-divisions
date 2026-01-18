@@ -1,8 +1,9 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import useDivisionStore from '../../store/divisionStore';
 import useBanzuke from '../../hooks/useBanzuke';
 import useBashoResults from '../../hooks/useBashoResults';
 import { getCurrentBashoId } from '../../utils/bashoId';
+import { getWrestlerAwards } from '../../utils/awards';
 import WrestlerGrid from './WrestlerGrid';
 import BashoSelector from './BashoSelector';
 import BashoWinners from './BashoWinners';
@@ -68,7 +69,7 @@ function WrestlerSidebar() {
     };
   }, [bashoResults, data]);
 
-  // Filter wrestlers by selected rank
+  // Filter wrestlers by selected rank and enrich with awards
   const { eastWrestlers, westWrestlers } = useMemo(() => {
     if (!data || !selectedRank) {
       return { eastWrestlers: [], westWrestlers: [] };
@@ -79,8 +80,20 @@ function WrestlerSidebar() {
       return wrestler.rank.startsWith(selectedRank);
     };
 
-    const east = data.east?.filter(filterByRank) || [];
-    const west = data.west?.filter(filterByRank) || [];
+    // Enrich wrestler with awards
+    const enrichWithAwards = (wrestler) => ({
+      ...wrestler,
+      awards: getWrestlerAwards(
+        wrestler.rikishiID,
+        bashoResults,
+        selectedApiDivision
+      ),
+    });
+
+    const east =
+      data.east?.filter(filterByRank).map(enrichWithAwards) || [];
+    const west =
+      data.west?.filter(filterByRank).map(enrichWithAwards) || [];
 
     // Sort by rankValue (lower is better)
     const sortByRank = (a, b) => a.rankValue - b.rankValue;
@@ -89,7 +102,7 @@ function WrestlerSidebar() {
       eastWrestlers: east.sort(sortByRank),
       westWrestlers: west.sort(sortByRank),
     };
-  }, [data, selectedRank]);
+  }, [data, selectedRank, bashoResults, selectedApiDivision]);
 
   useEffect(() => {
     if (isSidebarOpen) {

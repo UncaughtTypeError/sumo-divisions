@@ -17,12 +17,36 @@
   transform: translateX(4px);
 }
 
+.rankRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-basis: 100%;
+}
+
 .rank {
   font-size: 0.75rem;
   color: #666;
-  min-width: 80px;
   font-weight: 500;
-  flex-basis: 100%;
+}
+
+.awards {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.award {
+  font-size: 0.625rem;
+  font-weight: 600;
+  padding: 0.125rem 0.25rem;
+  border-radius: 3px;
+  background: #e0e0e0;
+  color: #555;
+}
+
+.award.yusho {
+  background: linear-gradient(135deg, #ffd700 0%, #ffb800 100%);
+  color: #5c4d00;
 }
 
 .name {
@@ -52,7 +76,11 @@
 
   .rank {
     font-size: 0.7rem;
-    min-width: 60px;
+  }
+
+  .award {
+    font-size: 0.5625rem;
+    padding: 0.0625rem 0.1875rem;
   }
 
   .name {
