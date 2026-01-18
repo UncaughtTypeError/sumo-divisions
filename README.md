@@ -218,12 +218,10 @@ sumo-divisions/
 │   ├── styles/
 │   │   ├── global.css         # Global styles
 │   │   └── variables.css      # CSS custom properties
-│   ├── images/                # Image assets
-│   │   └── sumo-api-logo.png
 │   ├── __tests__/             # Test files
 │   ├── App.jsx                # Root component
 │   └── main.jsx               # Entry point
-├── public/                    # Static assets
+├── public/                    # Static assets (favicon, images)
 ├── index.html                 # HTML template
 ├── package.json
 ├── vite.config.js

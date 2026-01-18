@@ -25,7 +25,7 @@ function App() {
           <div className={styles.appCredits}>
             Powered by{' '}
             <a href="https://sumo-api.com" target="_blank" rel="noopener">
-              <img src="src/images/sumo-api-logo.png" alt="Sumo-API Logo" />
+              <img src="/sumo-api-logo.png" alt="Sumo-API Logo" />
               Sumo-API
             </a>
           </div>
