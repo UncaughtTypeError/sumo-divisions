@@ -1,0 +1,26 @@
+.appContainer {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.appHeader {
+  padding: 2rem;
+  text-align: left;
+  background-color: var(--color-primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.appHeader h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.appMain {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
