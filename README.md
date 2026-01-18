@@ -7,9 +7,10 @@ An interactive React application for visualizing sumo wrestling divisions, ranki
 - **Hierarchical Pyramid Visualization**: 10 levels displaying all sumo ranks from Yokozuna (Grand Champion) down to Jonokuchi (entry level)
 - **Division Groupings**: Visual indicators for San'yaku, Maku-uchi, Sekitori, and Minarai groupings
 - **East/West Rankings**: Side-by-side grid layout showing wrestlers ranked by East and West positions
-- **Win-Loss-Forfeit Records**: Automatically calculated from match data for each wrestler
+- **Win-Loss-Forfeit Records**: Fetched directly from API data for each wrestler
 - **Match History**: Detailed view of each wrestler's matches including opponents and winning techniques (kimarite)
-- **Real-Time Data**: Fetches current or most recent valid basho (tournament) data
+- **Basho Selection**: View data from current basho or any historical tournament
+- **Real-Time Data**: Fetches current or most recent valid basho (tournament) data with ability to browse past tournaments
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 - **Automatic Caching**: Reduces API calls and improves performance
 - **Rate Limiting**: Respects API usage guidelines with built-in request throttling
@@ -35,8 +36,8 @@ An interactive React application for visualizing sumo wrestling divisions, ranki
 - **Axios** - HTTP client with interceptors
 
 ### Styling
-- **Tailwind CSS** - Utility-first CSS framework
 - **CSS Modules** - Component-scoped styling
+- **CSS Custom Properties** - Design tokens and theming
 - **CSS Grid & Flexbox** - Modern layout (no HTML tables)
 
 ### UI Components
@@ -56,6 +57,7 @@ This application uses the **Sumo API** (https://www.sumo-api.com/) to fetch real
 
 ### Key Endpoints Used
 - `GET /api/basho/:bashoId/banzuke/:division` - Fetch wrestler rankings and records
+- `GET /api/basho/:bashoId` - Fetch tournament results (yusho winners, special prizes)
 
 ### BashoId Logic
 Sumo bashos (tournaments) occur **6 times per year** in odd months only:
@@ -137,7 +139,13 @@ npm run test:coverage
 ### Test Files Location
 - `src/__tests__/utils/` - Utility function tests
 - `src/__tests__/services/` - API service tests
+- `src/__tests__/hooks/` - Custom hook tests
+- `src/__tests__/store/` - Zustand store tests
 - `src/__tests__/components/` - Component tests
+  - `src/__tests__/components/pyramid/` - Pyramid component tests
+  - `src/__tests__/components/sidebar/` - Sidebar component tests
+  - `src/__tests__/components/modal/` - Modal component tests
+  - `src/__tests__/components/common/` - Common component tests
 
 ## Project Structure
 
@@ -152,7 +160,9 @@ sumo-divisions/
 │   │   ├── sidebar/           # Wrestler list sidebar
 │   │   │   ├── WrestlerSidebar.jsx
 │   │   │   ├── WrestlerGrid.jsx
-│   │   │   └── WrestlerRow.jsx
+│   │   │   ├── WrestlerRow.jsx
+│   │   │   ├── BashoSelector.jsx
+│   │   │   └── BashoWinners.jsx
 │   │   ├── modal/             # Match history modal
 │   │   │   ├── MatchHistoryModal.jsx
 │   │   │   └── MatchGrid.jsx
@@ -163,20 +173,24 @@ sumo-divisions/
 │   │   ├── api/               # API client & services
 │   │   │   ├── sumoApi.js
 │   │   │   ├── banzukeService.js
+│   │   │   ├── bashoService.js
 │   │   │   └── apiConfig.js
 │   │   └── rateLimiter/       # Rate limiting
 │   │       └── rateLimiter.js
 │   ├── store/
 │   │   └── divisionStore.js   # Zustand state management
 │   ├── hooks/
-│   │   └── useBanzuke.js      # Custom React Query hook
+│   │   ├── useBanzuke.js      # Banzuke data hook
+│   │   └── useBashoResults.js # Basho results hook
 │   ├── utils/
 │   │   ├── bashoId.js         # BashoId calculation
-│   │   ├── recordCalculator.js # W-L-F calculation
+│   │   ├── awards.js          # Wrestler awards utility
 │   │   └── constants.js       # App constants
 │   ├── styles/
 │   │   ├── global.css         # Global styles
 │   │   └── variables.css      # CSS custom properties
+│   ├── images/                # Image assets
+│   │   └── sumo-api-logo.png
 │   ├── __tests__/             # Test files
 │   ├── App.jsx                # Root component
 │   └── main.jsx               # Entry point
@@ -185,7 +199,6 @@ sumo-divisions/
 ├── package.json
 ├── vite.config.js
 ├── vitest.config.js
-├── tailwind.config.js
 └── README.md
 ```
 
@@ -204,11 +217,7 @@ sumo-divisions/
 - User-friendly error messages
 
 ### Win-Loss-Forfeit Calculation
-Records are calculated from the `record` array in the API response:
-- `result === "win"` → Win
-- `result === "loss"` → Loss
-- `result === "fusen loss"` or `result === ""` → Forfeit
-- Default: 0-0-0 if no data
+Records are derived from the `wins`, `losses`, and `absences` fields in the API response for each wrestler. These values are provided directly by the API rather than calculated from match data.
 
 ### Division Hierarchy
 1. Yokozuna (Grand Champion)
@@ -251,3 +260,5 @@ This is a demonstration project. Feel free to fork and modify for your own use.
 ## Contact
 
 For issues or questions, please open an issue on the GitHub repository.
+
+For other inquiries, [contact me](mailto:nathan.shepherd8@gmail.com).
