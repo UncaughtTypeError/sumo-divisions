@@ -8,11 +8,46 @@
   padding: 1rem 2rem;
   text-align: left;
   color: var(--color-text-accent);
+  display: flex;
+  align-items: baseline;
+  gap: 2rem;
 }
 
 .appHeader h1 {
   font-size: 2.5rem;
   font-weight: 400;
+}
+
+.appHeader h2 {
+  font-weight: 300;
+  flex-grow: 2;
+  opacity: 0.8;
+}
+
+.appCredits {
+  font-weight: 300;
+  font-size: 0.75rem;
+  background: var(--color-text);
+  color: white;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.appCredits a {
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-weight: 500;
+}
+
+.appCredits img {
+  width: 20px;
+  height: auto;
+  filter: invert(1);
 }
 
 .appMain {

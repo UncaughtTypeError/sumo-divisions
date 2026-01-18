@@ -91,10 +91,8 @@ function WrestlerSidebar() {
       ),
     });
 
-    const east =
-      data.east?.filter(filterByRank).map(enrichWithAwards) || [];
-    const west =
-      data.west?.filter(filterByRank).map(enrichWithAwards) || [];
+    const east = data.east?.filter(filterByRank).map(enrichWithAwards) || [];
+    const west = data.west?.filter(filterByRank).map(enrichWithAwards) || [];
 
     // Sort by rankValue (lower is better)
     const sortByRank = (a, b) => a.rankValue - b.rankValue;
@@ -163,7 +161,9 @@ function WrestlerSidebar() {
 
         {/* Content */}
         <div className={styles.sidebarContent}>
-          {isLoading && <Loading message="Loading rikishi..." color={selectedColor} />}
+          {isLoading && (
+            <Loading message="Loading rikishi..." color={selectedColor} />
+          )}
 
           {error && <ErrorMessage error={error} onRetry={refetch} />}
 

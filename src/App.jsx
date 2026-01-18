@@ -18,6 +18,14 @@ function App() {
       <div className={styles.appContainer}>
         <header className={styles.appHeader}>
           <h1>Sumo Divisions</h1>
+          <h2>Up to date Banzuke and Basho records</h2>
+          <div className={styles.appCredits}>
+            Powered by{' '}
+            <a href="https://sumo-api.com" target="_blank" rel="noopener">
+              <img src="src/images/sumo-api-logo.png" alt="Sumo-API Logo" />
+              Sumo-API
+            </a>
+          </div>
         </header>
         <main className={styles.appMain}>
           <DivisionPyramid />
