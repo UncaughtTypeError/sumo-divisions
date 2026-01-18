@@ -1,9 +1,11 @@
 import { useMemo, useState, useEffect } from 'react';
 import useDivisionStore from '../../store/divisionStore';
 import useBanzuke from '../../hooks/useBanzuke';
+import useBashoResults from '../../hooks/useBashoResults';
 import { getCurrentBashoId } from '../../utils/bashoId';
 import WrestlerGrid from './WrestlerGrid';
 import BashoSelector from './BashoSelector';
+import BashoWinners from './BashoWinners';
 import MatchHistoryModal from '../modal/MatchHistoryModal';
 import Loading from '../common/Loading';
 import ErrorMessage from '../common/ErrorMessage';
@@ -29,6 +31,42 @@ function WrestlerSidebar() {
       enabled: isSidebarOpen && !!selectedApiDivision,
     }
   );
+
+  // Fetch basho results (yusho winners and special prizes) - cached per bashoId
+  const { data: bashoResults } = useBashoResults(currentBashoId, {
+    enabled: isSidebarOpen,
+  });
+
+  // Enrich basho results with rank data from banzuke
+  const enrichedBashoResults = useMemo(() => {
+    if (!bashoResults || !data) return bashoResults;
+
+    const allWrestlers = [...(data.east || []), ...(data.west || [])];
+
+    // Helper to find wrestler rank by rikishiId
+    const findRank = (rikishiId) => {
+      const wrestler = allWrestlers.find((w) => w.rikishiID === rikishiId);
+      return wrestler?.rank || null;
+    };
+
+    // Enrich yusho winners with ranks
+    const enrichedYusho = bashoResults.yusho?.map((winner) => ({
+      ...winner,
+      rank: findRank(winner.rikishiId),
+    }));
+
+    // Enrich special prize winners with ranks
+    const enrichedSpecialPrizes = bashoResults.specialPrizes?.map((prize) => ({
+      ...prize,
+      rank: findRank(prize.rikishiId),
+    }));
+
+    return {
+      ...bashoResults,
+      yusho: enrichedYusho,
+      specialPrizes: enrichedSpecialPrizes,
+    };
+  }, [bashoResults, data]);
 
   // Filter wrestlers by selected rank
   const { eastWrestlers, westWrestlers } = useMemo(() => {
@@ -112,18 +150,25 @@ function WrestlerSidebar() {
           {error && <ErrorMessage error={error} onRetry={refetch} />}
 
           {data && !isLoading && !error && (
-            <div className={styles.gridContainer}>
-              <WrestlerGrid
-                wrestlers={eastWrestlers}
-                side="East"
-                onWrestlerClick={openModal}
+            <>
+              <BashoWinners
+                bashoResults={enrichedBashoResults}
+                selectedRank={selectedRank}
+                selectedApiDivision={selectedApiDivision}
               />
-              <WrestlerGrid
-                wrestlers={westWrestlers}
-                side="West"
-                onWrestlerClick={openModal}
-              />
-            </div>
+              <div className={styles.gridContainer}>
+                <WrestlerGrid
+                  wrestlers={eastWrestlers}
+                  side="East"
+                  onWrestlerClick={openModal}
+                />
+                <WrestlerGrid
+                  wrestlers={westWrestlers}
+                  side="West"
+                  onWrestlerClick={openModal}
+                />
+              </div>
+            </>
           )}
 
           {data &&
@@ -132,7 +177,7 @@ function WrestlerSidebar() {
             eastWrestlers.length === 0 &&
             westWrestlers.length === 0 && (
               <div className={styles.noData}>
-                <p>No wrestlers found for {selectedRank}</p>
+                <p>No rikishi found for {selectedRank}</p>
               </div>
             )}
         </div>

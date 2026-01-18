@@ -1,13 +1,13 @@
-import WrestlerRow from './WrestlerRow'
-import styles from './WrestlerGrid.module.css'
+import WrestlerRow from './WrestlerRow';
+import styles from './WrestlerGrid.module.css';
 
 function WrestlerGrid({ wrestlers, side, onWrestlerClick }) {
   if (!wrestlers || wrestlers.length === 0) {
     return (
       <div className={styles.emptyColumn}>
-        <p>No wrestlers in {side}</p>
+        <p>No rikishi in {side}</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -26,7 +26,7 @@ function WrestlerGrid({ wrestlers, side, onWrestlerClick }) {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
-export default WrestlerGrid
+export default WrestlerGrid;
