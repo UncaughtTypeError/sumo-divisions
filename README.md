@@ -1,6 +1,9 @@
 # Sumo Divisions
 
-An interactive React application for visualizing sumo wrestling divisions, rankings, and wrestler statistics. View tournament standings, wrestler records, and detailed match history in an intuitive pyramid interface.
+An interactive React application for visualizing sumo wrestling divisions, rankings, and wrestler statistics. View tournament standings, wrestler records, and detailed match history in an intuitive pyramid interface. [sumo-divisions.com](https://sumo-divisions.com/)
+
+[![Netlify Status](https://api.netlify.com/api/v1/badges/b1d4a3fe-fb6f-4a6e-be3c-6c62c36101a4/deploy-status)](https://app.netlify.com/projects/sumo-divisions/deploys)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/UncaughtTypeError/sumo-divisions/blob/master/LICENSE)
 
 ## Features
 
@@ -26,27 +29,33 @@ An interactive React application for visualizing sumo wrestling divisions, ranki
 ## Technology Stack
 
 ### Core
+
 - **React 18+** - UI framework with hooks
 - **Vite** - Fast build tool and development server
 - **JavaScript (ES6+)** - Modern JavaScript features
 
 ### State Management & Data Fetching
+
 - **Zustand** - Lightweight state management
 - **React Query (TanStack Query)** - Data fetching, caching, and synchronization
 - **Axios** - HTTP client with interceptors
 
 ### Styling
+
 - **CSS Modules** - Component-scoped styling
 - **CSS Custom Properties** - Design tokens and theming
 - **CSS Grid & Flexbox** - Modern layout (no HTML tables)
 
 ### UI Components
+
 - **Headless UI** - Accessible, unstyled components (modals, dialogs)
 
 ### Utilities
+
 - **date-fns** - Date manipulation for basho ID calculations
 
 ### Testing
+
 - **Vitest** - Fast unit test runner
 - **Testing Library** - React component testing
 - **MSW (Mock Service Worker)** - API mocking
@@ -56,11 +65,14 @@ An interactive React application for visualizing sumo wrestling divisions, ranki
 This application uses the **Sumo API** (https://www.sumo-api.com/) to fetch real-time sumo wrestling data.
 
 ### Key Endpoints Used
+
 - `GET /api/basho/:bashoId/banzuke/:division` - Fetch wrestler rankings and records
 - `GET /api/basho/:bashoId` - Fetch tournament results (yusho winners, special prizes)
 
 ### BashoId Logic
+
 Sumo bashos (tournaments) occur **6 times per year** in odd months only:
+
 - January (01)
 - March (03)
 - May (05)
@@ -71,6 +83,7 @@ Sumo bashos (tournaments) occur **6 times per year** in odd months only:
 The application automatically calculates the current or most recent valid basho ID. If the current month is invalid (e.g., February), it falls back to the most recent valid month (e.g., January).
 
 ### Data Structure
+
 ```javascript
 {
   bashoId: "202601",
@@ -98,14 +111,17 @@ The application automatically calculates the current or most recent valid basho 
 ## Installation & Setup
 
 ### Prerequisites
+
 - Node.js 16+ and npm
 
 ### Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### Run Development Server
+
 ```bash
 npm run dev
 ```
@@ -113,6 +129,7 @@ npm run dev
 The app will open at `http://localhost:5173` (or the next available port).
 
 ### Build for Production
+
 ```bash
 npm run build
 ```
@@ -120,6 +137,7 @@ npm run build
 Outputs to `dist/` directory.
 
 ### Preview Production Build
+
 ```bash
 npm run preview
 ```
@@ -127,16 +145,19 @@ npm run preview
 ## Testing
 
 ### Run All Tests
+
 ```bash
 npm test
 ```
 
 ### Run Tests in Watch Mode with Coverage
+
 ```bash
 npm run test:coverage
 ```
 
 ### Generate Coverage Report
+
 ```bash
 npm run test:coverage:report
 ```
@@ -161,11 +182,13 @@ xdg-open coverage/index.html
 Or manually open `coverage/index.html` in your browser.
 
 The report provides:
+
 - **Summary view**: Overall coverage percentages for statements, branches, functions, and lines
 - **File browser**: Navigate through source files to see line-by-line coverage
 - **Highlighted code**: Green = covered, red = uncovered, yellow = partially covered branches
 
 ### Test Files Location
+
 - `src/__tests__/utils/` - Utility function tests
 - `src/__tests__/services/` - API service tests
 - `src/__tests__/hooks/` - Custom hook tests
@@ -232,21 +255,25 @@ sumo-divisions/
 ## Key Implementation Details
 
 ### Caching Strategy
+
 - All API responses cached for 5 minutes (stale time)
 - Cache persists for 30 minutes
 - Automatic request deduplication via React Query
 - Makuuchi division cached once, filtered for San'yaku ranks
 
 ### Rate Limiting
+
 - Maximum 60 requests per minute
 - Token bucket algorithm
 - Automatic queuing when limit approached
 - User-friendly error messages
 
 ### Win-Loss-Forfeit Calculation
+
 Records are derived from the `wins`, `losses`, and `absences` fields in the API response for each wrestler. These values are provided directly by the API rather than calculated from match data.
 
 ### Division Hierarchy
+
 1. Yokozuna (Grand Champion)
 2. Ozeki
 3. Sekiwake
@@ -259,6 +286,7 @@ Records are derived from the `wins`, `losses`, and `absences` fields in the API 
 10. Jonokuchi (Division 6)
 
 ### Groupings
+
 - **San'yaku**: Yokozuna, Ozeki, Sekiwake, Komusubi (top 4 ranks)
 - **Maku-uchi**: San'yaku + Maegashira (Division 1)
 - **Sekitori**: Maku-uchi + Juryo (salaried professionals)
