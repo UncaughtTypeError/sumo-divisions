@@ -131,10 +131,39 @@ npm run preview
 npm test
 ```
 
-### Run Tests with Coverage
+### Run Tests in Watch Mode with Coverage
 ```bash
 npm run test:coverage
 ```
+
+### Generate Coverage Report
+```bash
+npm run test:coverage:report
+```
+
+This runs all tests once and generates a detailed coverage report in the `coverage/` directory.
+
+### View Coverage Report in Browser
+
+After generating the coverage report, open the HTML report:
+
+```bash
+# Windows
+start coverage/index.html
+
+# macOS
+open coverage/index.html
+
+# Linux
+xdg-open coverage/index.html
+```
+
+Or manually open `coverage/index.html` in your browser.
+
+The report provides:
+- **Summary view**: Overall coverage percentages for statements, branches, functions, and lines
+- **File browser**: Navigate through source files to see line-by-line coverage
+- **Highlighted code**: Green = covered, red = uncovered, yellow = partially covered branches
 
 ### Test Files Location
 - `src/__tests__/utils/` - Utility function tests
