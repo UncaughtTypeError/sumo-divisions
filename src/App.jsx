@@ -17,7 +17,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <div className={styles.appContainer}>
         <header className={styles.appHeader}>
-          <h1>Sumo Divisions</h1>
+          <h1>
+            <img src="/favicon.svg" alt="" className={styles.appLogo} />
+            Sumo Divisions
+          </h1>
           <h2>Up to date Banzuke and Basho records</h2>
           <div className={styles.appCredits}>
             Powered by{' '}
