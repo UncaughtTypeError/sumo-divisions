@@ -1,6 +1,6 @@
 import styles from './MatchGrid.module.css';
 
-function MatchGrid({ matches }) {
+function MatchGrid({ matches, color }) {
   if (!matches || matches.length === 0) {
     return (
       <div className={styles.emptyState}>
@@ -22,7 +22,10 @@ function MatchGrid({ matches }) {
   return (
     <div className={styles.matchGridContainer}>
       {/* Header */}
-      <div className={styles.matchGridHeader}>
+      <div
+        className={styles.matchGridHeader}
+        style={{ backgroundColor: `var(--color-${color})` }}
+      >
         <div className={styles.headerCell}>Result</div>
         <div className={styles.headerCell}>Opponent</div>
         <div className={styles.headerCell}>Kimarite</div>

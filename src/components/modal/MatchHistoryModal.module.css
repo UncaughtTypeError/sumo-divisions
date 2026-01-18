@@ -38,18 +38,13 @@
   align-items: center;
   padding: 1.5rem;
   border-bottom: 2px solid var(--color-border);
-  background: linear-gradient(
-    to right,
-    var(--color-primary),
-    var(--color-secondary)
-  );
   color: white;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .modalTitle {
   font-size: 1.5rem;
-  font-weight: 700;
+  font-weight: 400;
   margin: 0;
   display: flex;
   flex-wrap: wrap;
@@ -125,17 +120,17 @@
 
 .closeFooterButton {
   padding: 0.75rem 1.5rem;
-  background: var(--color-primary);
+  background: var(--color-text);
   color: white;
   border: none;
   border-radius: var(--radius-md);
   font-weight: 600;
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: opacity var(--transition-fast);
 }
 
 .closeFooterButton:hover {
-  background: var(--color-hover);
+  opacity: 0.8;
 }
 
 @media (max-width: 768px) {

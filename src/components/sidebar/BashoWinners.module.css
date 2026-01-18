@@ -70,7 +70,7 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #666;
+  color: var(--color-text-accent);
   margin-bottom: 0.75rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--color-border);
@@ -102,13 +102,13 @@
 
 .prizeEnglish {
   font-size: 0.75rem;
-  color: #666;
+  color: var(--color-text-accent);
 }
 
 .prizeWinners {
   padding-left: 0.5rem;
   font-size: 0.875rem;
-  color: var(--color-primary);
+  color: var(--color-text);
   font-weight: 500;
 }
 

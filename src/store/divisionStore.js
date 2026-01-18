@@ -8,6 +8,7 @@ const useDivisionStore = create((set) => ({
   selectedRank: null,
   selectedDivision: null,
   selectedApiDivision: null,
+  selectedColor: null,
 
   // Sidebar state
   isSidebarOpen: false,
@@ -17,11 +18,12 @@ const useDivisionStore = create((set) => ({
   selectedWrestler: null,
 
   // Actions
-  selectRank: (rank, division, apiDivision) =>
+  selectRank: (rank, division, apiDivision, color) =>
     set({
       selectedRank: rank,
       selectedDivision: division,
       selectedApiDivision: apiDivision,
+      selectedColor: color,
       isSidebarOpen: true,
     }),
 
@@ -31,6 +33,7 @@ const useDivisionStore = create((set) => ({
       selectedRank: null,
       selectedDivision: null,
       selectedApiDivision: null,
+      selectedColor: null,
     }),
 
   openModal: (wrestler) =>
@@ -54,6 +57,7 @@ const useDivisionStore = create((set) => ({
       selectedRank: null,
       selectedDivision: null,
       selectedApiDivision: null,
+      selectedColor: null,
       isSidebarOpen: false,
       isModalOpen: false,
       selectedWrestler: null,

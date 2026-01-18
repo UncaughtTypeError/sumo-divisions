@@ -10,7 +10,7 @@ function DivisionPyramid() {
   const selectRank = useDivisionStore((state) => state.selectRank);
 
   const handleRankClick = (level) => {
-    selectRank(level.rank, level.division, level.apiDivision);
+    selectRank(level.rank, level.division, level.apiDivision, level.color);
   };
 
   return (

@@ -17,6 +17,7 @@ function WrestlerSidebar() {
     isSidebarOpen,
     selectedRank,
     selectedApiDivision,
+    selectedColor,
     closeSidebar,
     openModal,
   } = useDivisionStore();
@@ -139,12 +140,16 @@ function WrestlerSidebar() {
       />
       <div className={`${styles.sidebar} ${isClosing ? styles.closing : ''}`}>
         {/* Header */}
-        <div className={styles.sidebarHeader}>
+        <div
+          className={styles.sidebarHeader}
+          style={{ backgroundColor: `var(--color-${selectedColor})` }}
+        >
           <div>
             <h2>{selectedRank}</h2>
             <BashoSelector
               selectedBashoId={currentBashoId}
               onBashoChange={handleBashoChange}
+              color={selectedColor}
             />
           </div>
           <button
@@ -158,7 +163,7 @@ function WrestlerSidebar() {
 
         {/* Content */}
         <div className={styles.sidebarContent}>
-          {isLoading && <Loading message="Loading rikishi..." />}
+          {isLoading && <Loading message="Loading rikishi..." color={selectedColor} />}
 
           {error && <ErrorMessage error={error} onRetry={refetch} />}
 
@@ -174,11 +179,13 @@ function WrestlerSidebar() {
                   wrestlers={eastWrestlers}
                   side="East"
                   onWrestlerClick={openModal}
+                  color={selectedColor}
                 />
                 <WrestlerGrid
                   wrestlers={westWrestlers}
                   side="West"
                   onWrestlerClick={openModal}
+                  color={selectedColor}
                 />
               </div>
             </>

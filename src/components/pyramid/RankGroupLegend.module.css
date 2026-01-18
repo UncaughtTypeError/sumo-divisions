@@ -30,6 +30,6 @@
 
 .legendDescription {
   font-size: 0.8rem;
-  color: #666;
+  color: var(--color-text-accent);
   font-style: italic;
 }

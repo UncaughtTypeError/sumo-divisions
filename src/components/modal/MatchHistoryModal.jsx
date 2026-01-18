@@ -16,7 +16,7 @@ function getWinPercentage(record) {
 }
 
 function MatchHistoryModal() {
-  const { isModalOpen, selectedWrestler, closeModal, clearSelectedWrestler } =
+  const { isModalOpen, selectedWrestler, selectedColor, closeModal, clearSelectedWrestler } =
     useDivisionStore();
 
   if (!selectedWrestler) {
@@ -60,7 +60,10 @@ function MatchHistoryModal() {
           >
             <Dialog.Panel className={styles.modalPanel}>
               {/* Header */}
-              <div className={styles.modalHeader}>
+              <div
+                className={styles.modalHeader}
+                style={{ backgroundColor: `var(--color-${selectedColor})` }}
+              >
                 <div>
                   <Dialog.Title className={styles.modalTitle}>
                     {selectedWrestler.shikonaEn}
@@ -101,7 +104,7 @@ function MatchHistoryModal() {
               {/* Match History Content */}
               <div className={styles.modalContent}>
                 <h3 className={styles.sectionTitle}>Match History</h3>
-                <MatchGrid matches={selectedWrestler.record} />
+                <MatchGrid matches={selectedWrestler.record} color={selectedColor} />
               </div>
 
               {/* Footer */}
@@ -109,6 +112,7 @@ function MatchHistoryModal() {
                 <button
                   onClick={closeModal}
                   className={styles.closeFooterButton}
+                  style={{ backgroundColor: `var(--color-${selectedColor})` }}
                 >
                   Close
                 </button>

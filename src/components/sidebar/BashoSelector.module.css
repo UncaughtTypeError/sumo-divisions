@@ -36,7 +36,7 @@
 }
 
 .select option {
-  background: var(--color-primary);
+  background: var(--select-color, var(--color-text));
   color: white;
   padding: 0.5rem;
 }

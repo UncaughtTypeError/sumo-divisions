@@ -10,7 +10,7 @@
   width: 3rem;
   height: 3rem;
   border: 3px solid var(--color-border);
-  border-top-color: var(--color-primary);
+  border-top-color: var(--color-text);
   border-radius: 50%;
   margin-bottom: 1rem;
   animation: spin 1s linear infinite;
@@ -23,6 +23,6 @@
 }
 
 .message {
-  color: #666;
+  color: var(--color-text-accent);
   font-size: 0.95rem;
 }

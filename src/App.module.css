@@ -5,16 +5,14 @@
 }
 
 .appHeader {
-  padding: 2rem;
+  padding: 1rem 2rem;
   text-align: left;
-  background-color: var(--color-primary);
-  color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  color: var(--color-text-accent);
 }
 
 .appHeader h1 {
   font-size: 2.5rem;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 .appMain {

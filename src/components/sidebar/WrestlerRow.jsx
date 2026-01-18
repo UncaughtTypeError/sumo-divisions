@@ -2,13 +2,17 @@ import { AWARD_INFO, AWARD_TYPES } from '../../utils/awards';
 import Tooltip from '../common/Tooltip';
 import styles from './WrestlerRow.module.css';
 
-function WrestlerRow({ wrestler, onClick }) {
+function WrestlerRow({ wrestler, onClick, color }) {
   // Use the wins, losses, and absences from the API response
   const { wins = 0, losses = 0, absences = 0, awards = [] } = wrestler;
   const record = `${wins}-${losses}-${absences}`;
 
   return (
-    <div className={styles.wrestlerRow} onClick={() => onClick(wrestler)}>
+    <div
+      className={styles.wrestlerRow}
+      onClick={() => onClick(wrestler)}
+      style={{ '--hover-color': `var(--color-${color})` }}
+    >
       <div className={styles.rankRow}>
         <span className={styles.rank}>{wrestler.rank}</span>
         {awards.length > 0 && (
