@@ -39,11 +39,15 @@ function WrestlerSidebar() {
     enabled: isSidebarOpen,
   });
 
+  // All wrestlers from banzuke (for looking up full wrestler data)
+  const allWrestlers = useMemo(() => {
+    if (!data) return [];
+    return [...(data.east || []), ...(data.west || [])];
+  }, [data]);
+
   // Enrich basho results with rank data from banzuke
   const enrichedBashoResults = useMemo(() => {
     if (!bashoResults || !data) return bashoResults;
-
-    const allWrestlers = [...(data.east || []), ...(data.west || [])];
 
     // Helper to find wrestler rank by rikishiId
     const findRank = (rikishiId) => {
@@ -68,7 +72,7 @@ function WrestlerSidebar() {
       yusho: enrichedYusho,
       specialPrizes: enrichedSpecialPrizes,
     };
-  }, [bashoResults, data]);
+  }, [bashoResults, data, allWrestlers]);
 
   // Filter wrestlers by selected rank and enrich with awards
   const { eastWrestlers, westWrestlers } = useMemo(() => {
@@ -173,6 +177,8 @@ function WrestlerSidebar() {
                 bashoResults={enrichedBashoResults}
                 selectedRank={selectedRank}
                 selectedApiDivision={selectedApiDivision}
+                allWrestlers={allWrestlers}
+                onWrestlerClick={openModal}
               />
               <div className={styles.gridContainer}>
                 <WrestlerGrid

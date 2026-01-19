@@ -29,7 +29,7 @@ const SPECIAL_PRIZE_INFO = {
   },
 };
 
-function BashoWinners({ bashoResults, selectedRank, selectedApiDivision }) {
+function BashoWinners({ bashoResults, selectedRank, selectedApiDivision, allWrestlers, onWrestlerClick }) {
   if (!bashoResults) {
     return null;
   }
@@ -38,6 +38,19 @@ function BashoWinners({ bashoResults, selectedRank, selectedApiDivision }) {
 
   // Find the yusho winner for this division
   const divisionYusho = yusho.find((y) => y.type === selectedApiDivision);
+
+  // Helper to find full wrestler data by rikishiId
+  const findWrestler = (rikishiId) => {
+    return allWrestlers?.find((w) => w.rikishiID === rikishiId);
+  };
+
+  // Handle wrestler click - look up full data and trigger modal
+  const handleWrestlerClick = (rikishiId) => {
+    const wrestler = findWrestler(rikishiId);
+    if (wrestler && onWrestlerClick) {
+      onWrestlerClick(wrestler);
+    }
+  };
 
   // For Makuuchi division, also show special prizes
   const isMakuuchi = selectedApiDivision === 'Makuuchi';
@@ -65,7 +78,13 @@ function BashoWinners({ bashoResults, selectedRank, selectedApiDivision }) {
             <span className={styles.yushoTitle}>Yusho Winner</span>
           </div>
           <div className={styles.winnerInfo}>
-            <span className={styles.winnerName}>{divisionYusho.shikonaEn}</span>
+            <button
+              type="button"
+              className={styles.winnerNameButton}
+              onClick={() => handleWrestlerClick(divisionYusho.rikishiId)}
+            >
+              {divisionYusho.shikonaEn}
+            </button>
             <span className={styles.winnerNameJp}>
               {divisionYusho.shikonaJp}
             </span>
@@ -99,7 +118,13 @@ function BashoWinners({ bashoResults, selectedRank, selectedApiDivision }) {
                         key={winner.rikishiId}
                         className={styles.prizeWinner}
                       >
-                        {winner.shikonaEn}
+                        <button
+                          type="button"
+                          className={styles.prizeWinnerButton}
+                          onClick={() => handleWrestlerClick(winner.rikishiId)}
+                        >
+                          {winner.shikonaEn}
+                        </button>
                         {winner.rank && (
                           <span className={styles.prizeWinnerRank}>
                             {abbreviateRank(winner.rank)}
