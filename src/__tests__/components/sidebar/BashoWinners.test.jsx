@@ -130,7 +130,7 @@ describe('BashoWinners', () => {
   })
 
   describe('click functionality', () => {
-    it('should call onWrestlerClick with full wrestler data when yusho winner is clicked', async () => {
+    it('should call onWrestlerClick with full wrestler data and awards when yusho winner is clicked', async () => {
       const onWrestlerClick = vi.fn()
       const user = userEvent.setup()
 
@@ -145,11 +145,12 @@ describe('BashoWinners', () => {
           shikonaEn: 'Terunofuji',
           wins: 12,
           losses: 3,
+          awards: expect.arrayContaining(['yusho']),
         })
       )
     })
 
-    it('should call onWrestlerClick with full wrestler data when special prize winner is clicked', async () => {
+    it('should call onWrestlerClick with full wrestler data and awards when special prize winner is clicked', async () => {
       const onWrestlerClick = vi.fn()
       const user = userEvent.setup()
 
@@ -164,6 +165,7 @@ describe('BashoWinners', () => {
           shikonaEn: 'Onosato',
           wins: 11,
           losses: 4,
+          awards: expect.arrayContaining(['Shukun-sho']),
         })
       )
     })

@@ -1,3 +1,4 @@
+import { getWrestlerAwards } from '../../utils/awards';
 import styles from './BashoWinners.module.css';
 
 // Abbreviate rank to first letter + number + cardinal point (e.g., "Maegashira 17 East" -> "M17e")
@@ -44,11 +45,13 @@ function BashoWinners({ bashoResults, selectedRank, selectedApiDivision, allWres
     return allWrestlers?.find((w) => w.rikishiID === rikishiId);
   };
 
-  // Handle wrestler click - look up full data and trigger modal
+  // Handle wrestler click - look up full data, enrich with awards, and trigger modal
   const handleWrestlerClick = (rikishiId) => {
     const wrestler = findWrestler(rikishiId);
     if (wrestler && onWrestlerClick) {
-      onWrestlerClick(wrestler);
+      // Enrich wrestler with awards before passing to modal
+      const awards = getWrestlerAwards(rikishiId, bashoResults, selectedApiDivision);
+      onWrestlerClick({ ...wrestler, awards });
     }
   };
 
