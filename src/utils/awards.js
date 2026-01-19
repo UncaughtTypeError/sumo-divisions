@@ -9,6 +9,37 @@ export const AWARD_TYPES = {
   GINO_SHO: 'Gino-sho',
 };
 
+/**
+ * Record status types (kachi-koshi / make-koshi)
+ */
+export const RECORD_STATUS_TYPES = {
+  KACHI_KOSHI: 'kachi-koshi',
+  MAKE_KOSHI: 'make-koshi',
+};
+
+/**
+ * Professional divisions (sekitori) with 15 bouts
+ * Amateur/apprentice divisions have only 7 bouts
+ */
+export const SEKITORI_DIVISIONS = ['Makuuchi', 'Juryo'];
+
+export const RECORD_STATUS_INFO = {
+  [RECORD_STATUS_TYPES.KACHI_KOSHI]: {
+    abbrev: 'KK',
+    nameEn: 'Kachi-koshi',
+    nameJp: '勝ち越し',
+    description: 'Winning Record',
+    color: 'green',
+  },
+  [RECORD_STATUS_TYPES.MAKE_KOSHI]: {
+    abbrev: 'MK',
+    nameEn: 'Make-koshi',
+    nameJp: '負け越し',
+    description: 'Losing Record',
+    color: 'red',
+  },
+};
+
 export const AWARD_INFO = {
   [AWARD_TYPES.YUSHO]: {
     abbrev: 'Y',
@@ -68,4 +99,26 @@ export function getWrestlerAwards(rikishiId, bashoResults, division) {
   }
 
   return awards;
+}
+
+/**
+ * Get the record status (kachi-koshi or make-koshi) for a wrestler
+ * @param {number} wins - Number of wins
+ * @param {number} losses - Number of losses
+ * @param {string} division - The division (affects threshold: 8 for sekitori, 4 for others)
+ * @param {number} absences - Number of absences (count towards losses)
+ * @returns {string|null} Record status type or null if not yet determined
+ */
+export function getRecordStatus(wins, losses, division, absences = 0) {
+  const threshold = SEKITORI_DIVISIONS.includes(division) ? 8 : 4;
+  const totalLosses = losses + absences;
+
+  if (wins >= threshold) {
+    return RECORD_STATUS_TYPES.KACHI_KOSHI;
+  }
+  if (totalLosses >= threshold) {
+    return RECORD_STATUS_TYPES.MAKE_KOSHI;
+  }
+
+  return null;
 }

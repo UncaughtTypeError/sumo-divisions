@@ -1,3 +1,4 @@
+import Tooltip from '../common/Tooltip';
 import styles from './MatchGrid.module.css';
 
 function MatchGrid({ matches, color }) {
@@ -19,6 +20,38 @@ function MatchGrid({ matches, color }) {
     return styles.resultForfeit;
   };
 
+  const getResultCircle = (result) => {
+    if (result === 'win') {
+      return (
+        <Tooltip
+          content={
+            <>
+              <strong>Win</strong>
+              <span>Shiroboshi (白星)</span>
+            </>
+          }
+        >
+          <span className={styles.shiroboshi} />
+        </Tooltip>
+      );
+    }
+    if (result === 'loss') {
+      return (
+        <Tooltip
+          content={
+            <>
+              <strong>Loss</strong>
+              <span>Kuroboshi (黒星)</span>
+            </>
+          }
+        >
+          <span className={styles.kuroboshi} />
+        </Tooltip>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className={styles.matchGridContainer}>
       {/* Header */}
@@ -37,6 +70,7 @@ function MatchGrid({ matches, color }) {
           <div key={index} className={styles.matchRow}>
             <div className={`${styles.cell} ${getResultClass(match.result)}`}>
               {getResultDisplay(match.result)}
+              {getResultCircle(match.result)}
             </div>
             <div className={styles.cell}>
               {match.opponentShikonaEn || 'Unknown'}

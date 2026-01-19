@@ -74,4 +74,45 @@ describe('MatchGrid', () => {
     // Empty result shows "Result pending" as fallback
     expect(screen.getByText(/Result pending/i)).toBeInTheDocument()
   })
+
+  describe('shiroboshi/kuroboshi circles', () => {
+    it('should render shiroboshi circle for win', () => {
+      const winMatch = [
+        { result: 'win', opponentShikonaEn: 'Takakeisho', kimarite: 'yorikiri' },
+      ]
+      const { container } = render(<MatchGrid matches={winMatch} />)
+      // Circle is rendered as a styled span element
+      const shiroboshi = container.querySelector('[class*="shiroboshi"]')
+      expect(shiroboshi).toBeInTheDocument()
+    })
+
+    it('should render kuroboshi circle for loss', () => {
+      const lossMatch = [
+        { result: 'loss', opponentShikonaEn: 'Kotozakura', kimarite: 'oshidashi' },
+      ]
+      const { container } = render(<MatchGrid matches={lossMatch} />)
+      // Circle is rendered as a styled span element
+      const kuroboshi = container.querySelector('[class*="kuroboshi"]')
+      expect(kuroboshi).toBeInTheDocument()
+    })
+
+    it('should not render circle for forfeit results', () => {
+      const fusenMatch = [
+        { result: 'fusen loss', opponentShikonaEn: 'Hoshoryu', kimarite: null },
+      ]
+      const { container } = render(<MatchGrid matches={fusenMatch} />)
+      const shiroboshi = container.querySelector('[class*="shiroboshi"]')
+      const kuroboshi = container.querySelector('[class*="kuroboshi"]')
+      expect(shiroboshi).not.toBeInTheDocument()
+      expect(kuroboshi).not.toBeInTheDocument()
+    })
+
+    it('should render both circles for mixed results', () => {
+      const { container } = render(<MatchGrid matches={mockMatches} />)
+      const shiroboshi = container.querySelector('[class*="shiroboshi"]')
+      const kuroboshi = container.querySelector('[class*="kuroboshi"]')
+      expect(shiroboshi).toBeInTheDocument()
+      expect(kuroboshi).toBeInTheDocument()
+    })
+  })
 })

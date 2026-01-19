@@ -186,12 +186,14 @@ function WrestlerSidebar() {
                   side="East"
                   onWrestlerClick={openModal}
                   color={selectedColor}
+                  division={selectedApiDivision}
                 />
                 <WrestlerGrid
                   wrestlers={westWrestlers}
                   side="West"
                   onWrestlerClick={openModal}
                   color={selectedColor}
+                  division={selectedApiDivision}
                 />
               </div>
             </>

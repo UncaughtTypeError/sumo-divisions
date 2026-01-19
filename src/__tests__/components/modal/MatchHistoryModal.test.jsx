@@ -139,9 +139,11 @@ describe('MatchHistoryModal', () => {
       expect(screen.getByText(/🏆.*Yusho/)).toBeInTheDocument()
     })
 
-    it('should render special prize award', () => {
+    it('should render special prize award badge', () => {
       render(<MatchHistoryModal />)
-      expect(screen.getByText('Kantō-shō')).toBeInTheDocument()
+      // The badge text appears in the visible badge
+      const badges = screen.getAllByText('Kantō-shō')
+      expect(badges.length).toBeGreaterThanOrEqual(1)
     })
   })
 
@@ -179,6 +181,89 @@ describe('MatchHistoryModal', () => {
 
       render(<MatchHistoryModal />)
       expect(screen.getByText(/100\.00% Win Rate/)).toBeInTheDocument()
+    })
+  })
+
+  describe('kachi-koshi/make-koshi badges', () => {
+    it('should render Kachi-koshi badge for winning record', () => {
+      const winningWrestler = {
+        ...mockWrestler,
+        wins: 10,
+        losses: 5,
+      }
+      useDivisionStore.mockReturnValue({
+        isModalOpen: true,
+        selectedWrestler: winningWrestler,
+        selectedApiDivision: 'Makuuchi',
+        closeModal: mockCloseModal,
+        clearSelectedWrestler: mockClearSelectedWrestler,
+      })
+
+      render(<MatchHistoryModal />)
+      // Full name displayed in modal (appears in badge and tooltip)
+      const badges = screen.getAllByText('Kachi-koshi')
+      expect(badges.length).toBeGreaterThanOrEqual(1)
+    })
+
+    it('should render Make-koshi badge for losing record', () => {
+      const losingWrestler = {
+        ...mockWrestler,
+        wins: 5,
+        losses: 10,
+      }
+      useDivisionStore.mockReturnValue({
+        isModalOpen: true,
+        selectedWrestler: losingWrestler,
+        selectedApiDivision: 'Makuuchi',
+        closeModal: mockCloseModal,
+        clearSelectedWrestler: mockClearSelectedWrestler,
+      })
+
+      render(<MatchHistoryModal />)
+      // Full name displayed in modal (appears in badge and tooltip)
+      const badges = screen.getAllByText('Make-koshi')
+      expect(badges.length).toBeGreaterThanOrEqual(1)
+    })
+
+    it('should not render KK/MK badge when record not determined', () => {
+      const undeterminedWrestler = {
+        ...mockWrestler,
+        wins: 5,
+        losses: 5,
+      }
+      useDivisionStore.mockReturnValue({
+        isModalOpen: true,
+        selectedWrestler: undeterminedWrestler,
+        selectedApiDivision: 'Makuuchi',
+        closeModal: mockCloseModal,
+        clearSelectedWrestler: mockClearSelectedWrestler,
+      })
+
+      render(<MatchHistoryModal />)
+      expect(screen.queryByText('Kachi-koshi')).not.toBeInTheDocument()
+      expect(screen.queryByText('Make-koshi')).not.toBeInTheDocument()
+    })
+
+    it('should render KK badge before award badges', () => {
+      const wrestlerWithKKAndAward = {
+        ...mockWrestler,
+        wins: 12,
+        losses: 3,
+        awards: [AWARD_TYPES.YUSHO],
+      }
+      useDivisionStore.mockReturnValue({
+        isModalOpen: true,
+        selectedWrestler: wrestlerWithKKAndAward,
+        selectedApiDivision: 'Makuuchi',
+        closeModal: mockCloseModal,
+        clearSelectedWrestler: mockClearSelectedWrestler,
+      })
+
+      render(<MatchHistoryModal />)
+      // Both badges should be present (text appears in badge and tooltip)
+      const kkBadges = screen.getAllByText('Kachi-koshi')
+      expect(kkBadges.length).toBeGreaterThanOrEqual(1)
+      expect(screen.getByText(/🏆.*Yusho/)).toBeInTheDocument()
     })
   })
 })

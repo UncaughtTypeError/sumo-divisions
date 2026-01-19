@@ -1,7 +1,13 @@
 import { Dialog, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import useDivisionStore from '../../store/divisionStore';
-import { AWARD_INFO, AWARD_TYPES } from '../../utils/awards';
+import {
+  AWARD_INFO,
+  AWARD_TYPES,
+  RECORD_STATUS_INFO,
+  getRecordStatus,
+} from '../../utils/awards';
+import Tooltip from '../common/Tooltip';
 import MatchGrid from './MatchGrid';
 import styles from './MatchHistoryModal.module.css';
 
@@ -16,8 +22,14 @@ function getWinPercentage(record) {
 }
 
 function MatchHistoryModal() {
-  const { isModalOpen, selectedWrestler, selectedColor, closeModal, clearSelectedWrestler } =
-    useDivisionStore();
+  const {
+    isModalOpen,
+    selectedWrestler,
+    selectedColor,
+    selectedApiDivision,
+    closeModal,
+    clearSelectedWrestler,
+  } = useDivisionStore();
 
   if (!selectedWrestler) {
     return null;
@@ -25,6 +37,12 @@ function MatchHistoryModal() {
 
   const { wins = 0, losses = 0, absences = 0, awards = [] } = selectedWrestler;
   const record = `${wins}W-${losses}L-${absences}A`;
+
+  // Get record status (kachi-koshi or make-koshi)
+  const recordStatus = getRecordStatus(wins, losses, selectedApiDivision, absences);
+  const recordStatusInfo = recordStatus ? RECORD_STATUS_INFO[recordStatus] : null;
+
+  const hasAnyBadges = recordStatus || awards.length > 0;
 
   return (
     <Transition
@@ -67,19 +85,52 @@ function MatchHistoryModal() {
                 <div>
                   <Dialog.Title className={styles.modalTitle}>
                     {selectedWrestler.shikonaEn}
-                    {awards.length > 0 && (
+                    {hasAnyBadges && (
                       <span className={styles.awardsInline}>
+                        {/* Record status badge (KK/MK) comes first */}
+                        {recordStatusInfo && (
+                          <Tooltip
+                            content={
+                              <>
+                                <strong>{recordStatusInfo.nameEn}</strong>
+                                <span>{recordStatusInfo.nameJp}</span>
+                                <span>{recordStatusInfo.description}</span>
+                              </>
+                            }
+                          >
+                            <span
+                              className={`${styles.awardBadge} ${
+                                recordStatusInfo.color === 'green'
+                                  ? styles.kachiKoshiBadge
+                                  : styles.makeKoshiBadge
+                              }`}
+                            >
+                              {recordStatusInfo.nameEn}
+                            </span>
+                          </Tooltip>
+                        )}
+                        {/* Award badges */}
                         {awards.map((award) => {
                           const info = AWARD_INFO[award];
                           if (!info) return null;
                           return (
-                            <span
+                            <Tooltip
                               key={award}
-                              className={`${styles.awardBadge} ${award === AWARD_TYPES.YUSHO ? styles.yushoBadge : ''}`}
+                              content={
+                                <>
+                                  <strong>{info.nameEn}</strong>
+                                  <span>{info.nameJp}</span>
+                                  <span>{info.description}</span>
+                                </>
+                              }
                             >
-                              {award === AWARD_TYPES.YUSHO && '🏆 '}
-                              {info.nameEn}
-                            </span>
+                              <span
+                                className={`${styles.awardBadge} ${award === AWARD_TYPES.YUSHO ? styles.yushoBadge : ''}`}
+                              >
+                                {award === AWARD_TYPES.YUSHO && '🏆 '}
+                                {info.nameEn}
+                              </span>
+                            </Tooltip>
                           );
                         })}
                       </span>

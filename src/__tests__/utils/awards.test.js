@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest'
-import { AWARD_TYPES, AWARD_INFO, getWrestlerAwards } from '../../utils/awards'
+import {
+  AWARD_TYPES,
+  AWARD_INFO,
+  RECORD_STATUS_TYPES,
+  RECORD_STATUS_INFO,
+  SEKITORI_DIVISIONS,
+  getWrestlerAwards,
+  getRecordStatus,
+} from '../../utils/awards'
 
 describe('awards utilities', () => {
   describe('AWARD_TYPES', () => {
@@ -138,6 +146,141 @@ describe('awards utilities', () => {
 
       it('should return empty array when wrestler has no awards', () => {
         expect(getWrestlerAwards(999, mockBashoResults, 'Makuuchi')).toEqual([])
+      })
+    })
+  })
+
+  describe('RECORD_STATUS_TYPES', () => {
+    it('should have kachi-koshi and make-koshi types', () => {
+      expect(RECORD_STATUS_TYPES).toEqual({
+        KACHI_KOSHI: 'kachi-koshi',
+        MAKE_KOSHI: 'make-koshi',
+      })
+    })
+  })
+
+  describe('RECORD_STATUS_INFO', () => {
+    it('should have info for kachi-koshi', () => {
+      expect(RECORD_STATUS_INFO[RECORD_STATUS_TYPES.KACHI_KOSHI]).toEqual({
+        abbrev: 'KK',
+        nameEn: 'Kachi-koshi',
+        nameJp: '勝ち越し',
+        description: 'Winning Record',
+        color: 'green',
+      })
+    })
+
+    it('should have info for make-koshi', () => {
+      expect(RECORD_STATUS_INFO[RECORD_STATUS_TYPES.MAKE_KOSHI]).toEqual({
+        abbrev: 'MK',
+        nameEn: 'Make-koshi',
+        nameJp: '負け越し',
+        description: 'Losing Record',
+        color: 'red',
+      })
+    })
+  })
+
+  describe('SEKITORI_DIVISIONS', () => {
+    it('should include Makuuchi and Juryo', () => {
+      expect(SEKITORI_DIVISIONS).toContain('Makuuchi')
+      expect(SEKITORI_DIVISIONS).toContain('Juryo')
+      expect(SEKITORI_DIVISIONS).toHaveLength(2)
+    })
+  })
+
+  describe('getRecordStatus', () => {
+    describe('sekitori divisions (Makuuchi, Juryo)', () => {
+      it('should return kachi-koshi for 8+ wins in Makuuchi', () => {
+        expect(getRecordStatus(8, 7, 'Makuuchi')).toBe(RECORD_STATUS_TYPES.KACHI_KOSHI)
+        expect(getRecordStatus(10, 5, 'Makuuchi')).toBe(RECORD_STATUS_TYPES.KACHI_KOSHI)
+        expect(getRecordStatus(15, 0, 'Makuuchi')).toBe(RECORD_STATUS_TYPES.KACHI_KOSHI)
+      })
+
+      it('should return make-koshi for 8+ losses in Makuuchi', () => {
+        expect(getRecordStatus(7, 8, 'Makuuchi')).toBe(RECORD_STATUS_TYPES.MAKE_KOSHI)
+        expect(getRecordStatus(5, 10, 'Makuuchi')).toBe(RECORD_STATUS_TYPES.MAKE_KOSHI)
+        expect(getRecordStatus(0, 15, 'Makuuchi')).toBe(RECORD_STATUS_TYPES.MAKE_KOSHI)
+      })
+
+      it('should return null if record not yet determined in Makuuchi', () => {
+        expect(getRecordStatus(7, 7, 'Makuuchi')).toBeNull()
+        expect(getRecordStatus(5, 5, 'Makuuchi')).toBeNull()
+        expect(getRecordStatus(0, 0, 'Makuuchi')).toBeNull()
+      })
+
+      it('should return kachi-koshi for 8+ wins in Juryo', () => {
+        expect(getRecordStatus(8, 7, 'Juryo')).toBe(RECORD_STATUS_TYPES.KACHI_KOSHI)
+      })
+
+      it('should return make-koshi for 8+ losses in Juryo', () => {
+        expect(getRecordStatus(7, 8, 'Juryo')).toBe(RECORD_STATUS_TYPES.MAKE_KOSHI)
+      })
+    })
+
+    describe('amateur/apprentice divisions', () => {
+      it('should return kachi-koshi for 4+ wins in Makushita', () => {
+        expect(getRecordStatus(4, 3, 'Makushita')).toBe(RECORD_STATUS_TYPES.KACHI_KOSHI)
+        expect(getRecordStatus(7, 0, 'Makushita')).toBe(RECORD_STATUS_TYPES.KACHI_KOSHI)
+      })
+
+      it('should return make-koshi for 4+ losses in Makushita', () => {
+        expect(getRecordStatus(3, 4, 'Makushita')).toBe(RECORD_STATUS_TYPES.MAKE_KOSHI)
+        expect(getRecordStatus(0, 7, 'Makushita')).toBe(RECORD_STATUS_TYPES.MAKE_KOSHI)
+      })
+
+      it('should return null if record not yet determined in Makushita', () => {
+        expect(getRecordStatus(3, 3, 'Makushita')).toBeNull()
+        expect(getRecordStatus(2, 2, 'Makushita')).toBeNull()
+      })
+
+      it('should use amateur threshold for Sandanme', () => {
+        expect(getRecordStatus(4, 3, 'Sandanme')).toBe(RECORD_STATUS_TYPES.KACHI_KOSHI)
+        expect(getRecordStatus(3, 4, 'Sandanme')).toBe(RECORD_STATUS_TYPES.MAKE_KOSHI)
+      })
+
+      it('should use amateur threshold for Jonidan', () => {
+        expect(getRecordStatus(4, 3, 'Jonidan')).toBe(RECORD_STATUS_TYPES.KACHI_KOSHI)
+        expect(getRecordStatus(3, 4, 'Jonidan')).toBe(RECORD_STATUS_TYPES.MAKE_KOSHI)
+      })
+
+      it('should use amateur threshold for Jonokuchi', () => {
+        expect(getRecordStatus(4, 3, 'Jonokuchi')).toBe(RECORD_STATUS_TYPES.KACHI_KOSHI)
+        expect(getRecordStatus(3, 4, 'Jonokuchi')).toBe(RECORD_STATUS_TYPES.MAKE_KOSHI)
+      })
+    })
+
+    describe('absences counting towards losses', () => {
+      it('should count absences towards losses in Makuuchi', () => {
+        // 7 losses + 1 absence = 8 total losses
+        expect(getRecordStatus(7, 7, 'Makuuchi', 1)).toBe(RECORD_STATUS_TYPES.MAKE_KOSHI)
+        // 5 losses + 3 absences = 8 total losses
+        expect(getRecordStatus(7, 5, 'Makuuchi', 3)).toBe(RECORD_STATUS_TYPES.MAKE_KOSHI)
+        // 0 losses + 15 absences = 15 total losses (full absence)
+        expect(getRecordStatus(0, 0, 'Makuuchi', 15)).toBe(RECORD_STATUS_TYPES.MAKE_KOSHI)
+      })
+
+      it('should count absences towards losses in amateur divisions', () => {
+        // 3 losses + 1 absence = 4 total losses
+        expect(getRecordStatus(3, 3, 'Makushita', 1)).toBe(RECORD_STATUS_TYPES.MAKE_KOSHI)
+        // 2 losses + 2 absences = 4 total losses
+        expect(getRecordStatus(3, 2, 'Makushita', 2)).toBe(RECORD_STATUS_TYPES.MAKE_KOSHI)
+      })
+
+      it('should not affect kachi-koshi determination', () => {
+        // Wins still need to reach threshold regardless of absences
+        expect(getRecordStatus(8, 5, 'Makuuchi', 2)).toBe(RECORD_STATUS_TYPES.KACHI_KOSHI)
+        expect(getRecordStatus(4, 2, 'Makushita', 1)).toBe(RECORD_STATUS_TYPES.KACHI_KOSHI)
+      })
+
+      it('should default absences to 0 when not provided', () => {
+        expect(getRecordStatus(7, 7, 'Makuuchi')).toBeNull()
+        expect(getRecordStatus(3, 3, 'Makushita')).toBeNull()
+      })
+
+      it('should return null when neither threshold is met including absences', () => {
+        expect(getRecordStatus(5, 5, 'Makuuchi', 2)).toBeNull()
+        expect(getRecordStatus(3, 2, 'Makushita', 1)).toBeNull()
       })
     })
   })

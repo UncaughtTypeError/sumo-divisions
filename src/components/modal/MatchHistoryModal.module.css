@@ -72,6 +72,16 @@
   color: #5c4d00;
 }
 
+.awardBadge.kachiKoshiBadge {
+  background: #d1fae5;
+  color: #10b981;
+}
+
+.awardBadge.makeKoshiBadge {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
 .modalSubtitle {
   margin: 0.25rem 0 0 0;
   font-size: 0.875rem;

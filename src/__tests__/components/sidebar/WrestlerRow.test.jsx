@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import WrestlerRow from '../../../components/sidebar/WrestlerRow'
-import { AWARD_TYPES } from '../../../utils/awards'
+import { AWARD_TYPES, RECORD_STATUS_TYPES } from '../../../utils/awards'
 
 describe('WrestlerRow', () => {
   const mockWrestler = {
@@ -91,5 +91,76 @@ describe('WrestlerRow', () => {
     expect(screen.getByText('S')).toBeInTheDocument()
     expect(screen.getByText('K')).toBeInTheDocument()
     expect(screen.getByText('G')).toBeInTheDocument()
+  })
+
+  describe('kachi-koshi/make-koshi badges', () => {
+    it('should render KK badge for winning record in Makuuchi', () => {
+      const winningWrestler = {
+        ...mockWrestler,
+        wins: 8,
+        losses: 7,
+      }
+      render(<WrestlerRow wrestler={winningWrestler} onClick={() => {}} division="Makuuchi" />)
+      expect(screen.getByText('KK')).toBeInTheDocument()
+      // Tooltip content
+      expect(screen.getByText('Kachi-koshi')).toBeInTheDocument()
+    })
+
+    it('should render MK badge for losing record in Makuuchi', () => {
+      const losingWrestler = {
+        ...mockWrestler,
+        wins: 7,
+        losses: 8,
+      }
+      render(<WrestlerRow wrestler={losingWrestler} onClick={() => {}} division="Makuuchi" />)
+      expect(screen.getByText('MK')).toBeInTheDocument()
+      // Tooltip content
+      expect(screen.getByText('Make-koshi')).toBeInTheDocument()
+    })
+
+    it('should render KK badge for 4+ wins in Makushita', () => {
+      const winningWrestler = {
+        ...mockWrestler,
+        wins: 4,
+        losses: 3,
+      }
+      render(<WrestlerRow wrestler={winningWrestler} onClick={() => {}} division="Makushita" />)
+      expect(screen.getByText('KK')).toBeInTheDocument()
+    })
+
+    it('should render MK badge for 4+ losses in Makushita', () => {
+      const losingWrestler = {
+        ...mockWrestler,
+        wins: 3,
+        losses: 4,
+      }
+      render(<WrestlerRow wrestler={losingWrestler} onClick={() => {}} division="Makushita" />)
+      expect(screen.getByText('MK')).toBeInTheDocument()
+    })
+
+    it('should not render KK/MK badge when record not determined', () => {
+      const undeterminedWrestler = {
+        ...mockWrestler,
+        wins: 5,
+        losses: 5,
+      }
+      render(<WrestlerRow wrestler={undeterminedWrestler} onClick={() => {}} division="Makuuchi" />)
+      expect(screen.queryByText('KK')).not.toBeInTheDocument()
+      expect(screen.queryByText('MK')).not.toBeInTheDocument()
+    })
+
+    it('should render KK badge before award badges', () => {
+      const wrestlerWithKKAndAward = {
+        ...mockWrestler,
+        wins: 12,
+        losses: 3,
+        awards: [AWARD_TYPES.YUSHO],
+      }
+      render(<WrestlerRow wrestler={wrestlerWithKKAndAward} onClick={() => {}} division="Makuuchi" />)
+
+      // Both badges should be present
+      expect(screen.getByText('KK')).toBeInTheDocument()
+      expect(screen.getByText(/🏆/)).toBeInTheDocument()
+    })
   })
 })
