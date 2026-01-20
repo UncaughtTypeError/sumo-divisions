@@ -51,7 +51,7 @@ function App() {
           <a
             href="https://github.com/UncaughtTypeError/sumo-divisions"
             target="_blank"
-            rel="noopener noreferrer"
+            rel="noopener"
           >
             <GitHubIcon />
             View on GitHub

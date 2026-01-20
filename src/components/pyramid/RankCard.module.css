@@ -61,10 +61,69 @@
 }
 
 /* Responsive styles */
+@media (max-width: 1400px) {
+  .rankText {
+    transform: translateX(-50%);
+    position: absolute;
+    left: 50%;
+    bottom: 1rem;
+  }
+
+  .rankCard:before {
+    border-width: 4.5vw 3vw 0 0;
+  }
+
+  .rankCard:after {
+    border-width: 0 3vw 4.5vw 0;
+  }
+
+  .rankCardApex:before {
+    border-width: 9.5vw 6vw 0 0;
+  }
+
+  .rankCardApex:after {
+    border-width: 0 6vw 9.5vw 0;
+  }
+}
+
+@media (max-width: 1024px) {
+  .rankCard:before {
+    border-width: 7.5vw 4.25vw 0 0;
+  }
+
+  .rankCard:after {
+    border-width: 0 4.25vw 7.5vw 0;
+  }
+
+  .rankCardApex:before {
+    border-width: 14.5vw 8vw 0 0;
+  }
+
+  .rankCardApex:after {
+    border-width: 0 8vw 14.5vw 0;
+  }
+
+  .rankCard {
+    font-size: 1.2rem;
+  }
+}
+
 @media (max-width: 768px) {
+  .rankCard:before,
+  .rankCard:after,
+  .rankCardApex:before,
+  .rankCardApex:after {
+    display: none;
+  }
+
   .rankCard {
     padding: 1rem 1.5rem;
-    font-size: 0.95rem;
+  }
+
+  .rankText {
+    position: static;
+    transform: none;
+    font-size: 1.5rem;
   }
 }
 

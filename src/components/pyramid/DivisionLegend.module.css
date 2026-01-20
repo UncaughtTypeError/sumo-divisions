@@ -14,6 +14,7 @@
   border-left: 4px solid;
   min-height: 63px;
   justify-content: center;
+  border-left-color: rgb(197, 197, 197);
 }
 
 .legendItemTopDiv {
@@ -30,6 +31,30 @@
   font-size: 0.875rem;
   color: var(--color-text-accent);
   font-style: italic;
+}
+
+/* Responsive styles */
+@media (max-width: 1024px) {
+  .legendContainer {
+    padding: 2em 0;
+  }
+
+  .legendItem {
+    border-left: none;
+    border-right: 4px solid;
+    padding-left: 0;
+    padding-right: 0.5rem;
+    border-left-color: transparent;
+    border-right-color: rgb(197, 197, 197);
+  }
+
+  .legendName {
+    font-size: 0.8rem;
+  }
+
+  .legendDescription {
+    font-size: 0.775rem;
+  }
 }
 
 @media (max-width: 768px) {

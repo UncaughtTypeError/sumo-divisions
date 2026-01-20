@@ -70,9 +70,9 @@
 }
 
 .appFooter {
-  padding: 1.5rem 2rem;
+  padding: 10px 2rem;
   text-align: right;
-  position: absolute;
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
@@ -90,4 +90,47 @@
 
 .appFooter a:hover {
   opacity: 1;
+}
+
+/* Responsive styles */
+@media (max-width: 1400px) {
+  .appFooter {
+    position: relative;
+  }
+}
+
+@media (max-width: 1024px) {
+  .appHeader {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .appHeader h1 {
+    flex-basis: 100%;
+  }
+
+  .appCredits {
+    position: absolute;
+    right: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .appFooter {
+    text-align: center;
+  }
+}
+
+@media (max-width: 650px) {
+  .appHeader {
+    text-align: center;
+  }
+
+  .appHeader h1 {
+    justify-content: center;
+  }
+
+  .appCredits {
+    display: none;
+  }
 }

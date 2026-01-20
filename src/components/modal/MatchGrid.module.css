@@ -124,6 +124,7 @@
   font-style: italic;
 }
 
+/* Responsive styles */
 @media (max-width: 768px) {
   .matchGridHeader,
   .matchRow {

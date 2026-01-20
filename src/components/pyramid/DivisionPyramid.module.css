@@ -45,14 +45,25 @@
 }
 
 /* Responsive styles */
+@media (max-width: 1400px) {
+  .pyramidLevel {
+    min-height: 65px;
+  }
+}
+
 @media (max-width: 1024px) {
   .pyramidContainer {
     flex-direction: column;
+    gap: 0;
   }
 
   .legendWrapper {
-    width: 100%;
     height: auto;
+    position: absolute;
+    right: 0;
+    width: auto;
+    background: transparent;
+    box-shadow: none;
   }
 
   .pyramid {
@@ -65,12 +76,27 @@
     flex-direction: column;
   }
 
+  .pyramidApex {
+    height: auto;
+    min-height: 65px;
+  }
+
   .pyramid {
     gap: 0.75rem;
     padding: 1rem 0.5rem;
   }
 
   .pyramidLevel {
-    width: 100% !important;
+    min-width: 100%;
+  }
+
+  .legendWrapper {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .pyramidLevel {
+    min-height: auto;
   }
 }

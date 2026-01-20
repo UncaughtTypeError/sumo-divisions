@@ -40,6 +40,7 @@
   font-style: italic;
 }
 
+/* Responsive styles */
 @media (max-width: 768px) {
   .columnHeader h3 {
     font-size: 1.1rem;

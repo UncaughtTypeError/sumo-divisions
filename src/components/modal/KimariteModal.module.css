@@ -147,6 +147,7 @@
   transform: scale(0.95) translateY(10px);
 }
 
+/* Responsive styles */
 @media (max-width: 480px) {
   .modalPanel {
     margin: 0.5rem;

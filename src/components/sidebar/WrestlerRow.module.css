@@ -77,6 +77,7 @@
   text-align: right;
 }
 
+/* Responsive styles */
 @media (max-width: 768px) {
   .wrestlerRow {
     padding: 0.5rem;

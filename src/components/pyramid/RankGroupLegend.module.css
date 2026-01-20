@@ -33,3 +33,10 @@
   color: var(--color-text-accent);
   font-style: italic;
 }
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .legendWrapper {
+    display: none;
+  }
+}

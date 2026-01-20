@@ -8,11 +8,8 @@ function DivisionLegend() {
         <div
           key={division.name}
           className={`${styles.legendItem} ${
-            division.name === DIVISIONS.MAKUUCHI
-              ? styles.legendItemTopDiv
-              : ''
+            division.name === DIVISIONS.MAKUUCHI ? styles.legendItemTopDiv : ''
           }`}
-          style={{ borderLeftColor: division.color }}
         >
           <div className={styles.legendName}>{division.name}</div>
           <div className={styles.legendDescription}>

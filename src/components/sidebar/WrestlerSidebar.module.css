@@ -130,6 +130,7 @@
   }
 }
 
+/* Responsive styles */
 @media (max-width: 768px) {
   .sidebar {
     width: 100vw;
@@ -137,7 +138,6 @@
   }
 
   .gridContainer {
-    grid-template-columns: 1fr;
     gap: 1.5rem;
   }
 
@@ -147,5 +147,11 @@
 
   .sidebarContent {
     padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .gridContainer {
+    grid-template-columns: 1fr;
   }
 }
