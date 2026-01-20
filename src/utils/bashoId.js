@@ -1,6 +1,49 @@
 import { VALID_BASHO_MONTHS } from './constants'
 
 /**
+ * Tournament nicknames by month
+ * Each basho has a unique name based on when/where it's held
+ */
+export const BASHO_NICKNAMES = {
+  1: {
+    short: 'Hatsu',
+    full: 'Hatsu Basho',
+    japanese: '初場所',
+    description: 'Opening Tournament',
+  },
+  3: {
+    short: 'Haru',
+    full: 'Haru Basho',
+    japanese: '春場所',
+    description: 'Spring Tournament',
+  },
+  5: {
+    short: 'Natsu',
+    full: 'Natsu Basho',
+    japanese: '夏場所',
+    description: 'Summer Tournament',
+  },
+  7: {
+    short: 'Nagoya',
+    full: 'Nagoya Basho',
+    japanese: '名古屋場所',
+    description: 'Nagoya Tournament',
+  },
+  9: {
+    short: 'Aki',
+    full: 'Aki Basho',
+    japanese: '秋場所',
+    description: 'Autumn Tournament',
+  },
+  11: {
+    short: 'Kyushu',
+    full: 'Kyushu Basho',
+    japanese: '九州場所',
+    description: 'Kyushu Tournament',
+  },
+}
+
+/**
  * Get the current or most recent valid basho ID
  * Bashos occur in odd months only: January (01), March (03), May (05),
  * July (07), September (09), November (11)
@@ -107,17 +150,50 @@ export function isValidBashoId(bashoId) {
 }
 
 /**
- * Format a bashoId into a readable date string
+ * Format a bashoId into a readable date string with nickname
  * @param {string} bashoId - BashoId in YYYYMM format
- * @returns {string} Formatted date string (e.g., "Jan 2026")
+ * @returns {string} Formatted date string (e.g., "Jan 2026, Hatsu")
  */
 export function formatBashoDate(bashoId) {
   if (!bashoId) return ''
 
   const { year, month } = parseBashoId(bashoId)
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const nickname = BASHO_NICKNAMES[month]
 
-  return `${monthNames[month - 1]} ${year}`
+  const dateStr = `${monthNames[month - 1]} ${year}`
+  return nickname ? `${dateStr}, ${nickname.short}` : dateStr
+}
+
+/**
+ * Format a bashoId into a full readable string with start/end dates and full nickname
+ * @param {string} bashoId - BashoId in YYYYMM format
+ * @param {string} startDate - ISO date string for tournament start (e.g., "2026-01-11T00:00:00Z")
+ * @param {string} endDate - ISO date string for tournament end (e.g., "2026-01-25T00:00:00Z")
+ * @returns {string} Full formatted string (e.g., "11 - 25 Jan 2026, Hatsu Basho (初場所 "Opening Tournament")")
+ */
+export function formatBashoDateFull(bashoId, startDate, endDate) {
+  if (!bashoId) return ''
+
+  const { month } = parseBashoId(bashoId)
+  const nickname = BASHO_NICKNAMES[month]
+
+  // Parse dates
+  const start = startDate ? new Date(startDate) : null
+  const end = endDate ? new Date(endDate) : null
+
+  if (!start || !end || !nickname) {
+    // Fallback to basic format if dates not available
+    return formatBashoDate(bashoId)
+  }
+
+  const startDay = start.getUTCDate()
+  const endDay = end.getUTCDate()
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const monthName = monthNames[start.getUTCMonth()]
+  const year = start.getUTCFullYear()
+
+  return `${startDay} - ${endDay} ${monthName} ${year}, ${nickname.full} (${nickname.japanese} "${nickname.description}")`
 }
 
 /**

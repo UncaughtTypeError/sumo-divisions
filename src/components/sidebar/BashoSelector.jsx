@@ -1,14 +1,31 @@
 import { useMemo } from 'react';
-import { generateBashoIdList, formatBashoDate } from '../../utils/bashoId';
+import {
+  generateBashoIdList,
+  formatBashoDate,
+  formatBashoDateFull,
+} from '../../utils/bashoId';
 import styles from './BashoSelector.module.css';
 
-function BashoSelector({ selectedBashoId, onBashoChange, color }) {
+function BashoSelector({ selectedBashoId, onBashoChange, color, bashoResults }) {
   const bashoOptions = useMemo(() => {
     return generateBashoIdList();
   }, []);
 
+  // Format the currently selected basho with full info if bashoResults available
+  const selectedBashoDisplay = useMemo(() => {
+    if (bashoResults?.startDate && bashoResults?.endDate) {
+      return formatBashoDateFull(
+        selectedBashoId,
+        bashoResults.startDate,
+        bashoResults.endDate
+      );
+    }
+    return formatBashoDate(selectedBashoId);
+  }, [selectedBashoId, bashoResults]);
+
   return (
     <div className={styles.bashoSelector}>
+      <div className={styles.selectedBasho}>{selectedBashoDisplay}</div>
       <select
         value={selectedBashoId}
         onChange={(e) => onBashoChange(e.target.value)}

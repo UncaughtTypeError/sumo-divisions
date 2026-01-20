@@ -4,7 +4,9 @@ import {
   parseBashoId,
   isValidBashoId,
   formatBashoDate,
+  formatBashoDateFull,
   generateBashoIdList,
+  BASHO_NICKNAMES,
 } from '../../utils/bashoId'
 
 describe('bashoId utilities', () => {
@@ -129,27 +131,93 @@ describe('bashoId utilities', () => {
     })
   })
 
+  describe('BASHO_NICKNAMES', () => {
+    it('should have nicknames for all valid basho months', () => {
+      expect(BASHO_NICKNAMES[1]).toBeDefined()
+      expect(BASHO_NICKNAMES[3]).toBeDefined()
+      expect(BASHO_NICKNAMES[5]).toBeDefined()
+      expect(BASHO_NICKNAMES[7]).toBeDefined()
+      expect(BASHO_NICKNAMES[9]).toBeDefined()
+      expect(BASHO_NICKNAMES[11]).toBeDefined()
+    })
+
+    it('should have correct structure for each nickname', () => {
+      Object.values(BASHO_NICKNAMES).forEach((nickname) => {
+        expect(nickname).toHaveProperty('short')
+        expect(nickname).toHaveProperty('full')
+        expect(nickname).toHaveProperty('japanese')
+        expect(nickname).toHaveProperty('description')
+      })
+    })
+
+    it('should have correct nickname for January (Hatsu)', () => {
+      expect(BASHO_NICKNAMES[1]).toEqual({
+        short: 'Hatsu',
+        full: 'Hatsu Basho',
+        japanese: '初場所',
+        description: 'Opening Tournament',
+      })
+    })
+  })
+
   describe('formatBashoDate', () => {
     it.each([
-      ['202601', 'Jan 2026'],
-      ['202603', 'Mar 2026'],
-      ['202605', 'May 2026'],
-      ['202607', 'Jul 2026'],
-      ['202609', 'Sep 2026'],
-      ['202611', 'Nov 2026'],
+      ['202601', 'Jan 2026, Hatsu'],
+      ['202603', 'Mar 2026, Haru'],
+      ['202605', 'May 2026, Natsu'],
+      ['202607', 'Jul 2026, Nagoya'],
+      ['202609', 'Sep 2026, Aki'],
+      ['202611', 'Nov 2026, Kyushu'],
     ])('should format %s as %s', (bashoId, expected) => {
       expect(formatBashoDate(bashoId)).toBe(expected)
     })
 
     it('should handle different years', () => {
-      expect(formatBashoDate('199903')).toBe('Mar 1999')
-      expect(formatBashoDate('205511')).toBe('Nov 2055')
+      expect(formatBashoDate('199903')).toBe('Mar 1999, Haru')
+      expect(formatBashoDate('205511')).toBe('Nov 2055, Kyushu')
     })
 
     it('should return empty string for falsy input', () => {
       expect(formatBashoDate('')).toBe('')
       expect(formatBashoDate(null)).toBe('')
       expect(formatBashoDate(undefined)).toBe('')
+    })
+  })
+
+  describe('formatBashoDateFull', () => {
+    it('should format with start and end dates', () => {
+      const result = formatBashoDateFull(
+        '202601',
+        '2026-01-11T00:00:00Z',
+        '2026-01-25T00:00:00Z'
+      )
+      expect(result).toBe('11 - 25 Jan 2026, Hatsu Basho (初場所 "Opening Tournament")')
+    })
+
+    it('should format March basho correctly', () => {
+      const result = formatBashoDateFull(
+        '202603',
+        '2026-03-08T00:00:00Z',
+        '2026-03-22T00:00:00Z'
+      )
+      expect(result).toBe('8 - 22 Mar 2026, Haru Basho (春場所 "Spring Tournament")')
+    })
+
+    it('should fallback to formatBashoDate when dates missing', () => {
+      expect(formatBashoDateFull('202601', null, null)).toBe('Jan 2026, Hatsu')
+      expect(formatBashoDateFull('202601', undefined, undefined)).toBe('Jan 2026, Hatsu')
+    })
+
+    it('should fallback when only startDate provided', () => {
+      expect(formatBashoDateFull('202601', '2026-01-11T00:00:00Z', null)).toBe('Jan 2026, Hatsu')
+    })
+
+    it('should fallback when only endDate provided', () => {
+      expect(formatBashoDateFull('202601', null, '2026-01-25T00:00:00Z')).toBe('Jan 2026, Hatsu')
+    })
+
+    it('should return empty string for empty bashoId', () => {
+      expect(formatBashoDateFull('', '2026-01-11T00:00:00Z', '2026-01-25T00:00:00Z')).toBe('')
     })
   })
 

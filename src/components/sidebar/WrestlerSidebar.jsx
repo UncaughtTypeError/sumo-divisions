@@ -152,6 +152,7 @@ function WrestlerSidebar() {
               selectedBashoId={currentBashoId}
               onBashoChange={handleBashoChange}
               color={selectedColor}
+              bashoResults={bashoResults}
             />
           </div>
           <button
