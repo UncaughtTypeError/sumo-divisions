@@ -1,4 +1,4 @@
-# Sumo Divisions
+# <img src="public/favicon.svg" width="32" height="32" alt="Sumo Divisions Logo"> Sumo Divisions
 
 An interactive React application for visualizing sumo wrestling divisions, rankings, and wrestler statistics. View tournament standings, wrestler records, and detailed match history in an intuitive pyramid interface. [sumo-divisions.com](https://sumo-divisions.com/)
 
@@ -310,7 +310,7 @@ MIT
 
 ## Contributing
 
-This is a demonstration project. Feel free to fork and modify for your own use.
+This is a community project. Feel free to fork and modify for your own use.
 
 ## Contact
 
