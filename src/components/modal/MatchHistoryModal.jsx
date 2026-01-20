@@ -39,8 +39,15 @@ function MatchHistoryModal() {
   const record = `${wins}W-${losses}L-${absences}A`;
 
   // Get record status (kachi-koshi or make-koshi)
-  const recordStatus = getRecordStatus(wins, losses, selectedApiDivision, absences);
-  const recordStatusInfo = recordStatus ? RECORD_STATUS_INFO[recordStatus] : null;
+  const recordStatus = getRecordStatus(
+    wins,
+    losses,
+    selectedApiDivision,
+    absences
+  );
+  const recordStatusInfo = recordStatus
+    ? RECORD_STATUS_INFO[recordStatus]
+    : null;
 
   const hasAnyBadges = recordStatus || awards.length > 0;
 
@@ -125,7 +132,11 @@ function MatchHistoryModal() {
                               }
                             >
                               <span
-                                className={`${styles.awardBadge} ${award === AWARD_TYPES.YUSHO ? styles.yushoBadge : ''}`}
+                                className={`${styles.awardBadge} ${
+                                  award === AWARD_TYPES.YUSHO
+                                    ? styles.yushoBadge
+                                    : ''
+                                }`}
                               >
                                 {award === AWARD_TYPES.YUSHO && '🏆 '}
                                 {info.nameEn}
@@ -138,7 +149,7 @@ function MatchHistoryModal() {
                   </Dialog.Title>
                   <p className={styles.modalSubtitle}>
                     {selectedWrestler.rank} • <strong>{record}</strong>{' '}
-                    <small style={{ opacity: '0.8' }}>
+                    <small className={styles.modalWinRate}>
                       ({getWinPercentage({ wins, losses })}% Win Rate)
                     </small>
                   </p>
@@ -155,7 +166,10 @@ function MatchHistoryModal() {
               {/* Match History Content */}
               <div className={styles.modalContent}>
                 <h3 className={styles.sectionTitle}>Match History</h3>
-                <MatchGrid matches={selectedWrestler.record} color={selectedColor} />
+                <MatchGrid
+                  matches={selectedWrestler.record}
+                  color={selectedColor}
+                />
               </div>
 
               {/* Footer */}

@@ -1,7 +1,13 @@
+import { useState } from 'react';
 import Tooltip from '../common/Tooltip';
+import KimariteModal from './KimariteModal';
+import { getKimariteInfo } from '../../utils/kimarite';
 import styles from './MatchGrid.module.css';
 
 function MatchGrid({ matches, color }) {
+  const [selectedKimarite, setSelectedKimarite] = useState(null);
+  const [selectedKimariteInfo, setSelectedKimariteInfo] = useState(null);
+
   if (!matches || matches.length === 0) {
     return (
       <div className={styles.emptyState}>
@@ -52,34 +58,78 @@ function MatchGrid({ matches, color }) {
     return null;
   };
 
-  return (
-    <div className={styles.matchGridContainer}>
-      {/* Header */}
-      <div
-        className={styles.matchGridHeader}
-        style={{ backgroundColor: `var(--color-${color})` }}
+  const handleKimariteClick = (kimarite) => {
+    const info = getKimariteInfo(kimarite);
+    if (info) {
+      setSelectedKimarite(kimarite);
+      setSelectedKimariteInfo(info);
+    }
+  };
+
+  const handleCloseKimariteModal = () => {
+    setSelectedKimarite(null);
+    setSelectedKimariteInfo(null);
+  };
+
+  const renderKimarite = (kimarite) => {
+    if (!kimarite) return '—';
+
+    const info = getKimariteInfo(kimarite);
+
+    if (!info) {
+      // Unknown kimarite - display without click functionality
+      return kimarite;
+    }
+
+    return (
+      <button
+        type="button"
+        className={styles.kimarite}
+        onClick={() => handleKimariteClick(kimarite)}
+        aria-label={`View details for ${kimarite}`}
       >
-        <div className={styles.headerCell}>Result</div>
-        <div className={styles.headerCell}>Opponent</div>
-        <div className={styles.headerCell}>Kimarite</div>
+        {kimarite}
+      </button>
+    );
+  };
+
+  return (
+    <>
+      <div className={styles.matchGridContainer}>
+        {/* Header */}
+        <div
+          className={styles.matchGridHeader}
+          style={{ backgroundColor: `var(--color-${color})` }}
+        >
+          <div className={styles.headerCell}>Result</div>
+          <div className={styles.headerCell}>Opponent</div>
+          <div className={styles.headerCell}>Kimarite</div>
+        </div>
+
+        {/* Matches */}
+        <div className={styles.matchList}>
+          {matches.map((match, index) => (
+            <div key={index} className={styles.matchRow}>
+              <div className={`${styles.cell} ${getResultClass(match.result)}`}>
+                {getResultDisplay(match.result)}
+                {getResultCircle(match.result)}
+              </div>
+              <div className={styles.cell}>
+                {match.opponentShikonaEn || 'Unknown'}
+              </div>
+              <div className={styles.cell}>{renderKimarite(match.kimarite)}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Matches */}
-      <div className={styles.matchList}>
-        {matches.map((match, index) => (
-          <div key={index} className={styles.matchRow}>
-            <div className={`${styles.cell} ${getResultClass(match.result)}`}>
-              {getResultDisplay(match.result)}
-              {getResultCircle(match.result)}
-            </div>
-            <div className={styles.cell}>
-              {match.opponentShikonaEn || 'Unknown'}
-            </div>
-            <div className={styles.cell}>{match.kimarite || '—'}</div>
-          </div>
-        ))}
-      </div>
-    </div>
+      <KimariteModal
+        isOpen={selectedKimarite !== null}
+        onClose={handleCloseKimariteModal}
+        kimarite={selectedKimarite}
+        kimariteInfo={selectedKimariteInfo}
+      />
+    </>
   );
 }
 

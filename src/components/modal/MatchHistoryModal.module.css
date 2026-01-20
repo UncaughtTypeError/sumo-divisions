@@ -88,6 +88,10 @@
   opacity: 0.9;
 }
 
+.modalWinRate {
+  opacity: 0.8;
+}
+
 .closeButton {
   background: none;
   border: none;

@@ -87,6 +87,34 @@
   font-style: italic;
 }
 
+.kimarite {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+  color: inherit;
+  transition: color var(--transition-fast);
+}
+
+.kimarite:hover {
+  color: var(--color-primary);
+}
+
+.kimarite:focus {
+  outline: none;
+  color: var(--color-primary);
+}
+
+.kimarite:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 .emptyState {
   display: flex;
   align-items: center;

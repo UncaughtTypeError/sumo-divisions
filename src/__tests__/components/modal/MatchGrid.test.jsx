@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import MatchGrid from '../../../components/modal/MatchGrid'
 
 describe('MatchGrid', () => {
@@ -60,10 +60,10 @@ describe('MatchGrid', () => {
   })
 
   it('should render all matches', () => {
-    render(<MatchGrid matches={mockMatches} />)
-    // 3 matches + 1 header row
-    const rows = screen.getAllByText(/yorikiri|oshidashi|—/)
-    expect(rows).toHaveLength(3)
+    const { container } = render(<MatchGrid matches={mockMatches} />)
+    // Check that we have 3 match rows by looking at matchRow class
+    const matchRows = container.querySelectorAll('[class*="matchRow"]')
+    expect(matchRows).toHaveLength(3)
   })
 
   it('should handle empty result', () => {
@@ -113,6 +113,69 @@ describe('MatchGrid', () => {
       const kuroboshi = container.querySelector('[class*="kuroboshi"]')
       expect(shiroboshi).toBeInTheDocument()
       expect(kuroboshi).toBeInTheDocument()
+    })
+  })
+
+  describe('kimarite modal', () => {
+    it('should render kimarite as clickable button for known techniques', () => {
+      const { container } = render(<MatchGrid matches={mockMatches} />)
+      const kimariteButton = container.querySelector('button[class*="kimarite"]')
+      expect(kimariteButton).toBeInTheDocument()
+      expect(kimariteButton).toHaveTextContent('yorikiri')
+    })
+
+    it('should have aria-label for accessibility', () => {
+      render(<MatchGrid matches={mockMatches} />)
+      const kimariteButton = screen.getByRole('button', { name: /view details for yorikiri/i })
+      expect(kimariteButton).toBeInTheDocument()
+    })
+
+    it('should render unknown kimarite as plain text without button', () => {
+      const unknownKimariteMatch = [
+        { result: 'win', opponentShikonaEn: 'Test', kimarite: 'unknowntechnique' },
+      ]
+      const { container } = render(<MatchGrid matches={unknownKimariteMatch} />)
+      // Unknown kimarite should not have a button
+      const kimariteButton = container.querySelector('button[class*="kimarite"]')
+      expect(kimariteButton).not.toBeInTheDocument()
+      // But the text should still be displayed
+      expect(screen.getByText('unknowntechnique')).toBeInTheDocument()
+    })
+
+    it('should render dash for null kimarite', () => {
+      const nullKimariteMatch = [
+        { result: 'win', opponentShikonaEn: 'Test', kimarite: null },
+      ]
+      render(<MatchGrid matches={nullKimariteMatch} />)
+      expect(screen.getByText('—')).toBeInTheDocument()
+    })
+
+    it('should open modal when kimarite button is clicked', () => {
+      render(<MatchGrid matches={mockMatches} />)
+      const kimariteButton = screen.getByRole('button', { name: /view details for yorikiri/i })
+      fireEvent.click(kimariteButton)
+
+      // Modal should be open with kimarite info
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+      // Japanese and short description are combined in subtitle
+      expect(screen.getByText(/寄り切り/)).toBeInTheDocument()
+      expect(screen.getByText(/Frontal force out/)).toBeInTheDocument()
+    })
+
+    it('should close modal when close button is clicked', () => {
+      render(<MatchGrid matches={mockMatches} />)
+      const kimariteButton = screen.getByRole('button', { name: /view details for yorikiri/i })
+      fireEvent.click(kimariteButton)
+
+      // Modal should be open
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+
+      // Click close button
+      const closeButton = screen.getByRole('button', { name: /close modal/i })
+      fireEvent.click(closeButton)
+
+      // Modal should be closed (dialog should not be in document)
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     })
   })
 })
