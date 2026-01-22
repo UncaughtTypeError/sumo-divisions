@@ -6,6 +6,16 @@ import { isKinboshiMatch, isYokozuna } from '../../utils/awards';
 import useDivisionStore from '../../store/divisionStore';
 import styles from './MatchGrid.module.css';
 
+// Abbreviate rank to first letter + number + cardinal point (e.g., "Maegashira 17 East" -> "M17e")
+function abbreviateRank(rank) {
+  if (!rank) return null;
+  const match = rank.match(/^(\w)\w*\s*(\d*)\s*(East|West)?$/i);
+  if (!match) return rank;
+  const [, firstLetter, number, side] = match;
+  const sideAbbrev = side ? side[0].toLowerCase() : '';
+  return `${firstLetter}${number}${sideAbbrev}`;
+}
+
 function MatchGrid({ matches, color, wrestlerRank }) {
   const [selectedKimarite, setSelectedKimarite] = useState(null);
   const [selectedKimariteInfo, setSelectedKimariteInfo] = useState(null);
@@ -151,6 +161,11 @@ function MatchGrid({ matches, color, wrestlerRank }) {
               </div>
               <div className={styles.cell}>
                 {match.opponentShikonaEn || 'Unknown'}
+                {rankLookup.get(match.opponentID) && (
+                  <span className={styles.opponentRank}>
+                    {abbreviateRank(rankLookup.get(match.opponentID))}
+                  </span>
+                )}
                 {renderKinboshiStar(match)}
               </div>
               <div className={styles.cell}>
