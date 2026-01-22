@@ -58,6 +58,16 @@
   color: #ef4444;
 }
 
+.award.kinboshi {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.award.reverseKinboshi {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
 .name {
   flex: 1;
   font-weight: 600;

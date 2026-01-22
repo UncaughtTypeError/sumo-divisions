@@ -70,6 +70,7 @@ import useBashoResults from '../../../hooks/useBashoResults'
 describe('WrestlerSidebar', () => {
   const mockCloseSidebar = vi.fn()
   const mockOpenModal = vi.fn()
+  const mockSetRankLookup = vi.fn()
   const mockRefetch = vi.fn()
 
   beforeEach(() => {
@@ -84,6 +85,7 @@ describe('WrestlerSidebar', () => {
         selectedApiDivision: null,
         closeSidebar: mockCloseSidebar,
         openModal: mockOpenModal,
+        setRankLookup: mockSetRankLookup,
       })
       useBanzuke.mockReturnValue({
         data: null,
@@ -110,6 +112,7 @@ describe('WrestlerSidebar', () => {
         selectedApiDivision: 'Makuuchi',
         closeSidebar: mockCloseSidebar,
         openModal: mockOpenModal,
+        setRankLookup: mockSetRankLookup,
       })
     })
 

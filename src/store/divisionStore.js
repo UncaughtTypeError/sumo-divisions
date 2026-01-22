@@ -17,6 +17,9 @@ const useDivisionStore = create((set) => ({
   isModalOpen: false,
   selectedWrestler: null,
 
+  // Rank lookup for kinboshi calculation (Map of rikishiID to rank)
+  rankLookup: new Map(),
+
   // Actions
   selectRank: (rank, division, apiDivision, color) =>
     set({
@@ -25,6 +28,11 @@ const useDivisionStore = create((set) => ({
       selectedApiDivision: apiDivision,
       selectedColor: color,
       isSidebarOpen: true,
+    }),
+
+  setRankLookup: (lookup) =>
+    set({
+      rankLookup: lookup,
     }),
 
   closeSidebar: () =>
@@ -61,6 +69,7 @@ const useDivisionStore = create((set) => ({
       isSidebarOpen: false,
       isModalOpen: false,
       selectedWrestler: null,
+      rankLookup: new Map(),
     }),
 }))
 

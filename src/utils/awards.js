@@ -122,3 +122,93 @@ export function getRecordStatus(wins, losses, division, absences = 0) {
 
   return null;
 }
+
+/**
+ * Check if a rank string indicates a Yokozuna
+ * @param {string} rank - The rank string (e.g., "Yokozuna 1 East", "Maegashira 5 West")
+ * @returns {boolean} True if the rank is Yokozuna
+ */
+export function isYokozuna(rank) {
+  if (!rank) return false;
+  return rank.toLowerCase().startsWith('yokozuna');
+}
+
+/**
+ * Check if a rank string indicates a Maegashira
+ * @param {string} rank - The rank string (e.g., "Maegashira 5 West")
+ * @returns {boolean} True if the rank is Maegashira
+ */
+export function isMaegashira(rank) {
+  if (!rank) return false;
+  return rank.toLowerCase().startsWith('maegashira');
+}
+
+/**
+ * Build a lookup map from wrestler ID to rank
+ * @param {Array} eastWrestlers - Array of wrestlers from east side
+ * @param {Array} westWrestlers - Array of wrestlers from west side
+ * @returns {Map} Map of rikishiID to rank string
+ */
+export function buildRankLookup(eastWrestlers = [], westWrestlers = []) {
+  const lookup = new Map();
+  [...eastWrestlers, ...westWrestlers].forEach((wrestler) => {
+    if (wrestler.rikishiID && wrestler.rank) {
+      lookup.set(wrestler.rikishiID, wrestler.rank);
+    }
+  });
+  return lookup;
+}
+
+/**
+ * Calculate kinboshi count - wins/losses between Maegashira and Yokozuna
+ * For Maegashira: counts wins against Yokozuna (gold stars earned)
+ * For Yokozuna: counts losses against Maegashira (gold stars given away)
+ * @param {string} wrestlerRank - The wrestler's rank
+ * @param {Array} record - The wrestler's match record array
+ * @param {Map} rankLookup - Map of opponentID to rank string
+ * @returns {number} Number of kinboshi
+ */
+export function getKinboshiCount(wrestlerRank, record, rankLookup) {
+  if (!record || !Array.isArray(record) || !rankLookup) {
+    return 0;
+  }
+
+  const isMaegashiraWrestler = isMaegashira(wrestlerRank);
+  const isYokozunaWrestler = isYokozuna(wrestlerRank);
+
+  if (!isMaegashiraWrestler && !isYokozunaWrestler) {
+    return 0;
+  }
+
+  return record.filter((match) => {
+    const opponentRank = rankLookup.get(match.opponentID);
+    if (isMaegashiraWrestler) {
+      return match.result === 'win' && isYokozuna(opponentRank);
+    }
+    // Yokozuna: count losses to Maegashira
+    return match.result === 'loss' && isMaegashira(opponentRank);
+  }).length;
+}
+
+/**
+ * Check if a specific match is a kinboshi match
+ * @param {string} wrestlerRank - The wrestler's rank
+ * @param {object} match - The match object with result and opponentID
+ * @param {Map} rankLookup - Map of opponentID to rank string
+ * @returns {boolean} True if this match is a kinboshi
+ */
+export function isKinboshiMatch(wrestlerRank, match, rankLookup) {
+  if (!match || !rankLookup) return false;
+
+  const opponentRank = rankLookup.get(match.opponentID);
+  const isMaegashiraWrestler = isMaegashira(wrestlerRank);
+  const isYokozunaWrestler = isYokozuna(wrestlerRank);
+
+  if (isMaegashiraWrestler) {
+    return match.result === 'win' && isYokozuna(opponentRank);
+  }
+  if (isYokozunaWrestler) {
+    return match.result === 'loss' && isMaegashira(opponentRank);
+  }
+  return false;
+}

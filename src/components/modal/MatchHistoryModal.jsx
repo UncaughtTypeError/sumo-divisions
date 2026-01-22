@@ -6,6 +6,8 @@ import {
   AWARD_TYPES,
   RECORD_STATUS_INFO,
   getRecordStatus,
+  getKinboshiCount,
+  isYokozuna,
 } from '../../utils/awards';
 import Tooltip from '../common/Tooltip';
 import MatchGrid from './MatchGrid';
@@ -29,13 +31,21 @@ function MatchHistoryModal() {
     selectedApiDivision,
     closeModal,
     clearSelectedWrestler,
+    rankLookup,
   } = useDivisionStore();
 
   if (!selectedWrestler) {
     return null;
   }
 
-  const { wins = 0, losses = 0, absences = 0, awards = [] } = selectedWrestler;
+  const {
+    wins = 0,
+    losses = 0,
+    absences = 0,
+    awards = [],
+    rank,
+    record: matchRecord = [],
+  } = selectedWrestler;
   const record = `${wins}W-${losses}L-${absences}A`;
 
   // Get record status (kachi-koshi or make-koshi)
@@ -49,7 +59,11 @@ function MatchHistoryModal() {
     ? RECORD_STATUS_INFO[recordStatus]
     : null;
 
-  const hasAnyBadges = recordStatus || awards.length > 0;
+  // Calculate kinboshi count (for both Maegashira and Yokozuna)
+  const kinboshiCount = getKinboshiCount(rank, matchRecord, rankLookup);
+  const isYokozunaWrestler = isYokozuna(rank);
+
+  const hasAnyBadges = recordStatus || awards.length > 0 || kinboshiCount > 0;
 
   return (
     <Transition
@@ -144,6 +158,39 @@ function MatchHistoryModal() {
                             </Tooltip>
                           );
                         })}
+                        {/* Kinboshi badge */}
+                        {kinboshiCount > 0 && (
+                          <Tooltip
+                            content={
+                              <>
+                                <strong>
+                                  {isYokozunaWrestler
+                                    ? 'Kinboshi Given'
+                                    : 'Kinboshi'}
+                                </strong>
+                                <span>金星</span>
+                                <span>
+                                  {isYokozunaWrestler
+                                    ? 'Gold star given to Maegashira opponent'
+                                    : 'Gold star for defeating a Yokozuna'}
+                                </span>
+                              </>
+                            }
+                          >
+                            <span
+                              className={`${styles.awardBadge} ${
+                                isYokozunaWrestler
+                                  ? styles.reverseKinboshiBadge
+                                  : styles.kinboshiBadge
+                              }`}
+                            >
+                              ★ {kinboshiCount}{' '}
+                              {isYokozunaWrestler
+                                ? 'Kinboshi Given'
+                                : 'Kinboshi'}
+                            </span>
+                          </Tooltip>
+                        )}
                       </span>
                     )}
                   </Dialog.Title>
@@ -169,6 +216,7 @@ function MatchHistoryModal() {
                 <MatchGrid
                   matches={selectedWrestler.record}
                   color={selectedColor}
+                  wrestlerRank={rank}
                 />
               </div>
 

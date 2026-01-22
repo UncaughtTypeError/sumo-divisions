@@ -1,9 +1,9 @@
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import useDivisionStore from '../../store/divisionStore';
 import useBanzuke from '../../hooks/useBanzuke';
 import useBashoResults from '../../hooks/useBashoResults';
 import { getCurrentBashoId } from '../../utils/bashoId';
-import { getWrestlerAwards } from '../../utils/awards';
+import { getWrestlerAwards, buildRankLookup } from '../../utils/awards';
 import WrestlerGrid from './WrestlerGrid';
 import BashoSelector from './BashoSelector';
 import BashoWinners from './BashoWinners';
@@ -20,6 +20,7 @@ function WrestlerSidebar() {
     selectedColor,
     closeSidebar,
     openModal,
+    setRankLookup,
   } = useDivisionStore();
 
   const [isVisible, setIsVisible] = useState(false);
@@ -44,6 +45,14 @@ function WrestlerSidebar() {
     if (!data) return [];
     return [...(data.east || []), ...(data.west || [])];
   }, [data]);
+
+  // Build and set rank lookup when data changes
+  useEffect(() => {
+    if (data) {
+      const lookup = buildRankLookup(data.east, data.west);
+      setRankLookup(lookup);
+    }
+  }, [data, setRankLookup]);
 
   // Enrich basho results with rank data from banzuke
   const enrichedBashoResults = useMemo(() => {

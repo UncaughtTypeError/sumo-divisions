@@ -82,6 +82,16 @@
   color: #ef4444;
 }
 
+.awardBadge.kinboshiBadge {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.awardBadge.reverseKinboshiBadge {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
 .modalSubtitle {
   margin: 0.25rem 0 0 0;
   font-size: 0.875rem;

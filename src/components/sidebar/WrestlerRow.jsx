@@ -3,20 +3,39 @@ import {
   AWARD_TYPES,
   RECORD_STATUS_INFO,
   getRecordStatus,
+  getKinboshiCount,
+  isMaegashira,
+  isYokozuna,
 } from '../../utils/awards';
+import useDivisionStore from '../../store/divisionStore';
 import Tooltip from '../common/Tooltip';
 import styles from './WrestlerRow.module.css';
 
 function WrestlerRow({ wrestler, onClick, color, division }) {
+  const { rankLookup } = useDivisionStore();
+
   // Use the wins, losses, and absences from the API response
-  const { wins = 0, losses = 0, absences = 0, awards = [] } = wrestler;
+  const {
+    wins = 0,
+    losses = 0,
+    absences = 0,
+    awards = [],
+    rank,
+    record: matchRecord = [],
+  } = wrestler;
   const record = `${wins}-${losses}-${absences}`;
 
   // Get record status (kachi-koshi or make-koshi)
   const recordStatus = getRecordStatus(wins, losses, division, absences);
-  const recordStatusInfo = recordStatus ? RECORD_STATUS_INFO[recordStatus] : null;
+  const recordStatusInfo = recordStatus
+    ? RECORD_STATUS_INFO[recordStatus]
+    : null;
 
-  const hasAnyBadges = recordStatus || awards.length > 0;
+  // Calculate kinboshi count (works for both Maegashira and Yokozuna)
+  const kinboshiCount = getKinboshiCount(rank, matchRecord, rankLookup);
+  const isYokozunaWrestler = isYokozuna(rank);
+
+  const hasAnyBadges = recordStatus || awards.length > 0 || kinboshiCount > 0;
 
   return (
     <div
@@ -41,7 +60,9 @@ function WrestlerRow({ wrestler, onClick, color, division }) {
               >
                 <span
                   className={`${styles.award} ${
-                    recordStatusInfo.color === 'green' ? styles.kachiKoshi : styles.makeKoshi
+                    recordStatusInfo.color === 'green'
+                      ? styles.kachiKoshi
+                      : styles.makeKoshi
                   }`}
                 >
                   {recordStatusInfo.abbrev}
@@ -64,7 +85,9 @@ function WrestlerRow({ wrestler, onClick, color, division }) {
                   }
                 >
                   <span
-                    className={`${styles.award} ${award === AWARD_TYPES.YUSHO ? styles.yusho : ''}`}
+                    className={`${styles.award} ${
+                      award === AWARD_TYPES.YUSHO ? styles.yusho : ''
+                    }`}
                   >
                     {award === AWARD_TYPES.YUSHO && '🏆'}
                     {info.abbrev}
@@ -72,6 +95,30 @@ function WrestlerRow({ wrestler, onClick, color, division }) {
                 </Tooltip>
               );
             })}
+            {/* Kinboshi badge */}
+            {kinboshiCount > 0 && (
+              <Tooltip
+                content={
+                  <>
+                    <strong>{isYokozunaWrestler ? 'Kinboshi Given' : 'Kinboshi'}</strong>
+                    <span>金星</span>
+                    <span>
+                      {isYokozunaWrestler
+                        ? 'Gold star given to Maegashira opponent'
+                        : 'Gold star for defeating a Yokozuna'}
+                    </span>
+                  </>
+                }
+              >
+                <span
+                  className={`${styles.award} ${
+                    isYokozunaWrestler ? styles.reverseKinboshi : styles.kinboshi
+                  }`}
+                >
+                  ★{kinboshiCount}
+                </span>
+              </Tooltip>
+            )}
           </span>
         )}
       </div>

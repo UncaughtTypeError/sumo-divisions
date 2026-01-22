@@ -2,11 +2,14 @@ import { useState } from 'react';
 import Tooltip from '../common/Tooltip';
 import KimariteModal from './KimariteModal';
 import { getKimariteInfo } from '../../utils/kimarite';
+import { isKinboshiMatch, isYokozuna } from '../../utils/awards';
+import useDivisionStore from '../../store/divisionStore';
 import styles from './MatchGrid.module.css';
 
-function MatchGrid({ matches, color }) {
+function MatchGrid({ matches, color, wrestlerRank }) {
   const [selectedKimarite, setSelectedKimarite] = useState(null);
   const [selectedKimariteInfo, setSelectedKimariteInfo] = useState(null);
+  const { rankLookup } = useDivisionStore();
 
   if (!matches || matches.length === 0) {
     return (
@@ -15,6 +18,8 @@ function MatchGrid({ matches, color }) {
       </div>
     );
   }
+
+  const isYokozunaWrestler = isYokozuna(wrestlerRank);
 
   const getResultDisplay = (result) => {
     return result ? result.toUpperCase() : 'Result pending' || 'Unknown';
@@ -93,6 +98,36 @@ function MatchGrid({ matches, color }) {
     );
   };
 
+  const renderKinboshiStar = (match) => {
+    if (!isKinboshiMatch(wrestlerRank, match, rankLookup)) {
+      return null;
+    }
+
+    return (
+      <Tooltip
+        content={
+          <>
+            <strong>Kinboshi</strong>
+            <span>金星</span>
+            <span>
+              {isYokozunaWrestler
+                ? 'Gold star awarded to opponent'
+                : 'Gold star for defeating a Yokozuna'}
+            </span>
+          </>
+        }
+      >
+        <span
+          className={
+            isYokozunaWrestler ? styles.reverseKinboshiStar : styles.kinboshiStar
+          }
+        >
+          ★
+        </span>
+      </Tooltip>
+    );
+  };
+
   return (
     <>
       <div className={styles.matchGridContainer}>
@@ -116,8 +151,11 @@ function MatchGrid({ matches, color }) {
               </div>
               <div className={styles.cell}>
                 {match.opponentShikonaEn || 'Unknown'}
+                {renderKinboshiStar(match)}
               </div>
-              <div className={styles.cell}>{renderKimarite(match.kimarite)}</div>
+              <div className={styles.cell}>
+                {renderKimarite(match.kimarite)}
+              </div>
             </div>
           ))}
         </div>

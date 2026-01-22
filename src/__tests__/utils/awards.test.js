@@ -7,6 +7,11 @@ import {
   SEKITORI_DIVISIONS,
   getWrestlerAwards,
   getRecordStatus,
+  isYokozuna,
+  isMaegashira,
+  buildRankLookup,
+  getKinboshiCount,
+  isKinboshiMatch,
 } from '../../utils/awards'
 
 describe('awards utilities', () => {
@@ -281,6 +286,252 @@ describe('awards utilities', () => {
       it('should return null when neither threshold is met including absences', () => {
         expect(getRecordStatus(5, 5, 'Makuuchi', 2)).toBeNull()
         expect(getRecordStatus(3, 2, 'Makushita', 1)).toBeNull()
+      })
+    })
+  })
+
+  describe('isYokozuna', () => {
+    it('should return true for Yokozuna ranks', () => {
+      expect(isYokozuna('Yokozuna 1 East')).toBe(true)
+      expect(isYokozuna('Yokozuna 1 West')).toBe(true)
+      expect(isYokozuna('Yokozuna')).toBe(true)
+    })
+
+    it('should return false for non-Yokozuna ranks', () => {
+      expect(isYokozuna('Ozeki 1 East')).toBe(false)
+      expect(isYokozuna('Maegashira 5 West')).toBe(false)
+      expect(isYokozuna('Sekiwake 1 East')).toBe(false)
+    })
+
+    it('should return false for null or undefined', () => {
+      expect(isYokozuna(null)).toBe(false)
+      expect(isYokozuna(undefined)).toBe(false)
+      expect(isYokozuna('')).toBe(false)
+    })
+
+    it('should be case insensitive', () => {
+      expect(isYokozuna('yokozuna 1 east')).toBe(true)
+      expect(isYokozuna('YOKOZUNA 1 EAST')).toBe(true)
+    })
+  })
+
+  describe('isMaegashira', () => {
+    it('should return true for Maegashira ranks', () => {
+      expect(isMaegashira('Maegashira 1 East')).toBe(true)
+      expect(isMaegashira('Maegashira 17 West')).toBe(true)
+      expect(isMaegashira('Maegashira')).toBe(true)
+    })
+
+    it('should return false for non-Maegashira ranks', () => {
+      expect(isMaegashira('Yokozuna 1 East')).toBe(false)
+      expect(isMaegashira('Ozeki 1 East')).toBe(false)
+      expect(isMaegashira('Komusubi 1 West')).toBe(false)
+    })
+
+    it('should return false for null or undefined', () => {
+      expect(isMaegashira(null)).toBe(false)
+      expect(isMaegashira(undefined)).toBe(false)
+      expect(isMaegashira('')).toBe(false)
+    })
+
+    it('should be case insensitive', () => {
+      expect(isMaegashira('maegashira 5 west')).toBe(true)
+      expect(isMaegashira('MAEGASHIRA 5 WEST')).toBe(true)
+    })
+  })
+
+  describe('buildRankLookup', () => {
+    const eastWrestlers = [
+      { rikishiID: 1, rank: 'Yokozuna 1 East' },
+      { rikishiID: 2, rank: 'Ozeki 1 East' },
+    ]
+    const westWrestlers = [
+      { rikishiID: 3, rank: 'Maegashira 1 West' },
+      { rikishiID: 4, rank: 'Maegashira 2 West' },
+    ]
+
+    it('should build a map of rikishiID to rank', () => {
+      const lookup = buildRankLookup(eastWrestlers, westWrestlers)
+      expect(lookup.get(1)).toBe('Yokozuna 1 East')
+      expect(lookup.get(2)).toBe('Ozeki 1 East')
+      expect(lookup.get(3)).toBe('Maegashira 1 West')
+      expect(lookup.get(4)).toBe('Maegashira 2 West')
+    })
+
+    it('should handle empty arrays', () => {
+      const lookup = buildRankLookup([], [])
+      expect(lookup.size).toBe(0)
+    })
+
+    it('should handle undefined arrays', () => {
+      const lookup = buildRankLookup(undefined, undefined)
+      expect(lookup.size).toBe(0)
+    })
+
+    it('should skip wrestlers without rikishiID or rank', () => {
+      const wrestlers = [
+        { rikishiID: 1, rank: 'Yokozuna 1 East' },
+        { rikishiID: null, rank: 'Ozeki 1 East' },
+        { rikishiID: 2, rank: null },
+        { rikishiID: 3 },
+      ]
+      const lookup = buildRankLookup(wrestlers, [])
+      expect(lookup.size).toBe(1)
+      expect(lookup.get(1)).toBe('Yokozuna 1 East')
+    })
+  })
+
+  describe('getKinboshiCount', () => {
+    const rankLookup = new Map([
+      [1, 'Yokozuna 1 East'],
+      [2, 'Yokozuna 1 West'],
+      [3, 'Maegashira 5 East'],
+      [4, 'Maegashira 10 West'],
+      [5, 'Ozeki 1 East'],
+    ])
+
+    describe('for Maegashira wrestlers', () => {
+      it('should count wins against Yokozuna', () => {
+        const record = [
+          { result: 'win', opponentID: 1 }, // vs Yokozuna - kinboshi
+          { result: 'win', opponentID: 2 }, // vs Yokozuna - kinboshi
+          { result: 'loss', opponentID: 5 }, // vs Ozeki - not kinboshi
+        ]
+        expect(getKinboshiCount('Maegashira 5 East', record, rankLookup)).toBe(2)
+      })
+
+      it('should not count losses against Yokozuna', () => {
+        const record = [
+          { result: 'loss', opponentID: 1 }, // loss vs Yokozuna - not kinboshi
+          { result: 'win', opponentID: 5 }, // win vs Ozeki - not kinboshi
+        ]
+        expect(getKinboshiCount('Maegashira 5 East', record, rankLookup)).toBe(0)
+      })
+
+      it('should not count wins against non-Yokozuna', () => {
+        const record = [
+          { result: 'win', opponentID: 5 }, // vs Ozeki - not kinboshi
+          { result: 'win', opponentID: 4 }, // vs Maegashira - not kinboshi
+        ]
+        expect(getKinboshiCount('Maegashira 5 East', record, rankLookup)).toBe(0)
+      })
+    })
+
+    describe('for Yokozuna wrestlers', () => {
+      it('should count losses against Maegashira', () => {
+        const record = [
+          { result: 'loss', opponentID: 3 }, // vs Maegashira - kinboshi given
+          { result: 'loss', opponentID: 4 }, // vs Maegashira - kinboshi given
+          { result: 'win', opponentID: 5 }, // vs Ozeki - not relevant
+        ]
+        expect(getKinboshiCount('Yokozuna 1 East', record, rankLookup)).toBe(2)
+      })
+
+      it('should not count wins against Maegashira', () => {
+        const record = [
+          { result: 'win', opponentID: 3 }, // win vs Maegashira - not kinboshi
+          { result: 'win', opponentID: 4 }, // win vs Maegashira - not kinboshi
+        ]
+        expect(getKinboshiCount('Yokozuna 1 East', record, rankLookup)).toBe(0)
+      })
+
+      it('should not count losses against non-Maegashira', () => {
+        const record = [
+          { result: 'loss', opponentID: 5 }, // loss vs Ozeki - not kinboshi
+          { result: 'loss', opponentID: 2 }, // loss vs Yokozuna - not kinboshi
+        ]
+        expect(getKinboshiCount('Yokozuna 1 East', record, rankLookup)).toBe(0)
+      })
+    })
+
+    describe('for other ranks', () => {
+      it('should return 0 for Ozeki', () => {
+        const record = [
+          { result: 'win', opponentID: 1 },
+          { result: 'loss', opponentID: 3 },
+        ]
+        expect(getKinboshiCount('Ozeki 1 East', record, rankLookup)).toBe(0)
+      })
+
+      it('should return 0 for Sekiwake', () => {
+        const record = [{ result: 'win', opponentID: 1 }]
+        expect(getKinboshiCount('Sekiwake 1 East', record, rankLookup)).toBe(0)
+      })
+    })
+
+    describe('edge cases', () => {
+      it('should return 0 for null record', () => {
+        expect(getKinboshiCount('Maegashira 5 East', null, rankLookup)).toBe(0)
+      })
+
+      it('should return 0 for undefined record', () => {
+        expect(getKinboshiCount('Maegashira 5 East', undefined, rankLookup)).toBe(0)
+      })
+
+      it('should return 0 for empty record', () => {
+        expect(getKinboshiCount('Maegashira 5 East', [], rankLookup)).toBe(0)
+      })
+
+      it('should return 0 for null rankLookup', () => {
+        const record = [{ result: 'win', opponentID: 1 }]
+        expect(getKinboshiCount('Maegashira 5 East', record, null)).toBe(0)
+      })
+
+      it('should handle opponent not in lookup', () => {
+        const record = [{ result: 'win', opponentID: 999 }]
+        expect(getKinboshiCount('Maegashira 5 East', record, rankLookup)).toBe(0)
+      })
+    })
+  })
+
+  describe('isKinboshiMatch', () => {
+    const rankLookup = new Map([
+      [1, 'Yokozuna 1 East'],
+      [2, 'Maegashira 5 West'],
+    ])
+
+    describe('for Maegashira wrestlers', () => {
+      it('should return true for win against Yokozuna', () => {
+        const match = { result: 'win', opponentID: 1 }
+        expect(isKinboshiMatch('Maegashira 5 East', match, rankLookup)).toBe(true)
+      })
+
+      it('should return false for loss against Yokozuna', () => {
+        const match = { result: 'loss', opponentID: 1 }
+        expect(isKinboshiMatch('Maegashira 5 East', match, rankLookup)).toBe(false)
+      })
+
+      it('should return false for win against non-Yokozuna', () => {
+        const match = { result: 'win', opponentID: 2 }
+        expect(isKinboshiMatch('Maegashira 5 East', match, rankLookup)).toBe(false)
+      })
+    })
+
+    describe('for Yokozuna wrestlers', () => {
+      it('should return true for loss against Maegashira', () => {
+        const match = { result: 'loss', opponentID: 2 }
+        expect(isKinboshiMatch('Yokozuna 1 East', match, rankLookup)).toBe(true)
+      })
+
+      it('should return false for win against Maegashira', () => {
+        const match = { result: 'win', opponentID: 2 }
+        expect(isKinboshiMatch('Yokozuna 1 East', match, rankLookup)).toBe(false)
+      })
+    })
+
+    describe('edge cases', () => {
+      it('should return false for null match', () => {
+        expect(isKinboshiMatch('Maegashira 5 East', null, rankLookup)).toBe(false)
+      })
+
+      it('should return false for null rankLookup', () => {
+        const match = { result: 'win', opponentID: 1 }
+        expect(isKinboshiMatch('Maegashira 5 East', match, null)).toBe(false)
+      })
+
+      it('should return false for Ozeki wrestler', () => {
+        const match = { result: 'win', opponentID: 1 }
+        expect(isKinboshiMatch('Ozeki 1 East', match, rankLookup)).toBe(false)
       })
     })
   })
