@@ -3,6 +3,7 @@ import useDivisionStore from '../../store/divisionStore';
 import useBanzuke from '../../hooks/useBanzuke';
 import useBashoResults from '../../hooks/useBashoResults';
 import { getCurrentBashoId } from '../../utils/bashoId';
+import { RANK_INFO } from '../../utils/constants';
 import { getWrestlerAwards, buildRankLookup } from '../../utils/awards';
 import WrestlerGrid from './WrestlerGrid';
 import BashoSelector from './BashoSelector';
@@ -156,7 +157,14 @@ function WrestlerSidebar() {
           style={{ backgroundColor: `var(--color-${selectedColor})` }}
         >
           <div>
-            <h2>{selectedRank}</h2>
+            <h2>
+              {selectedRank}
+              {RANK_INFO[selectedRank] && (
+                <span className={styles.rankKanji}>
+                  {RANK_INFO[selectedRank].nameJp}
+                </span>
+              )}
+            </h2>
             <BashoSelector
               selectedBashoId={currentBashoId}
               onBashoChange={handleBashoChange}

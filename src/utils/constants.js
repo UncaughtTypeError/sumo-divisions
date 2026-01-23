@@ -27,6 +27,113 @@ export const RANKS = {
   JONOKUCHI: 'Jonokuchi',
 };
 
+// Rank information with kanji
+export const RANK_INFO = {
+  [RANKS.YOKOZUNA]: {
+    nameEn: 'Yokozuna',
+    nameJp: '横綱',
+    description: 'Grand Champion',
+  },
+  [RANKS.OZEKI]: {
+    nameEn: 'Ōzeki',
+    nameJp: '大関',
+    description: 'Champion',
+  },
+  [RANKS.SEKIWAKE]: {
+    nameEn: 'Sekiwake',
+    nameJp: '関脇',
+    description: 'Junior Champion',
+  },
+  [RANKS.KOMUSUBI]: {
+    nameEn: 'Komusubi',
+    nameJp: '小結',
+    description: 'Junior Champion 2nd Class',
+  },
+  [RANKS.MAEGASHIRA]: {
+    nameEn: 'Maegashira',
+    nameJp: '前頭',
+    description: 'Senior Wrestler',
+  },
+  [RANKS.JURYO]: {
+    nameEn: 'Jūryō',
+    nameJp: '十両',
+    description: 'Second Division',
+  },
+  [RANKS.MAKUSHITA]: {
+    nameEn: 'Makushita',
+    nameJp: '幕下',
+    description: 'Third Division',
+  },
+  [RANKS.SANDANME]: {
+    nameEn: 'Sandanme',
+    nameJp: '三段目',
+    description: 'Fourth Division',
+  },
+  [RANKS.JONIDAN]: {
+    nameEn: 'Jonidan',
+    nameJp: '序二段',
+    description: 'Fifth Division',
+  },
+  [RANKS.JONOKUCHI]: {
+    nameEn: 'Jonokuchi',
+    nameJp: '序ノ口',
+    description: 'Sixth Division',
+  },
+};
+
+// Division information with kanji
+export const DIVISION_INFO = {
+  [DIVISIONS.MAKUUCHI]: {
+    nameEn: 'Makuuchi',
+    nameJp: '幕内',
+    description: 'Top Division',
+  },
+  [DIVISIONS.JURYO]: {
+    nameEn: 'Jūryō',
+    nameJp: '十両',
+    description: 'Second Division',
+  },
+  [DIVISIONS.MAKUSHITA]: {
+    nameEn: 'Makushita',
+    nameJp: '幕下',
+    description: 'Third Division',
+  },
+  [DIVISIONS.SANDANME]: {
+    nameEn: 'Sandanme',
+    nameJp: '三段目',
+    description: 'Fourth Division',
+  },
+  [DIVISIONS.JONIDAN]: {
+    nameEn: 'Jonidan',
+    nameJp: '序二段',
+    description: 'Fifth Division',
+  },
+  [DIVISIONS.JONOKUCHI]: {
+    nameEn: 'Jonokuchi',
+    nameJp: '序ノ口',
+    description: 'Sixth Division',
+  },
+};
+
+// Rank group information with kanji
+export const RANK_GROUP_INFO = {
+  sekitori: {
+    nameEn: 'Sekitori',
+    nameJp: '関取',
+    description: 'Professionals',
+  },
+  sanyaku: {
+    nameEn: "San'yaku",
+    nameJp: '三役',
+    description: 'Three Ranks',
+  },
+  minarai: {
+    nameEn: 'Minarai',
+    nameJp: '見習',
+    description: 'Apprentices',
+  },
+};
+
 // Pyramid structure (10 levels from top to bottom)
 export const PYRAMID_LEVELS = [
   {

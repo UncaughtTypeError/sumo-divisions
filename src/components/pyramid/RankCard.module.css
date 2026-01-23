@@ -56,8 +56,24 @@
 }
 
 .rankText {
-  display: block;
   white-space: nowrap;
+  position: relative;
+  display: inline-block;
+}
+
+.rankKanji {
+  font-size: 0.875rem;
+  opacity: 0.85;
+  margin-top: 0.125rem;
+  position: absolute;
+  margin-left: 5px;
+}
+
+.rankCardApex .rankKanji {
+  margin: 0;
+  left: 0;
+  right: 0;
+  top: -15px;
 }
 
 /* Responsive styles */
@@ -124,6 +140,13 @@
     position: static;
     transform: none;
     font-size: 1.5rem;
+  }
+
+  .rankCardApex .rankKanji {
+    margin-left: 5px;
+    left: auto;
+    right: auto;
+    top: auto;
   }
 }
 

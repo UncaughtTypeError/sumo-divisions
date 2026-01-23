@@ -27,6 +27,14 @@
   color: var(--color-text);
 }
 
+.legendKanji {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--color-text-accent);
+  margin-left: 0.375rem;
+  opacity: 0.55;
+}
+
 .legendDescription {
   font-size: 0.875rem;
   color: var(--color-text-accent);
