@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { screen, fireEvent } from '@testing-library/react'
+import { renderWithQueryClient } from '../../testUtils'
 import WrestlerRow from '../../../components/sidebar/WrestlerRow'
 import { AWARD_TYPES, RECORD_STATUS_TYPES } from '../../../utils/awards'
 
@@ -15,23 +16,23 @@ describe('WrestlerRow', () => {
   }
 
   it('should render wrestler name', () => {
-    render(<WrestlerRow wrestler={mockWrestler} onClick={() => {}} />)
+    renderWithQueryClient(<WrestlerRow wrestler={mockWrestler} onClick={() => {}} />)
     expect(screen.getByText('Terunofuji')).toBeInTheDocument()
   })
 
   it('should render wrestler rank', () => {
-    render(<WrestlerRow wrestler={mockWrestler} onClick={() => {}} />)
+    renderWithQueryClient(<WrestlerRow wrestler={mockWrestler} onClick={() => {}} />)
     expect(screen.getByText('Yokozuna 1 East')).toBeInTheDocument()
   })
 
   it('should render wrestler record', () => {
-    render(<WrestlerRow wrestler={mockWrestler} onClick={() => {}} />)
+    renderWithQueryClient(<WrestlerRow wrestler={mockWrestler} onClick={() => {}} />)
     expect(screen.getByText('12-3-0')).toBeInTheDocument()
   })
 
   it('should call onClick when clicked', () => {
     const onClick = vi.fn()
-    render(<WrestlerRow wrestler={mockWrestler} onClick={onClick} />)
+    renderWithQueryClient(<WrestlerRow wrestler={mockWrestler} onClick={onClick} />)
 
     fireEvent.click(screen.getByText('Terunofuji'))
     expect(onClick).toHaveBeenCalledWith(mockWrestler)
@@ -42,7 +43,7 @@ describe('WrestlerRow', () => {
       ...mockWrestler,
       awards: [AWARD_TYPES.YUSHO],
     }
-    render(<WrestlerRow wrestler={wrestlerWithYusho} onClick={() => {}} />)
+    renderWithQueryClient(<WrestlerRow wrestler={wrestlerWithYusho} onClick={() => {}} />)
     // The span contains both trophy emoji and abbreviation
     expect(screen.getByText(/🏆/)).toBeInTheDocument()
     // Verify "Yusho" appears in the tooltip
@@ -54,13 +55,13 @@ describe('WrestlerRow', () => {
       ...mockWrestler,
       awards: [AWARD_TYPES.SHUKUN_SHO, AWARD_TYPES.KANTO_SHO],
     }
-    render(<WrestlerRow wrestler={wrestlerWithPrizes} onClick={() => {}} />)
+    renderWithQueryClient(<WrestlerRow wrestler={wrestlerWithPrizes} onClick={() => {}} />)
     expect(screen.getByText('S')).toBeInTheDocument()
     expect(screen.getByText('K')).toBeInTheDocument()
   })
 
   it('should not render awards section when no awards', () => {
-    render(<WrestlerRow wrestler={mockWrestler} onClick={() => {}} />)
+    renderWithQueryClient(<WrestlerRow wrestler={mockWrestler} onClick={() => {}} />)
     expect(screen.queryByText('Y')).not.toBeInTheDocument()
     expect(screen.queryByText('S')).not.toBeInTheDocument()
   })
@@ -71,7 +72,7 @@ describe('WrestlerRow', () => {
       shikonaEn: 'Test',
       rank: 'Maegashira 1 East',
     }
-    render(<WrestlerRow wrestler={wrestlerWithDefaults} onClick={() => {}} />)
+    renderWithQueryClient(<WrestlerRow wrestler={wrestlerWithDefaults} onClick={() => {}} />)
     expect(screen.getByText('0-0-0')).toBeInTheDocument()
   })
 
@@ -85,7 +86,7 @@ describe('WrestlerRow', () => {
         AWARD_TYPES.GINO_SHO,
       ],
     }
-    render(<WrestlerRow wrestler={wrestlerWithAllPrizes} onClick={() => {}} />)
+    renderWithQueryClient(<WrestlerRow wrestler={wrestlerWithAllPrizes} onClick={() => {}} />)
     // Yusho has "🏆Y" combined in one element
     expect(screen.getByText(/🏆/)).toBeInTheDocument()
     expect(screen.getByText('S')).toBeInTheDocument()
@@ -100,7 +101,7 @@ describe('WrestlerRow', () => {
         wins: 8,
         losses: 7,
       }
-      render(<WrestlerRow wrestler={winningWrestler} onClick={() => {}} division="Makuuchi" />)
+      renderWithQueryClient(<WrestlerRow wrestler={winningWrestler} onClick={() => {}} division="Makuuchi" />)
       expect(screen.getByText('KK')).toBeInTheDocument()
       // Tooltip content
       expect(screen.getByText('Kachi-koshi')).toBeInTheDocument()
@@ -112,7 +113,7 @@ describe('WrestlerRow', () => {
         wins: 7,
         losses: 8,
       }
-      render(<WrestlerRow wrestler={losingWrestler} onClick={() => {}} division="Makuuchi" />)
+      renderWithQueryClient(<WrestlerRow wrestler={losingWrestler} onClick={() => {}} division="Makuuchi" />)
       expect(screen.getByText('MK')).toBeInTheDocument()
       // Tooltip content
       expect(screen.getByText('Make-koshi')).toBeInTheDocument()
@@ -124,7 +125,7 @@ describe('WrestlerRow', () => {
         wins: 4,
         losses: 3,
       }
-      render(<WrestlerRow wrestler={winningWrestler} onClick={() => {}} division="Makushita" />)
+      renderWithQueryClient(<WrestlerRow wrestler={winningWrestler} onClick={() => {}} division="Makushita" />)
       expect(screen.getByText('KK')).toBeInTheDocument()
     })
 
@@ -134,7 +135,7 @@ describe('WrestlerRow', () => {
         wins: 3,
         losses: 4,
       }
-      render(<WrestlerRow wrestler={losingWrestler} onClick={() => {}} division="Makushita" />)
+      renderWithQueryClient(<WrestlerRow wrestler={losingWrestler} onClick={() => {}} division="Makushita" />)
       expect(screen.getByText('MK')).toBeInTheDocument()
     })
 
@@ -144,7 +145,7 @@ describe('WrestlerRow', () => {
         wins: 5,
         losses: 5,
       }
-      render(<WrestlerRow wrestler={undeterminedWrestler} onClick={() => {}} division="Makuuchi" />)
+      renderWithQueryClient(<WrestlerRow wrestler={undeterminedWrestler} onClick={() => {}} division="Makuuchi" />)
       expect(screen.queryByText('KK')).not.toBeInTheDocument()
       expect(screen.queryByText('MK')).not.toBeInTheDocument()
     })
@@ -156,7 +157,7 @@ describe('WrestlerRow', () => {
         losses: 3,
         awards: [AWARD_TYPES.YUSHO],
       }
-      render(<WrestlerRow wrestler={wrestlerWithKKAndAward} onClick={() => {}} division="Makuuchi" />)
+      renderWithQueryClient(<WrestlerRow wrestler={wrestlerWithKKAndAward} onClick={() => {}} division="Makuuchi" />)
 
       // Both badges should be present
       expect(screen.getByText('KK')).toBeInTheDocument()

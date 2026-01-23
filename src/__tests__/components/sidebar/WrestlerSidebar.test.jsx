@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { screen, fireEvent, waitFor } from '@testing-library/react'
 import WrestlerSidebar from '../../../components/sidebar/WrestlerSidebar'
 import { renderWithQueryClient, mockBanzukeData, mockBashoResults } from '../../testUtils'
 
@@ -15,6 +15,10 @@ vi.mock('../../../hooks/useBanzuke', () => ({
 
 vi.mock('../../../hooks/useBashoResults', () => ({
   default: vi.fn(),
+}))
+
+vi.mock('../../../hooks/useRikishi', () => ({
+  useAllRikishi: vi.fn(() => ({ rikishiMap: new Map(), isLoading: false })),
 }))
 
 // Mock child components
@@ -99,7 +103,7 @@ describe('WrestlerSidebar', () => {
     })
 
     it('should return null when sidebar is not open', () => {
-      const { container } = render(<WrestlerSidebar />)
+      const { container } = renderWithQueryClient(<WrestlerSidebar />)
       expect(container.firstChild).toBeNull()
     })
   })
@@ -125,7 +129,7 @@ describe('WrestlerSidebar', () => {
       })
       useBashoResults.mockReturnValue({ data: null })
 
-      render(<WrestlerSidebar />)
+      renderWithQueryClient(<WrestlerSidebar />)
       expect(screen.getByTestId('loading')).toBeInTheDocument()
       expect(screen.getByText('Loading rikishi...')).toBeInTheDocument()
     })
@@ -140,7 +144,7 @@ describe('WrestlerSidebar', () => {
       })
       useBashoResults.mockReturnValue({ data: null })
 
-      render(<WrestlerSidebar />)
+      renderWithQueryClient(<WrestlerSidebar />)
       expect(screen.getByTestId('error-message')).toBeInTheDocument()
     })
 
@@ -153,7 +157,7 @@ describe('WrestlerSidebar', () => {
       })
       useBashoResults.mockReturnValue({ data: mockBashoResults })
 
-      render(<WrestlerSidebar />)
+      renderWithQueryClient(<WrestlerSidebar />)
       expect(screen.getByText('Yokozuna')).toBeInTheDocument()
     })
 
@@ -166,7 +170,7 @@ describe('WrestlerSidebar', () => {
       })
       useBashoResults.mockReturnValue({ data: mockBashoResults })
 
-      render(<WrestlerSidebar />)
+      renderWithQueryClient(<WrestlerSidebar />)
       expect(screen.getByLabelText('Close sidebar')).toBeInTheDocument()
     })
 
@@ -179,7 +183,7 @@ describe('WrestlerSidebar', () => {
       })
       useBashoResults.mockReturnValue({ data: mockBashoResults })
 
-      render(<WrestlerSidebar />)
+      renderWithQueryClient(<WrestlerSidebar />)
       expect(screen.getByTestId('basho-selector')).toBeInTheDocument()
     })
 
@@ -192,7 +196,7 @@ describe('WrestlerSidebar', () => {
       })
       useBashoResults.mockReturnValue({ data: mockBashoResults })
 
-      render(<WrestlerSidebar />)
+      renderWithQueryClient(<WrestlerSidebar />)
       expect(screen.getByTestId('match-history-modal')).toBeInTheDocument()
     })
 
@@ -205,7 +209,7 @@ describe('WrestlerSidebar', () => {
       })
       useBashoResults.mockReturnValue({ data: mockBashoResults })
 
-      render(<WrestlerSidebar />)
+      renderWithQueryClient(<WrestlerSidebar />)
 
       fireEvent.click(screen.getByLabelText('Close sidebar'))
 
@@ -223,7 +227,7 @@ describe('WrestlerSidebar', () => {
       })
       useBashoResults.mockReturnValue({ data: mockBashoResults })
 
-      const { container } = render(<WrestlerSidebar />)
+      const { container } = renderWithQueryClient(<WrestlerSidebar />)
       const overlay = container.querySelector('div')
 
       fireEvent.click(overlay)

@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from 'react';
 import useDivisionStore from '../../store/divisionStore';
 import useBanzuke from '../../hooks/useBanzuke';
 import useBashoResults from '../../hooks/useBashoResults';
+import { useAllRikishi } from '../../hooks/useRikishi';
 import { getCurrentBashoId } from '../../utils/bashoId';
 import { RANK_INFO } from '../../utils/constants';
 import { getWrestlerAwards, buildRankLookup } from '../../utils/awards';
@@ -38,6 +39,11 @@ function WrestlerSidebar() {
 
   // Fetch basho results (yusho winners and special prizes) - cached per bashoId
   const { data: bashoResults } = useBashoResults(currentBashoId, {
+    enabled: isSidebarOpen,
+  });
+
+  // Fetch all rikishi data for heya and shusshin lookup (single API call)
+  const { rikishiMap } = useAllRikishi({
     enabled: isSidebarOpen,
   });
 
@@ -205,6 +211,7 @@ function WrestlerSidebar() {
                   onWrestlerClick={openModal}
                   color={selectedColor}
                   division={selectedApiDivision}
+                  rikishiMap={rikishiMap}
                 />
                 <WrestlerGrid
                   wrestlers={westWrestlers}
@@ -212,6 +219,7 @@ function WrestlerSidebar() {
                   onWrestlerClick={openModal}
                   color={selectedColor}
                   division={selectedApiDivision}
+                  rikishiMap={rikishiMap}
                 />
               </div>
             </>

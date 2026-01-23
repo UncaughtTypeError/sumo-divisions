@@ -7,12 +7,22 @@ import {
   isMaegashira,
   isYokozuna,
 } from '../../utils/awards';
+import { getFlagData } from '../common/flags';
 import useDivisionStore from '../../store/divisionStore';
 import Tooltip from '../common/Tooltip';
 import styles from './WrestlerRow.module.css';
 
-function WrestlerRow({ wrestler, onClick, color, division }) {
+function WrestlerRow({ wrestler, onClick, color, division, rikishiMap }) {
   const { rankLookup } = useDivisionStore();
+
+  // Get rikishi details from the pre-fetched map (no individual API calls)
+  const rikishiDetails = rikishiMap?.get(wrestler.rikishiID);
+  const heya = rikishiDetails?.heya;
+  const shusshin = rikishiDetails?.shusshin;
+  const flagData = getFlagData(shusshin);
+  const FlagComponent = flagData?.component;
+  const countryCode = flagData?.code;
+  const countryName = flagData?.name;
 
   // Use the wins, losses, and absences from the API response
   const {
@@ -100,7 +110,9 @@ function WrestlerRow({ wrestler, onClick, color, division }) {
               <Tooltip
                 content={
                   <>
-                    <strong>{isYokozunaWrestler ? 'Kinboshi Given' : 'Kinboshi'}</strong>
+                    <strong>
+                      {isYokozunaWrestler ? 'Kinboshi Given' : 'Kinboshi'}
+                    </strong>
                     <span>金星</span>
                     <span>
                       {isYokozunaWrestler
@@ -112,7 +124,9 @@ function WrestlerRow({ wrestler, onClick, color, division }) {
               >
                 <span
                   className={`${styles.award} ${
-                    isYokozunaWrestler ? styles.reverseKinboshi : styles.kinboshi
+                    isYokozunaWrestler
+                      ? styles.reverseKinboshi
+                      : styles.kinboshi
                   }`}
                 >
                   ★{kinboshiCount}
@@ -124,6 +138,23 @@ function WrestlerRow({ wrestler, onClick, color, division }) {
       </div>
       <div className={styles.name}>{wrestler.shikonaEn}</div>
       <div className={styles.record}>{record}</div>
+      <div className={styles.meta}>
+        {FlagComponent && (
+          <span className={styles.country}>
+            <Tooltip content={shusshin}>
+              <FlagComponent className={styles.flag} />
+            </Tooltip>
+            <Tooltip content={countryName}>
+              <span className={styles.countryCode}>{countryCode}</span>
+            </Tooltip>
+          </span>
+        )}
+        {heya && (
+          <Tooltip content="Heya (Stable)">
+            <span className={styles.heya}>{heya}</span>
+          </Tooltip>
+        )}
+      </div>
     </div>
   );
 }

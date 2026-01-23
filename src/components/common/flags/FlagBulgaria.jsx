@@ -1,0 +1,15 @@
+function FlagBulgaria({ className }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 900 600"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect width="900" height="200" fill="#fff" />
+      <rect y="200" width="900" height="200" fill="#00966e" />
+      <rect y="400" width="900" height="200" fill="#d62612" />
+    </svg>
+  );
+}
+
+export default FlagBulgaria;

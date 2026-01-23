@@ -1,7 +1,7 @@
 import WrestlerRow from './WrestlerRow';
 import styles from './WrestlerGrid.module.css';
 
-function WrestlerGrid({ wrestlers, side, onWrestlerClick, color, division }) {
+function WrestlerGrid({ wrestlers, side, onWrestlerClick, color, division, rikishiMap }) {
   if (!wrestlers || wrestlers.length === 0) {
     return (
       <div className={styles.emptyColumn}>
@@ -24,6 +24,7 @@ function WrestlerGrid({ wrestlers, side, onWrestlerClick, color, division }) {
             onClick={onWrestlerClick}
             color={color}
             division={division}
+            rikishiMap={rikishiMap}
           />
         ))}
       </div>
