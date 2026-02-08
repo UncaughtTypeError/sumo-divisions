@@ -68,28 +68,28 @@
 }
 
 .awardBadge.yushoBadge {
-  background: linear-gradient(135deg, #ffd700 0%, #ffb800 100%);
-  color: #5c4d00;
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+  color: var(--color-gold-text);
 }
 
 .awardBadge.kachiKoshiBadge {
-  background: #d1fae5;
-  color: #10b981;
+  background: var(--color-success-bg);
+  color: var(--color-success);
 }
 
 .awardBadge.makeKoshiBadge {
-  background: #fee2e2;
-  color: #ef4444;
+  background: var(--color-error-bg);
+  color: var(--color-error);
 }
 
 .awardBadge.kinboshiBadge {
-  background: #fef3c7;
-  color: #d97706;
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
 }
 
 .awardBadge.reverseKinboshiBadge {
-  background: #fee2e2;
-  color: #ef4444;
+  background: var(--color-error-bg);
+  color: var(--color-error);
 }
 
 .modalSubtitle {

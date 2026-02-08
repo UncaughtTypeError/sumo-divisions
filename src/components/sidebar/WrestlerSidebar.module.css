@@ -88,7 +88,7 @@
 .gridContainer {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .noData {
@@ -97,7 +97,7 @@
   align-items: center;
   justify-content: center;
   padding: 3rem;
-  color: #999;
+  color: var(--color-text-muted);
   font-style: italic;
   text-align: center;
   gap: 0.5rem;

@@ -36,7 +36,7 @@
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  color: #999;
+  color: var(--color-text-muted);
   font-style: italic;
 }
 

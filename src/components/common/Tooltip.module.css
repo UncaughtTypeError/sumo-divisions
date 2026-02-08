@@ -10,8 +10,8 @@
   transform: translateX(-50%);
   margin-bottom: 0.5rem;
   padding: 0.5rem 0.75rem;
-  background: #333;
-  color: white;
+  background: var(--color-tooltip-bg);
+  color: var(--color-tooltip-text);
   font-size: 0.75rem;
   font-weight: 400;
   line-height: 1.4;
@@ -33,7 +33,7 @@
   left: 50%;
   transform: translateX(-50%);
   border: 6px solid transparent;
-  border-top-color: #333;
+  border-top-color: var(--color-tooltip-bg);
 }
 
 .tooltipWrapper:hover .tooltip {
