@@ -35,12 +35,15 @@ describe('banzukeService', () => {
       )
     })
 
-    it('should return banzuke data', async () => {
+    it('should return normalized banzuke data with isEmpty flag', async () => {
       sumoApiClient.get.mockResolvedValue(mockResponse)
 
       const result = await getBanzuke('202601', 'Makuuchi')
 
-      expect(result).toEqual(mockResponse.data)
+      expect(result).toEqual({
+        ...mockResponse.data,
+        isEmpty: false,
+      })
     })
 
     it('should handle different divisions', async () => {
@@ -83,7 +86,14 @@ describe('banzukeService', () => {
 
   describe('banzukeQueryFn', () => {
     it('should extract parameters from queryKey and call getBanzuke', async () => {
-      const mockResponse = { data: { test: 'data' } }
+      const mockResponse = {
+        data: {
+          bashoId: '202601',
+          division: 'Makuuchi',
+          east: [],
+          west: [],
+        },
+      }
       sumoApiClient.get.mockResolvedValue(mockResponse)
 
       const result = await banzukeQueryFn({
@@ -93,7 +103,11 @@ describe('banzukeService', () => {
       expect(sumoApiClient.get).toHaveBeenCalledWith(
         '/basho/202601/banzuke/Makuuchi'
       )
-      expect(result).toEqual(mockResponse.data)
+      // Normalized response includes isEmpty flag
+      expect(result).toEqual({
+        ...mockResponse.data,
+        isEmpty: true, // Empty arrays mean isEmpty is true
+      })
     })
 
     it('should work with different query key values', async () => {

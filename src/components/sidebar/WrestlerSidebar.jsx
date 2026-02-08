@@ -12,6 +12,7 @@ import BashoWinners from './BashoWinners';
 import MatchHistoryModal from '../modal/MatchHistoryModal';
 import Loading from '../common/Loading';
 import ErrorMessage from '../common/ErrorMessage';
+import NoDataMessage from '../common/NoDataMessage';
 import styles from './WrestlerSidebar.module.css';
 
 function WrestlerSidebar() {
@@ -34,7 +35,7 @@ function WrestlerSidebar() {
     selectedApiDivision,
     {
       enabled: isSidebarOpen && !!selectedApiDivision,
-    }
+    },
   );
 
   // Fetch basho results (yusho winners and special prizes) - cached per bashoId
@@ -107,7 +108,7 @@ function WrestlerSidebar() {
       awards: getWrestlerAwards(
         wrestler.rikishiID,
         bashoResults,
-        selectedApiDivision
+        selectedApiDivision,
       ),
     });
 
@@ -195,7 +196,11 @@ function WrestlerSidebar() {
 
           {error && <ErrorMessage error={error} onRetry={refetch} />}
 
-          {data && !isLoading && !error && (
+          {data && !isLoading && !error && data.isEmpty && (
+            <NoDataMessage bashoId={currentBashoId} />
+          )}
+
+          {data && !isLoading && !error && !data.isEmpty && (
             <>
               <BashoWinners
                 bashoResults={enrichedBashoResults}
@@ -228,6 +233,7 @@ function WrestlerSidebar() {
           {data &&
             !isLoading &&
             !error &&
+            !data.isEmpty &&
             eastWrestlers.length === 0 &&
             westWrestlers.length === 0 && (
               <div className={styles.noData}>
