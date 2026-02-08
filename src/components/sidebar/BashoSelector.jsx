@@ -6,6 +6,12 @@ import {
 } from '../../utils/bashoId';
 import styles from './BashoSelector.module.css';
 
+// Cancelled tournaments that should be disabled in the selector
+const CANCELLED_BASHO = {
+  '201103': 'Cancelled - match-fixing investigation',
+  '202005': 'Cancelled - COVID-19',
+};
+
 function BashoSelector({ selectedBashoId, onBashoChange, color, bashoResults }) {
   const bashoOptions = useMemo(() => {
     return generateBashoIdList();
@@ -33,11 +39,22 @@ function BashoSelector({ selectedBashoId, onBashoChange, color, bashoResults }) 
         aria-label="Select basho tournament"
         style={{ '--select-color': `var(--color-${color})` }}
       >
-        {bashoOptions.map((bashoId) => (
-          <option key={bashoId} value={bashoId}>
-            {formatBashoDate(bashoId)}
-          </option>
-        ))}
+        {bashoOptions.map((bashoId) => {
+          const isCancelled = bashoId in CANCELLED_BASHO;
+          const label = isCancelled
+            ? `${formatBashoDate(bashoId)} — ${CANCELLED_BASHO[bashoId]}`
+            : formatBashoDate(bashoId);
+          return (
+            <option
+              key={bashoId}
+              value={bashoId}
+              disabled={isCancelled}
+              className={isCancelled ? styles.cancelledOption : undefined}
+            >
+              {label}
+            </option>
+          );
+        })}
       </select>
     </div>
   );
