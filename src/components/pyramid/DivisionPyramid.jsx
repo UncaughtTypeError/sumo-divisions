@@ -29,6 +29,10 @@ function DivisionPyramid() {
               }`}
               style={{
                 '--level-width': `${15 + index * 8}%`,
+                '--clip-indent':
+                  level.rank === RANKS.YOKOZUNA
+                    ? '50%'
+                    : `${(4 / (15 + index * 8)) * 100}%`,
               }}
             >
               <RankCard
