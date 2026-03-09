@@ -175,6 +175,7 @@ describe('constants', () => {
       expect(MATCH_RESULTS).toEqual({
         WIN: 'win',
         LOSS: 'loss',
+        FUSEN_WIN: 'fusen win',
         FUSEN_LOSS: 'fusen loss',
         EMPTY: '',
       })

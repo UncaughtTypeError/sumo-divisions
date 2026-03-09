@@ -64,20 +64,28 @@
 }
 
 .shiroboshi,
-.kuroboshi {
+.kuroboshi,
+.fusenshoSquare,
+.fusenpaiSquare {
   display: inline-block;
   width: 0.75rem;
   height: 0.75rem;
-  border-radius: 50%;
   flex-shrink: 0;
 }
 
-.shiroboshi {
+.shiroboshi,
+.kuroboshi {
+  border-radius: 50%;
+}
+
+.shiroboshi,
+.fusenshoSquare {
   background: white;
   border: 2px solid var(--color-text);
 }
 
-.kuroboshi {
+.kuroboshi,
+.fusenpaiSquare {
   background: var(--color-text);
   border: 2px solid var(--color-text);
 }

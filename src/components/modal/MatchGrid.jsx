@@ -36,8 +36,8 @@ function MatchGrid({ matches, color, wrestlerRank }) {
   };
 
   const getResultClass = (result) => {
-    if (result === 'win') return styles.resultWin;
-    if (result === 'loss') return styles.resultLoss;
+    if (result === 'win' || result === 'fusen win') return styles.resultWin;
+    if (result === 'loss' || result === 'fusen loss') return styles.resultLoss;
     return styles.resultForfeit;
   };
 
@@ -67,6 +67,34 @@ function MatchGrid({ matches, color, wrestlerRank }) {
           }
         >
           <span className={styles.kuroboshi} />
+        </Tooltip>
+      );
+    }
+    if (result === 'fusen win') {
+      return (
+        <Tooltip
+          content={
+            <>
+              <strong>Win by Forfeit</strong>
+              <span>Fusensho (不戦勝)</span>
+            </>
+          }
+        >
+          <span className={styles.fusenshoSquare} />
+        </Tooltip>
+      );
+    }
+    if (result === 'fusen loss') {
+      return (
+        <Tooltip
+          content={
+            <>
+              <strong>Loss by Forfeit</strong>
+              <span>Fusenpai (不戦敗)</span>
+            </>
+          }
+        >
+          <span className={styles.fusenpaiSquare} />
         </Tooltip>
       );
     }

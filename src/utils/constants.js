@@ -271,6 +271,7 @@ export const RANK_GROUPS = [
 export const MATCH_RESULTS = {
   WIN: 'win',
   LOSS: 'loss',
+  FUSEN_WIN: 'fusen win',
   FUSEN_LOSS: 'fusen loss',
   EMPTY: '',
 };

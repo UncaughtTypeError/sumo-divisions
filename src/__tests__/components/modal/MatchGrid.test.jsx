@@ -96,15 +96,24 @@ describe('MatchGrid', () => {
       expect(kuroboshi).toBeInTheDocument()
     })
 
-    it('should not render circle for forfeit results', () => {
+    it('should render fusenpai square for fusen loss, not a circle', () => {
       const fusenMatch = [
         { result: 'fusen loss', opponentShikonaEn: 'Hoshoryu', kimarite: null },
       ]
       const { container } = render(<MatchGrid matches={fusenMatch} />)
-      const shiroboshi = container.querySelector('[class*="shiroboshi"]')
-      const kuroboshi = container.querySelector('[class*="kuroboshi"]')
-      expect(shiroboshi).not.toBeInTheDocument()
-      expect(kuroboshi).not.toBeInTheDocument()
+      expect(container.querySelector('[class*="shiroboshi"]')).not.toBeInTheDocument()
+      expect(container.querySelector('[class*="kuroboshi"]')).not.toBeInTheDocument()
+      expect(container.querySelector('[class*="fusenpaiSquare"]')).toBeInTheDocument()
+    })
+
+    it('should render fusensho square for fusen win, not a circle', () => {
+      const fusenMatch = [
+        { result: 'fusen win', opponentShikonaEn: 'Hoshoryu', kimarite: null },
+      ]
+      const { container } = render(<MatchGrid matches={fusenMatch} />)
+      expect(container.querySelector('[class*="shiroboshi"]')).not.toBeInTheDocument()
+      expect(container.querySelector('[class*="kuroboshi"]')).not.toBeInTheDocument()
+      expect(container.querySelector('[class*="fusenshoSquare"]')).toBeInTheDocument()
     })
 
     it('should render both circles for mixed results', () => {
