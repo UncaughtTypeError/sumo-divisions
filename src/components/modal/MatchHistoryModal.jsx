@@ -9,6 +9,8 @@ import {
   getKinboshiCount,
   isYokozuna,
 } from '../../utils/awards';
+import { useAllRikishi } from '../../hooks/useRikishi';
+import { getFlagData } from '../common/flags';
 import Tooltip from '../common/Tooltip';
 import MatchGrid from './MatchGrid';
 import styles from './MatchHistoryModal.module.css';
@@ -34,6 +36,8 @@ function MatchHistoryModal() {
     rankLookup,
   } = useDivisionStore();
 
+  const { rikishiMap } = useAllRikishi();
+
   if (!selectedWrestler) {
     return null;
   }
@@ -46,6 +50,14 @@ function MatchHistoryModal() {
     rank,
     record: matchRecord = [],
   } = selectedWrestler;
+
+  const rikishiDetails = rikishiMap?.get(selectedWrestler.rikishiID);
+  const heya = rikishiDetails?.heya;
+  const shusshin = rikishiDetails?.shusshin;
+  const flagData = getFlagData(shusshin);
+  const FlagComponent = flagData?.component;
+  const countryCode = flagData?.code;
+  const countryName = flagData?.name;
   const record = `${wins}W-${losses}L-${absences}A`;
 
   // Get record status (kachi-koshi or make-koshi)
@@ -200,6 +212,25 @@ function MatchHistoryModal() {
                       ({getWinPercentage({ wins, losses })}% Win Rate)
                     </small>
                   </p>
+                  {(FlagComponent || heya) && (
+                    <div className={styles.modalMeta}>
+                      {FlagComponent && (
+                        <span className={styles.metaCountry}>
+                          <Tooltip content={shusshin} position="right">
+                            <FlagComponent className={styles.metaFlag} />
+                          </Tooltip>
+                          <Tooltip content={countryName} position="right">
+                            <span className={styles.metaCountryCode}>{countryCode}</span>
+                          </Tooltip>
+                        </span>
+                      )}
+                      {heya && (
+                        <Tooltip content="Heya (Stable)" position="right">
+                          <span className={styles.metaHeya}>{heya}</span>
+                        </Tooltip>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={closeModal}
