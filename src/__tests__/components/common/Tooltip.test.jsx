@@ -46,4 +46,25 @@ describe('Tooltip', () => {
     )
     expect(container.querySelector('span')).toBeInTheDocument()
   })
+
+  it('should apply top position class by default', () => {
+    const { container } = render(
+      <Tooltip content="Test">
+        <button>Button</button>
+      </Tooltip>
+    )
+    const tooltip = container.querySelectorAll('span')[1]
+    expect(tooltip.className).toMatch(/top/)
+  })
+
+  it('should apply the given position class', () => {
+    const { container } = render(
+      <Tooltip content="Test" position="right">
+        <button>Button</button>
+      </Tooltip>
+    )
+    const tooltip = container.querySelectorAll('span')[1]
+    expect(tooltip.className).toMatch(/right/)
+    expect(tooltip.className).not.toMatch(/top/)
+  })
 })

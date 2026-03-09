@@ -141,10 +141,10 @@ function WrestlerRow({ wrestler, onClick, color, division, rikishiMap }) {
       <div className={styles.meta}>
         {FlagComponent && (
           <span className={styles.country}>
-            <Tooltip content={shusshin}>
+            <Tooltip content={shusshin} position="right">
               <FlagComponent className={styles.flag} />
             </Tooltip>
-            <Tooltip content={countryName}>
+            <Tooltip content={countryName} position="right">
               <span className={styles.countryCode}>{countryCode}</span>
             </Tooltip>
           </span>

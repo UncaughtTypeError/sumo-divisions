@@ -3,12 +3,9 @@
   display: inline-flex;
 }
 
+/* Base tooltip — visual styles only, no positioning */
 .tooltip {
   position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 0.5rem;
   padding: 0.5rem 0.75rem;
   background: var(--color-tooltip-bg);
   color: var(--color-tooltip-text);
@@ -25,15 +22,71 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* Arrow */
+/* Arrow base */
 .tooltip::after {
   content: '';
   position: absolute;
+  border: 6px solid transparent;
+}
+
+/* Top (default) */
+.top {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 0.5rem;
+}
+
+.top::after {
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  border: 6px solid transparent;
   border-top-color: var(--color-tooltip-bg);
+}
+
+/* Bottom */
+.bottom {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 0.5rem;
+}
+
+.bottom::after {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: var(--color-tooltip-bg);
+}
+
+/* Left */
+.left {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-right: 0.5rem;
+}
+
+.left::after {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left-color: var(--color-tooltip-bg);
+}
+
+/* Right */
+.right {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 0.5rem;
+}
+
+.right::after {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border-right-color: var(--color-tooltip-bg);
 }
 
 .tooltipWrapper:hover .tooltip {

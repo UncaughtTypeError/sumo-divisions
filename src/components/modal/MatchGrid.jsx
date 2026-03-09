@@ -45,6 +45,7 @@ function MatchGrid({ matches, color, wrestlerRank }) {
     if (result === 'win') {
       return (
         <Tooltip
+          position="right"
           content={
             <>
               <strong>Win</strong>
@@ -59,6 +60,7 @@ function MatchGrid({ matches, color, wrestlerRank }) {
     if (result === 'loss') {
       return (
         <Tooltip
+          position="right"
           content={
             <>
               <strong>Loss</strong>
@@ -73,6 +75,7 @@ function MatchGrid({ matches, color, wrestlerRank }) {
     if (result === 'fusen win') {
       return (
         <Tooltip
+          position="right"
           content={
             <>
               <strong>Win by Forfeit</strong>
@@ -87,6 +90,7 @@ function MatchGrid({ matches, color, wrestlerRank }) {
     if (result === 'fusen loss') {
       return (
         <Tooltip
+          position="right"
           content={
             <>
               <strong>Loss by Forfeit</strong>
@@ -143,6 +147,7 @@ function MatchGrid({ matches, color, wrestlerRank }) {
 
     return (
       <Tooltip
+        position="right"
         content={
           <>
             <strong>Kinboshi</strong>

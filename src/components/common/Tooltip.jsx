@@ -1,10 +1,10 @@
 import styles from './Tooltip.module.css';
 
-function Tooltip({ children, content }) {
+function Tooltip({ children, content, position = 'top' }) {
   return (
     <span className={styles.tooltipWrapper}>
       {children}
-      <span className={styles.tooltip}>{content}</span>
+      <span className={`${styles.tooltip} ${styles[position]}`}>{content}</span>
     </span>
   );
 }
