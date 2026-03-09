@@ -19,7 +19,7 @@ function abbreviateRank(rank) {
 function MatchGrid({ matches, color, wrestlerRank }) {
   const [selectedKimarite, setSelectedKimarite] = useState(null);
   const [selectedKimariteInfo, setSelectedKimariteInfo] = useState(null);
-  const { rankLookup } = useDivisionStore();
+  const { rankLookup, openModal, allWrestlers } = useDivisionStore();
 
   if (!matches || matches.length === 0) {
     return (
@@ -166,6 +166,29 @@ function MatchGrid({ matches, color, wrestlerRank }) {
     );
   };
 
+  const handleOpponentClick = (opponentID) => {
+    const opponent = allWrestlers.find((w) => w.rikishiID === opponentID);
+    if (opponent) {
+      openModal(opponent);
+    }
+  };
+
+  const renderOpponentName = (match) => {
+    const name = match.opponentShikonaEn || 'Unknown';
+    const isLinked = allWrestlers.some((w) => w.rikishiID === match.opponentID);
+    if (!isLinked) return name;
+    return (
+      <button
+        type="button"
+        className={styles.opponentLink}
+        onClick={() => handleOpponentClick(match.opponentID)}
+        aria-label={`View ${name}'s match history`}
+      >
+        {name}
+      </button>
+    );
+  };
+
   return (
     <>
       <div className={styles.matchGridContainer}>
@@ -188,7 +211,7 @@ function MatchGrid({ matches, color, wrestlerRank }) {
                 {getResultCircle(match.result)}
               </div>
               <div className={styles.cell}>
-                {match.opponentShikonaEn || 'Unknown'}
+                {renderOpponentName(match)}
                 {rankLookup.get(match.opponentID) && (
                   <span className={styles.opponentRank}>
                     {abbreviateRank(rankLookup.get(match.opponentID))}

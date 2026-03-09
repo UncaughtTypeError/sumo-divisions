@@ -75,6 +75,7 @@ describe('WrestlerSidebar', () => {
   const mockCloseSidebar = vi.fn()
   const mockOpenModal = vi.fn()
   const mockSetRankLookup = vi.fn()
+  const mockSetAllWrestlers = vi.fn()
   const mockRefetch = vi.fn()
 
   beforeEach(() => {
@@ -90,6 +91,7 @@ describe('WrestlerSidebar', () => {
         closeSidebar: mockCloseSidebar,
         openModal: mockOpenModal,
         setRankLookup: mockSetRankLookup,
+        setAllWrestlers: mockSetAllWrestlers,
       })
       useBanzuke.mockReturnValue({
         data: null,
@@ -117,6 +119,7 @@ describe('WrestlerSidebar', () => {
         closeSidebar: mockCloseSidebar,
         openModal: mockOpenModal,
         setRankLookup: mockSetRankLookup,
+        setAllWrestlers: mockSetAllWrestlers,
       })
     })
 

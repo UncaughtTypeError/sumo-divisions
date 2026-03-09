@@ -95,6 +95,23 @@
   font-style: italic;
 }
 
+.opponentLink {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+  transition: color var(--transition-fast);
+}
+
+.opponentLink:hover {
+  color: var(--color-link);
+}
+
 .kimarite {
   background: none;
   border: none;

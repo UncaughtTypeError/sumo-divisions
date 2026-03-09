@@ -24,6 +24,7 @@ function WrestlerSidebar() {
     closeSidebar,
     openModal,
     setRankLookup,
+    setAllWrestlers,
   } = useDivisionStore();
 
   const [isVisible, setIsVisible] = useState(false);
@@ -62,6 +63,11 @@ function WrestlerSidebar() {
       setRankLookup(lookup);
     }
   }, [data, setRankLookup]);
+
+  // Sync all wrestlers into the store for opponent lookups in MatchGrid
+  useEffect(() => {
+    setAllWrestlers(allWrestlers);
+  }, [allWrestlers, setAllWrestlers]);
 
   // Enrich basho results with rank data from banzuke
   const enrichedBashoResults = useMemo(() => {

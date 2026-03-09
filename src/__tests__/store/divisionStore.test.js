@@ -127,6 +127,20 @@ describe('divisionStore', () => {
     })
   })
 
+  describe('setAllWrestlers', () => {
+    it('should set allWrestlers', () => {
+      const wrestlers = [{ rikishiID: 1, shikonaEn: 'Terunofuji' }]
+      useDivisionStore.getState().setAllWrestlers(wrestlers)
+      expect(useDivisionStore.getState().allWrestlers).toEqual(wrestlers)
+    })
+
+    it('should clear allWrestlers when closeSidebar is called', () => {
+      useDivisionStore.getState().setAllWrestlers([{ rikishiID: 1, shikonaEn: 'Terunofuji' }])
+      useDivisionStore.getState().closeSidebar()
+      expect(useDivisionStore.getState().allWrestlers).toEqual([])
+    })
+  })
+
   describe('reset', () => {
     beforeEach(() => {
       // Set up some state
@@ -134,6 +148,7 @@ describe('divisionStore', () => {
       useDivisionStore
         .getState()
         .openModal({ rikishiID: 1, shikonaEn: 'Terunofuji' })
+      useDivisionStore.getState().setAllWrestlers([{ rikishiID: 1, shikonaEn: 'Terunofuji' }])
     })
 
     it('should reset all state to initial values', () => {
@@ -146,6 +161,7 @@ describe('divisionStore', () => {
       expect(state.isSidebarOpen).toBe(false)
       expect(state.isModalOpen).toBe(false)
       expect(state.selectedWrestler).toBeNull()
+      expect(state.allWrestlers).toEqual([])
     })
   })
 })

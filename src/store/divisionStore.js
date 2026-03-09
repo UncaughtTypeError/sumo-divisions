@@ -20,6 +20,9 @@ const useDivisionStore = create((set) => ({
   // Rank lookup for kinboshi calculation (Map of rikishiID to rank)
   rankLookup: new Map(),
 
+  // All wrestlers in current banzuke (for opponent lookups from MatchGrid)
+  allWrestlers: [],
+
   // Actions
   selectRank: (rank, division, apiDivision, color) =>
     set({
@@ -35,6 +38,11 @@ const useDivisionStore = create((set) => ({
       rankLookup: lookup,
     }),
 
+  setAllWrestlers: (wrestlers) =>
+    set({
+      allWrestlers: wrestlers,
+    }),
+
   closeSidebar: () =>
     set({
       isSidebarOpen: false,
@@ -42,6 +50,7 @@ const useDivisionStore = create((set) => ({
       selectedDivision: null,
       selectedApiDivision: null,
       selectedColor: null,
+      allWrestlers: [],
     }),
 
   openModal: (wrestler) =>
@@ -70,6 +79,7 @@ const useDivisionStore = create((set) => ({
       isModalOpen: false,
       selectedWrestler: null,
       rankLookup: new Map(),
+      allWrestlers: [],
     }),
 }))
 
