@@ -31,6 +31,7 @@ function WrestlerSidebar() {
   const [isClosing, setIsClosing] = useState(false);
   const [currentBashoId, setCurrentBashoId] = useState(getCurrentBashoId());
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState('rank-asc');
 
   const { data, isLoading, error, refetch } = useBanzuke(
     currentBashoId,
@@ -98,11 +99,19 @@ function WrestlerSidebar() {
     };
   }, [bashoResults, data, allWrestlers]);
 
-  // Filter wrestlers by search query
-  const filterBySearch = (wrestlers) => {
-    if (!searchQuery.trim()) return wrestlers;
-    const query = searchQuery.toLowerCase();
-    return wrestlers.filter((w) => w.shikonaEn.toLowerCase().includes(query));
+  // Filter by search and apply sort order
+  const filterAndSort = (wrestlers) => {
+    let result = wrestlers;
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = wrestlers.filter((w) => w.shikonaEn.toLowerCase().includes(query));
+    }
+    const sorted = [...result];
+    if (sortOrder === 'rank-asc') return sorted.sort((a, b) => a.rankValue - b.rankValue);
+    if (sortOrder === 'rank-desc') return sorted.sort((a, b) => b.rankValue - a.rankValue);
+    if (sortOrder === 'wins-asc') return sorted.sort((a, b) => a.wins - b.wins);
+    if (sortOrder === 'wins-desc') return sorted.sort((a, b) => b.wins - a.wins);
+    return sorted;
   };
 
   // Filter wrestlers by selected rank and enrich with awards
@@ -145,6 +154,7 @@ function WrestlerSidebar() {
       // Reset to current basho and clear search when sidebar opens
       setCurrentBashoId(getCurrentBashoId());
       setSearchQuery('');
+      setSortOrder('rank-asc');
     }
   }, [isSidebarOpen]);
 
@@ -225,26 +235,39 @@ function WrestlerSidebar() {
                 onWrestlerClick={openModal}
               />
               <div className={styles.searchContainer}>
-                <input
-                  type="text"
-                  className={styles.searchInput}
-                  placeholder="Search rikishi..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                {searchQuery && (
-                  <button
-                    className={styles.clearSearch}
-                    onClick={() => setSearchQuery('')}
-                    aria-label="Clear search"
-                  >
-                    ✕
-                  </button>
-                )}
+                <div className={styles.searchInputWrapper}>
+                  <input
+                    type="text"
+                    className={styles.searchInput}
+                    placeholder="Search rikishi..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  {searchQuery && (
+                    <button
+                      className={styles.clearSearch}
+                      onClick={() => setSearchQuery('')}
+                      aria-label="Clear search"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                <select
+                  className={styles.sortSelect}
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value)}
+                  aria-label="Sort order"
+                >
+                  <option value="rank-asc">Rank ↑</option>
+                  <option value="rank-desc">Rank ↓</option>
+                  <option value="wins-asc">Wins ↑</option>
+                  <option value="wins-desc">Wins ↓</option>
+                </select>
               </div>
               <div className={styles.gridContainer}>
                 <WrestlerGrid
-                  wrestlers={filterBySearch(eastWrestlers)}
+                  wrestlers={filterAndSort(eastWrestlers)}
                   side="East"
                   onWrestlerClick={openModal}
                   color={selectedColor}
@@ -252,7 +275,7 @@ function WrestlerSidebar() {
                   rikishiMap={rikishiMap}
                 />
                 <WrestlerGrid
-                  wrestlers={filterBySearch(westWrestlers)}
+                  wrestlers={filterAndSort(westWrestlers)}
                   side="West"
                   onWrestlerClick={openModal}
                   color={selectedColor}

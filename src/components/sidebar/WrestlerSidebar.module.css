@@ -82,12 +82,20 @@
 .sidebarContent {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 1.5rem;
 }
 
 .searchContainer {
-  position: relative;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
   margin-bottom: 1rem;
+}
+
+.searchInputWrapper {
+  position: relative;
+  flex: 1;
 }
 
 .searchInput {
@@ -130,6 +138,23 @@
 
 .clearSearch:hover {
   color: var(--color-text);
+}
+
+.sortSelect {
+  padding: 0.5rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  color: var(--color-text-accent);
+  background: var(--color-bg, white);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: border-color var(--transition-fast);
+}
+
+.sortSelect:focus {
+  outline: none;
+  border-color: var(--color-text-accent);
 }
 
 .gridContainer {
