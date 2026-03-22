@@ -39,6 +39,7 @@
   padding: 1.5rem;
   border-bottom: 2px solid var(--color-border);
   color: white;
+  gap: 3em;
 }
 
 .sidebarHeader h2 {

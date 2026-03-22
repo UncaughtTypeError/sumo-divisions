@@ -27,7 +27,8 @@
   background-repeat: no-repeat;
   background-position: right 0.5rem center;
   background-size: 12px;
-  min-width: 120px;
+  max-width: 100%;
+  width: 100%;
 }
 
 .select:hover {
