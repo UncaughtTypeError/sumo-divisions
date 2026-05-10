@@ -12,6 +12,7 @@ const useDivisionStore = create((set) => ({
 
   // Sidebar state
   isSidebarOpen: false,
+  isDivisionView: false,
 
   // Modal state
   isModalOpen: false,
@@ -31,6 +32,17 @@ const useDivisionStore = create((set) => ({
       selectedApiDivision: apiDivision,
       selectedColor: color,
       isSidebarOpen: true,
+      isDivisionView: false,
+    }),
+
+  selectDivision: (division, apiDivision, color) =>
+    set({
+      selectedRank: null,
+      selectedDivision: division,
+      selectedApiDivision: apiDivision,
+      selectedColor: color,
+      isSidebarOpen: true,
+      isDivisionView: true,
     }),
 
   setRankLookup: (lookup) =>
@@ -46,6 +58,7 @@ const useDivisionStore = create((set) => ({
   closeSidebar: () =>
     set({
       isSidebarOpen: false,
+      isDivisionView: false,
       selectedRank: null,
       selectedDivision: null,
       selectedApiDivision: null,
@@ -76,6 +89,7 @@ const useDivisionStore = create((set) => ({
       selectedApiDivision: null,
       selectedColor: null,
       isSidebarOpen: false,
+      isDivisionView: false,
       isModalOpen: false,
       selectedWrestler: null,
       rankLookup: new Map(),

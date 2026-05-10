@@ -17,6 +17,19 @@
   border-left-color: rgb(197, 197, 197);
 }
 
+.legendItemClickable {
+  cursor: pointer;
+  border-radius: var(--radius-sm, 4px);
+  transition: background var(--transition-fast, 150ms ease), border-left-color var(--transition-fast, 150ms ease);
+}
+
+.legendItemClickable:hover,
+.legendItemClickable:focus-visible {
+  background: rgba(0, 0, 0, 0.04);
+  border-left-color: rgb(140, 140, 140);
+  outline: none;
+}
+
 .legendItemTopDiv {
   min-height: 393px;
 }
@@ -54,6 +67,12 @@
     padding-right: 0.5rem;
     border-left-color: transparent;
     border-right-color: rgb(197, 197, 197);
+  }
+
+  .legendItemClickable:hover,
+  .legendItemClickable:focus-visible {
+    border-right-color: rgb(140, 140, 140);
+    border-left-color: transparent;
   }
 
   .legendName {

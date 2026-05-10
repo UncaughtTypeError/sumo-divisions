@@ -164,6 +164,43 @@
   gap: 1.5rem;
 }
 
+.rankGroupsContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.rankSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.rankDivider {
+  height: 1px;
+  background: var(--color-border);
+  margin: 1.5rem 0;
+}
+
+.rankSectionHeader {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.rankSectionTitle {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.rankSectionKanji {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--color-text-accent);
+  opacity: 0.65;
+}
+
 .noData {
   display: flex;
   flex-direction: column;
