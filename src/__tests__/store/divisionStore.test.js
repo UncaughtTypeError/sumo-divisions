@@ -24,6 +24,10 @@ describe('divisionStore', () => {
       expect(useDivisionStore.getState().isSidebarOpen).toBe(false)
     })
 
+    it('should have isDivisionView as false', () => {
+      expect(useDivisionStore.getState().isDivisionView).toBe(false)
+    })
+
     it('should have isModalOpen as false', () => {
       expect(useDivisionStore.getState().isModalOpen).toBe(false)
     })
@@ -53,6 +57,43 @@ describe('divisionStore', () => {
       useDivisionStore.getState().selectRank('Yokozuna', 'Makuuchi', 'Makuuchi')
       expect(useDivisionStore.getState().isSidebarOpen).toBe(true)
     })
+
+    it('should set isDivisionView to false', () => {
+      useDivisionStore.getState().selectRank('Yokozuna', 'Makuuchi', 'Makuuchi')
+      expect(useDivisionStore.getState().isDivisionView).toBe(false)
+    })
+  })
+
+  describe('selectDivision', () => {
+    it('should set selectedDivision', () => {
+      useDivisionStore.getState().selectDivision('Makuuchi', 'Makuuchi', 'makuuchi')
+      expect(useDivisionStore.getState().selectedDivision).toBe('Makuuchi')
+    })
+
+    it('should set selectedApiDivision', () => {
+      useDivisionStore.getState().selectDivision('Makuuchi', 'Makuuchi', 'makuuchi')
+      expect(useDivisionStore.getState().selectedApiDivision).toBe('Makuuchi')
+    })
+
+    it('should set selectedColor', () => {
+      useDivisionStore.getState().selectDivision('Makuuchi', 'Makuuchi', 'makuuchi')
+      expect(useDivisionStore.getState().selectedColor).toBe('makuuchi')
+    })
+
+    it('should set selectedRank to null', () => {
+      useDivisionStore.getState().selectDivision('Makuuchi', 'Makuuchi', 'makuuchi')
+      expect(useDivisionStore.getState().selectedRank).toBeNull()
+    })
+
+    it('should set isDivisionView to true', () => {
+      useDivisionStore.getState().selectDivision('Makuuchi', 'Makuuchi', 'makuuchi')
+      expect(useDivisionStore.getState().isDivisionView).toBe(true)
+    })
+
+    it('should open sidebar', () => {
+      useDivisionStore.getState().selectDivision('Makuuchi', 'Makuuchi', 'makuuchi')
+      expect(useDivisionStore.getState().isSidebarOpen).toBe(true)
+    })
   })
 
   describe('closeSidebar', () => {
@@ -78,6 +119,12 @@ describe('divisionStore', () => {
     it('should reset selectedApiDivision', () => {
       useDivisionStore.getState().closeSidebar()
       expect(useDivisionStore.getState().selectedApiDivision).toBeNull()
+    })
+
+    it('should reset isDivisionView to false after selectDivision', () => {
+      useDivisionStore.getState().selectDivision('Makuuchi', 'Makuuchi', 'makuuchi')
+      useDivisionStore.getState().closeSidebar()
+      expect(useDivisionStore.getState().isDivisionView).toBe(false)
     })
   })
 
@@ -159,6 +206,7 @@ describe('divisionStore', () => {
       expect(state.selectedDivision).toBeNull()
       expect(state.selectedApiDivision).toBeNull()
       expect(state.isSidebarOpen).toBe(false)
+      expect(state.isDivisionView).toBe(false)
       expect(state.isModalOpen).toBe(false)
       expect(state.selectedWrestler).toBeNull()
       expect(state.allWrestlers).toEqual([])
