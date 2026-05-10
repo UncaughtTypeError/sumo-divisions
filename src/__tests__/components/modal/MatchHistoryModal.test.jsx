@@ -15,6 +15,10 @@ vi.mock('../../../components/modal/MatchGrid', () => ({
   ),
 }))
 
+vi.mock('../../../hooks/useRikishi', () => ({
+  useAllRikishi: vi.fn(() => ({ rikishiMap: new Map(), isLoading: false })),
+}))
+
 import useDivisionStore from '../../../store/divisionStore'
 
 describe('MatchHistoryModal', () => {
