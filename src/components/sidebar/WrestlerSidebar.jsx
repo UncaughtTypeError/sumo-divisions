@@ -4,7 +4,7 @@ import useBanzuke from '../../hooks/useBanzuke';
 import useBashoResults from '../../hooks/useBashoResults';
 import { useAllRikishi } from '../../hooks/useRikishi';
 import { getCurrentBashoId } from '../../utils/bashoId';
-import { RANK_INFO } from '../../utils/constants';
+import { RANKS, RANK_INFO, DIVISION_INFO } from '../../utils/constants';
 import { getWrestlerAwards, buildRankLookup } from '../../utils/awards';
 import WrestlerGrid from './WrestlerGrid';
 import BashoSelector from './BashoSelector';
@@ -15,10 +15,21 @@ import ErrorMessage from '../common/ErrorMessage';
 import NoDataMessage from '../common/NoDataMessage';
 import styles from './WrestlerSidebar.module.css';
 
+// Rank order within Makuuchi division (top to bottom)
+const MAKUUCHI_RANK_ORDER = [
+  RANKS.YOKOZUNA,
+  RANKS.OZEKI,
+  RANKS.SEKIWAKE,
+  RANKS.KOMUSUBI,
+  RANKS.MAEGASHIRA,
+];
+
 function WrestlerSidebar() {
   const {
     isSidebarOpen,
+    isDivisionView,
     selectedRank,
+    selectedDivision,
     selectedApiDivision,
     selectedColor,
     closeSidebar,
@@ -74,30 +85,38 @@ function WrestlerSidebar() {
   const enrichedBashoResults = useMemo(() => {
     if (!bashoResults || !data) return bashoResults;
 
-    // Helper to find wrestler rank by rikishiId
     const findRank = (rikishiId) => {
       const wrestler = allWrestlers.find((w) => w.rikishiID === rikishiId);
       return wrestler?.rank || null;
     };
 
-    // Enrich yusho winners with ranks
-    const enrichedYusho = bashoResults.yusho?.map((winner) => ({
-      ...winner,
-      rank: findRank(winner.rikishiId),
-    }));
-
-    // Enrich special prize winners with ranks
-    const enrichedSpecialPrizes = bashoResults.specialPrizes?.map((prize) => ({
-      ...prize,
-      rank: findRank(prize.rikishiId),
-    }));
-
     return {
       ...bashoResults,
-      yusho: enrichedYusho,
-      specialPrizes: enrichedSpecialPrizes,
+      yusho: bashoResults.yusho?.map((winner) => ({ ...winner, rank: findRank(winner.rikishiId) })),
+      specialPrizes: bashoResults.specialPrizes?.map((prize) => ({ ...prize, rank: findRank(prize.rikishiId) })),
     };
   }, [bashoResults, data, allWrestlers]);
+
+  // Unified rank groups: multiple groups for division view, one group for single-rank view
+  const rankGroups = useMemo(() => {
+    if (!data || data.isEmpty) return [];
+
+    const enrichWithAwards = (wrestler) => ({
+      ...wrestler,
+      awards: getWrestlerAwards(wrestler.rikishiID, bashoResults, selectedApiDivision),
+    });
+    const sortByRank = (a, b) => a.rankValue - b.rankValue;
+    const buildGroup = (rank) => ({
+      rank,
+      rankInfo: RANK_INFO[rank],
+      east: (data.east?.filter((w) => w.rank.startsWith(rank)).map(enrichWithAwards) || []).sort(sortByRank),
+      west: (data.west?.filter((w) => w.rank.startsWith(rank)).map(enrichWithAwards) || []).sort(sortByRank),
+    });
+
+    return isDivisionView
+      ? MAKUUCHI_RANK_ORDER.map(buildGroup)
+      : [buildGroup(selectedRank)];
+  }, [isDivisionView, data, selectedRank, bashoResults, selectedApiDivision]);
 
   // Filter by search and apply sort order
   const filterAndSort = (wrestlers) => {
@@ -114,44 +133,10 @@ function WrestlerSidebar() {
     return sorted;
   };
 
-  // Filter wrestlers by selected rank and enrich with awards
-  const { eastWrestlers, westWrestlers } = useMemo(() => {
-    if (!data || !selectedRank) {
-      return { eastWrestlers: [], westWrestlers: [] };
-    }
-
-    // Filter function: check if wrestler's rank starts with selected rank
-    const filterByRank = (wrestler) => {
-      return wrestler.rank.startsWith(selectedRank);
-    };
-
-    // Enrich wrestler with awards
-    const enrichWithAwards = (wrestler) => ({
-      ...wrestler,
-      awards: getWrestlerAwards(
-        wrestler.rikishiID,
-        bashoResults,
-        selectedApiDivision,
-      ),
-    });
-
-    const east = data.east?.filter(filterByRank).map(enrichWithAwards) || [];
-    const west = data.west?.filter(filterByRank).map(enrichWithAwards) || [];
-
-    // Sort by rankValue (lower is better)
-    const sortByRank = (a, b) => a.rankValue - b.rankValue;
-
-    return {
-      eastWrestlers: east.sort(sortByRank),
-      westWrestlers: west.sort(sortByRank),
-    };
-  }, [data, selectedRank, bashoResults, selectedApiDivision]);
-
   useEffect(() => {
     if (isSidebarOpen) {
       setIsVisible(true);
       setIsClosing(false);
-      // Reset to current basho and clear search when sidebar opens
       setCurrentBashoId(getCurrentBashoId());
       setSearchQuery('');
       setSortOrder('rank-asc');
@@ -163,23 +148,20 @@ function WrestlerSidebar() {
     setTimeout(() => {
       setIsVisible(false);
       closeSidebar();
-    }, 150); // Match the animation duration
-  };
-
-  const handleBashoChange = (newBashoId) => {
-    setCurrentBashoId(newBashoId);
+    }, 150);
   };
 
   if (!isVisible) {
     return null;
   }
 
+  const headerLabel = isDivisionView ? selectedDivision : selectedRank;
+  const headerInfo = isDivisionView ? DIVISION_INFO[selectedDivision] : RANK_INFO[selectedRank];
+
   return (
     <>
       <div
-        className={`${styles.sidebarOverlay} ${
-          isClosing ? styles.closing : ''
-        }`}
+        className={`${styles.sidebarOverlay} ${isClosing ? styles.closing : ''}`}
         onClick={handleClose}
       />
       <div className={`${styles.sidebar} ${isClosing ? styles.closing : ''}`}>
@@ -190,16 +172,14 @@ function WrestlerSidebar() {
         >
           <div>
             <h2>
-              {selectedRank}
-              {RANK_INFO[selectedRank] && (
-                <span className={styles.rankKanji}>
-                  {RANK_INFO[selectedRank].nameJp}
-                </span>
+              {headerLabel}
+              {headerInfo && (
+                <span className={styles.rankKanji}>{headerInfo.nameJp}</span>
               )}
             </h2>
             <BashoSelector
               selectedBashoId={currentBashoId}
-              onBashoChange={handleBashoChange}
+              onBashoChange={setCurrentBashoId}
               color={selectedColor}
               bashoResults={bashoResults}
             />
@@ -265,37 +245,46 @@ function WrestlerSidebar() {
                   <option value="wins-desc">Wins ↓</option>
                 </select>
               </div>
-              <div className={styles.gridContainer}>
-                <WrestlerGrid
-                  wrestlers={filterAndSort(eastWrestlers)}
-                  side="East"
-                  onWrestlerClick={openModal}
-                  color={selectedColor}
-                  division={selectedApiDivision}
-                  rikishiMap={rikishiMap}
-                />
-                <WrestlerGrid
-                  wrestlers={filterAndSort(westWrestlers)}
-                  side="West"
-                  onWrestlerClick={openModal}
-                  color={selectedColor}
-                  division={selectedApiDivision}
-                  rikishiMap={rikishiMap}
-                />
+              <div className={isDivisionView ? styles.rankGroupsContainer : undefined}>
+                {rankGroups.map((group, index) => (
+                  <div key={group.rank} className={isDivisionView ? styles.rankSection : undefined}>
+                    {isDivisionView && index > 0 && <div className={styles.rankDivider} />}
+                    {isDivisionView && (
+                      <div className={styles.rankSectionHeader}>
+                        <h3 className={styles.rankSectionTitle}>{group.rank}</h3>
+                        {group.rankInfo && (
+                          <span className={styles.rankSectionKanji}>{group.rankInfo.nameJp}</span>
+                        )}
+                      </div>
+                    )}
+                    <div className={styles.gridContainer}>
+                      <WrestlerGrid
+                        wrestlers={filterAndSort(group.east)}
+                        side="East"
+                        onWrestlerClick={openModal}
+                        color={selectedColor}
+                        division={selectedApiDivision}
+                        rikishiMap={rikishiMap}
+                      />
+                      <WrestlerGrid
+                        wrestlers={filterAndSort(group.west)}
+                        side="West"
+                        onWrestlerClick={openModal}
+                        color={selectedColor}
+                        division={selectedApiDivision}
+                        rikishiMap={rikishiMap}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
+              {!isDivisionView && rankGroups[0]?.east.length === 0 && rankGroups[0]?.west.length === 0 && (
+                <div className={styles.noData}>
+                  <p>No rikishi found for {selectedRank}</p>
+                </div>
+              )}
             </>
           )}
-
-          {data &&
-            !isLoading &&
-            !error &&
-            !data.isEmpty &&
-            eastWrestlers.length === 0 &&
-            westWrestlers.length === 0 && (
-              <div className={styles.noData}>
-                <p>No rikishi found for {selectedRank}</p>
-              </div>
-            )}
         </div>
       </div>
 
