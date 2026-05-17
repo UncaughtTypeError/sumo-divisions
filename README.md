@@ -14,6 +14,7 @@ An interactive React application for visualizing sumo wrestling divisions, ranki
 - **Search & Sort**: Filter rikishi by name within any rank or division view; sort by rank or win count in either direction
 - **Wrestler Metadata**: Each wrestler card includes heya (stable), country of origin, and rank context
 - **Match History**: Detailed view of each wrestler's matches including opponents and winning techniques (kimarite)
+- **Head-to-Head Records**: Historical match record between any two wrestlers, including win/loss totals, win percentage, and sortable match details
 - **Historical Records**: Full basho data available going back to 1958 — browse any tournament in sumo history
 - **Basho Selection**: View data from the current basho or any historical tournament via the basho selector
 - **Real-Time Data**: Fetches current or most recent valid basho (tournament) data automatically
