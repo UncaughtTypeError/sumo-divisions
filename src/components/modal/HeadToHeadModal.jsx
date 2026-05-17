@@ -3,6 +3,7 @@ import { Fragment, useState, useMemo } from 'react';
 import { useRikishiMatches } from '../../hooks/useRikishi';
 import KimariteModal from './KimariteModal';
 import { getKimariteInfo } from '../../utils/kimarite';
+import Tooltip from '../common/Tooltip';
 import styles from './HeadToHeadModal.module.css';
 
 function formatBasho(bashoId) {
@@ -34,6 +35,29 @@ function HeadToHeadModal({ isOpen, onClose, rikishiId, opponentId, rikishiName, 
 
   const isMatchWin = (match) => Number(match.winnerId) === Number(rikishiId);
   const isFusen = (match) => match.kimarite === 'fusen';
+
+  const renderResultIcon = (won, fusen) => {
+    if (won && !fusen) return (
+      <Tooltip position="top" content={<><strong>Win</strong><span>Shiroboshi (白星)</span></>}>
+        <span className={styles.shiroboshi} />
+      </Tooltip>
+    );
+    if (!won && !fusen) return (
+      <Tooltip position="top" content={<><strong>Loss</strong><span>Kuroboshi (黒星)</span></>}>
+        <span className={styles.kuroboshi} />
+      </Tooltip>
+    );
+    if (won && fusen) return (
+      <Tooltip position="top" content={<><strong>Win by Forfeit</strong><span>Fusensho (不戦勝)</span></>}>
+        <span className={styles.fusenshoSquare} />
+      </Tooltip>
+    );
+    return (
+      <Tooltip position="top" content={<><strong>Loss by Forfeit</strong><span>Fusenpai (不戦敗)</span></>}>
+        <span className={styles.fusenpaiSquare} />
+      </Tooltip>
+    );
+  };
 
   const handleKimariteClick = (kimarite) => {
     const info = getKimariteInfo(kimarite);
@@ -186,7 +210,7 @@ function HeadToHeadModal({ isOpen, onClose, rikishiId, opponentId, rikishiName, 
                           <span>{match.day != null ? `Day ${match.day}` : '—'}</span>
                           <span className={won ? styles.win : styles.loss}>
                             {won ? 'Win' : 'Loss'}
-                            {fusen && <span className={styles.fusenBadge}>fusen</span>}
+                            {renderResultIcon(won, fusen)}
                           </span>
                           <span>{renderKimarite(match.kimarite)}</span>
                         </div>

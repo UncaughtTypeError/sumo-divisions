@@ -160,10 +160,39 @@ describe('HeadToHeadModal', () => {
       useRikishiMatches.mockReturnValue({ data: mockData, isLoading: false, isError: false })
     })
 
-    it('should render Win and Loss results', () => {
+    it('should render Win and Loss text labels', () => {
       render(<HeadToHeadModal {...defaultProps} />)
       expect(screen.getAllByText('Win').length).toBeGreaterThanOrEqual(1)
       expect(screen.getAllByText('Loss').length).toBeGreaterThanOrEqual(1)
+    })
+
+    it('should render a shiroboshi circle for a regular win', () => {
+      render(<HeadToHeadModal {...defaultProps} />)
+      expect(document.body.querySelector('[class*="shiroboshi"]')).toBeInTheDocument()
+    })
+
+    it('should render a kuroboshi circle for a regular loss', () => {
+      render(<HeadToHeadModal {...defaultProps} />)
+      expect(document.body.querySelector('[class*="kuroboshi"]')).toBeInTheDocument()
+    })
+
+    it('should render a fusensho square for a fusen win and a fusenpai square for a fusen loss', () => {
+      useRikishiMatches.mockReturnValue({
+        data: {
+          matches: [
+            { bashoId: '202605', division: 'Makuuchi', day: 1, winnerId: 1, kimarite: 'fusen' },
+            { bashoId: '202601', division: 'Makuuchi', day: 1, winnerId: 2, kimarite: 'fusen' },
+          ],
+          rikishiWins: 1,
+          opponentWins: 1,
+          total: 2,
+        },
+        isLoading: false,
+        isError: false,
+      })
+      render(<HeadToHeadModal {...defaultProps} />)
+      expect(document.body.querySelector('[class*="fusenshoSquare"]')).toBeInTheDocument()
+      expect(document.body.querySelector('[class*="fusenpaiSquare"]')).toBeInTheDocument()
     })
 
     it('should render formatted basho dates', () => {
