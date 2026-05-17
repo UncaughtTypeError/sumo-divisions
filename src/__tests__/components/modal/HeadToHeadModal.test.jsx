@@ -91,21 +91,21 @@ describe('HeadToHeadModal', () => {
     })
 
     it('should show positive percentage when wins exceed losses', () => {
-      // (2-1)/3*100 = 33.3%
+      // wins/total = 2/3*100 = 66.7%
       useRikishiMatches.mockReturnValue({ data: mockData, isLoading: false, isError: false })
       render(<HeadToHeadModal {...defaultProps} />)
-      expect(screen.getByText('33.3%')).toBeInTheDocument()
+      expect(screen.getByText('66.7%')).toBeInTheDocument()
     })
 
     it('should show negative percentage when losses exceed wins', () => {
-      // (1-2)/3*100 = -33.3%
+      // -(losses/total) = -(2/3)*100 = -66.7%
       useRikishiMatches.mockReturnValue({
         data: { ...mockData, rikishiWins: 1, opponentWins: 2 },
         isLoading: false,
         isError: false,
       })
       render(<HeadToHeadModal {...defaultProps} />)
-      expect(screen.getByText('-33.3%')).toBeInTheDocument()
+      expect(screen.getByText('-66.7%')).toBeInTheDocument()
     })
 
     it('should show -100% when rikishi has no wins', () => {
@@ -144,14 +144,15 @@ describe('HeadToHeadModal', () => {
       expect(screen.getByText('100.0%')).toBeInTheDocument()
     })
 
-    it('should show 0.0% for an even record', () => {
+    it('should show 50.0% for an even record', () => {
+      // wins/total = 3/6*100 = 50.0%
       useRikishiMatches.mockReturnValue({
         data: { ...mockData, rikishiWins: 3, opponentWins: 3, total: 6 },
         isLoading: false,
         isError: false,
       })
       render(<HeadToHeadModal {...defaultProps} />)
-      expect(screen.getByText('0.0%')).toBeInTheDocument()
+      expect(screen.getByText('50.0%')).toBeInTheDocument()
     })
   })
 
