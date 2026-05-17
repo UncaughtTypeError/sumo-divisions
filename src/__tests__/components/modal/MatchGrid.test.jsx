@@ -1,6 +1,11 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import MatchGrid from '../../../components/modal/MatchGrid'
+
+vi.mock('../../../components/modal/HeadToHeadModal', () => ({
+  default: ({ isOpen }) =>
+    isOpen ? <div data-testid="h2h-modal">H2H Modal</div> : null,
+}))
 
 describe('MatchGrid', () => {
   const mockMatches = [
@@ -48,7 +53,7 @@ describe('MatchGrid', () => {
 
   it('should render dash for missing kimarite', () => {
     render(<MatchGrid matches={mockMatches} />)
-    expect(screen.getByText('—')).toBeInTheDocument()
+    expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(1)
   })
 
   it('should handle missing opponent name', () => {
@@ -156,7 +161,7 @@ describe('MatchGrid', () => {
         { result: 'win', opponentShikonaEn: 'Test', kimarite: null },
       ]
       render(<MatchGrid matches={nullKimariteMatch} />)
-      expect(screen.getByText('—')).toBeInTheDocument()
+      expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(1)
     })
 
     it('should open modal when kimarite button is clicked', () => {
@@ -185,6 +190,42 @@ describe('MatchGrid', () => {
 
       // Modal should be closed (dialog should not be in document)
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('head-to-head column', () => {
+    const matchesWithOpponent = [
+      { result: 'win', opponentShikonaEn: 'Takakeisho', opponentID: 42, kimarite: 'yorikiri' },
+      { result: 'loss', opponentShikonaEn: 'Kotozakura', opponentID: 99, kimarite: 'oshidashi' },
+    ]
+
+    it('should render H2H column header', () => {
+      render(<MatchGrid matches={mockMatches} />)
+      expect(screen.getByText('H2H')).toBeInTheDocument()
+    })
+
+    it('should not render H2H button when rikishiId is not provided', () => {
+      render(<MatchGrid matches={matchesWithOpponent} />)
+      expect(screen.queryByRole('button', { name: /head-to-head/i })).not.toBeInTheDocument()
+    })
+
+    it('should not render H2H button when opponentID is missing', () => {
+      const matchesNoId = [{ result: 'win', opponentShikonaEn: 'Test', kimarite: 'yorikiri' }]
+      render(<MatchGrid matches={matchesNoId} rikishiId={1} rikishiName="Terunofuji" />)
+      expect(screen.queryByRole('button', { name: /head-to-head/i })).not.toBeInTheDocument()
+    })
+
+    it('should render H2H buttons when rikishiId and opponentID are both present', () => {
+      render(<MatchGrid matches={matchesWithOpponent} rikishiId={1} rikishiName="Terunofuji" />)
+      const h2hButtons = screen.getAllByRole('button', { name: /head-to-head/i })
+      expect(h2hButtons).toHaveLength(2)
+    })
+
+    it('should open H2H modal when H2H button is clicked', () => {
+      render(<MatchGrid matches={matchesWithOpponent} rikishiId={1} rikishiName="Terunofuji" />)
+      expect(screen.queryByTestId('h2h-modal')).not.toBeInTheDocument()
+      fireEvent.click(screen.getAllByRole('button', { name: /head-to-head/i })[0])
+      expect(screen.getByTestId('h2h-modal')).toBeInTheDocument()
     })
   })
 })
