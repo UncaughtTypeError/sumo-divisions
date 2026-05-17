@@ -6,7 +6,7 @@
 
 .matchGridHeader {
   display: grid;
-  grid-template-columns: 100px 1fr 150px;
+  grid-template-columns: 100px 1fr 150px 52px;
   gap: 1rem;
   padding: 1rem;
   background: var(--color-text);
@@ -28,7 +28,7 @@
 
 .matchRow {
   display: grid;
-  grid-template-columns: 100px 1fr 150px;
+  grid-template-columns: 100px 1fr 150px 52px;
   gap: 1rem;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--color-border);
@@ -140,6 +140,31 @@
   border-radius: 2px;
 }
 
+.h2hButton {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--color-text-accent);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+  transition: color var(--transition-fast);
+}
+
+.h2hButton:hover {
+  color: var(--color-link);
+}
+
+.h2hButton:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 .emptyState {
   display: flex;
   align-items: center;
@@ -171,7 +196,7 @@
 @media (max-width: 768px) {
   .matchGridHeader,
   .matchRow {
-    grid-template-columns: 80px 1fr 120px;
+    grid-template-columns: 80px 1fr 120px 44px;
     gap: 0.5rem;
     padding: 0.5rem;
   }
@@ -188,7 +213,7 @@
 @media (max-width: 480px) {
   .matchGridHeader,
   .matchRow {
-    grid-template-columns: 70px 1fr 100px;
+    grid-template-columns: 70px 1fr 100px 36px;
     gap: 0.25rem;
     padding: 0.5rem 0.25rem;
   }

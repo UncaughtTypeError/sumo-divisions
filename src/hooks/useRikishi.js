@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { getAllRikishi, getRikishi } from '../services/api/rikishiService'
+import { getAllRikishi, getRikishi, getRikishiMatches } from '../services/api/rikishiService'
 
 /**
  * Custom hook to fetch all rikishi and build a lookup map
@@ -50,6 +50,16 @@ export function useRikishi(rikishiId, options = {}) {
     queryFn: () => getRikishi(rikishiId),
     enabled: !!rikishiId,
     staleTime: 1000 * 60 * 60, // 1 hour - rikishi details rarely change
+    ...options,
+  })
+}
+
+export function useRikishiMatches(rikishiId, opponentId, options = {}) {
+  return useQuery({
+    queryKey: ['rikishiMatches', rikishiId, opponentId],
+    queryFn: () => getRikishiMatches(rikishiId, opponentId),
+    enabled: !!rikishiId && !!opponentId,
+    staleTime: 1000 * 60 * 60,
     ...options,
   })
 }

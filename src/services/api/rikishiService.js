@@ -53,3 +53,13 @@ export const rikishiQueryFn = ({ queryKey }) => {
   const [, rikishiId] = queryKey
   return getRikishi(rikishiId)
 }
+
+export async function getRikishiMatches(rikishiId, opponentId) {
+  try {
+    const response = await sumoApiClient.get(`/rikishi/${rikishiId}/matches/${opponentId}`)
+    return response.data
+  } catch (error) {
+    console.error(`Failed to fetch matches between ${rikishiId} and ${opponentId}:`, error)
+    throw error
+  }
+}

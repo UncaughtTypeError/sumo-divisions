@@ -1,0 +1,193 @@
+.dialog {
+  position: fixed;
+  z-index: 200;
+  inset: 0;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modalContainer {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modalPanel {
+  position: relative;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.25rem 1.25rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modalTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--color-text);
+}
+
+.vs {
+  font-weight: 400;
+  color: var(--color-text-accent);
+  font-size: 0.9375rem;
+}
+
+.modalSubtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: var(--color-text-accent);
+}
+
+.wins {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.losses {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+
+.closeButton:hover {
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+.modalContent {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.statusMessage {
+  padding: 2rem;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin: 0;
+}
+
+.matchList {
+  display: flex;
+  flex-direction: column;
+}
+
+.matchHeader {
+  display: grid;
+  grid-template-columns: 90px 70px 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  background: var(--color-background);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  position: sticky;
+  top: 0;
+}
+
+.matchRow {
+  display: grid;
+  grid-template-columns: 90px 70px 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--color-border);
+  transition: background var(--transition-fast);
+}
+
+.matchRow:last-child {
+  border-bottom: none;
+}
+
+.matchRow:hover {
+  background: var(--color-background-alt);
+}
+
+.win {
+  color: var(--color-success);
+  font-weight: 600;
+}
+
+.loss {
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+.neutral {
+  color: var(--color-text-accent);
+  font-style: italic;
+}
+
+/* Backdrop transitions */
+.backdropEnter { transition: opacity 150ms ease-out; }
+.backdropEnterFrom { opacity: 0; }
+.backdropEnterTo { opacity: 1; }
+.backdropLeave { transition: opacity 100ms ease-in; }
+.backdropLeaveFrom { opacity: 1; }
+.backdropLeaveTo { opacity: 0; }
+
+/* Panel transitions */
+.panelEnter { transition: opacity 150ms ease-out, transform 150ms ease-out; }
+.panelEnterFrom { opacity: 0; transform: scale(0.95) translateY(10px); }
+.panelEnterTo { opacity: 1; transform: scale(1) translateY(0); }
+.panelLeave { transition: opacity 100ms ease-in, transform 100ms ease-in; }
+.panelLeaveFrom { opacity: 1; transform: scale(1) translateY(0); }
+.panelLeaveTo { opacity: 0; transform: scale(0.95) translateY(10px); }
+
+@media (max-width: 480px) {
+  .modalPanel {
+    max-width: calc(100% - 1rem);
+    max-height: 90vh;
+  }
+
+  .modalHeader {
+    padding: 1rem;
+  }
+
+  .matchHeader,
+  .matchRow {
+    grid-template-columns: 72px 56px 1fr 1fr;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+  }
+}

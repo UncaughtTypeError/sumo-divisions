@@ -264,6 +264,8 @@ function MatchHistoryModal() {
                     matches={selectedWrestler.record}
                     color={selectedColor}
                     wrestlerRank={rank}
+                    rikishiId={selectedWrestler.rikishiID}
+                    rikishiName={selectedWrestler.shikonaEn}
                   />
                 </div>
 

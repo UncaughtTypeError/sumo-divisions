@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Tooltip from '../common/Tooltip';
 import KimariteModal from './KimariteModal';
+import HeadToHeadModal from './HeadToHeadModal';
 import { getKimariteInfo } from '../../utils/kimarite';
 import { isKinboshiMatch, isYokozuna } from '../../utils/awards';
 import useDivisionStore from '../../store/divisionStore';
@@ -16,9 +17,10 @@ function abbreviateRank(rank) {
   return `${firstLetter}${number}${sideAbbrev}`;
 }
 
-function MatchGrid({ matches, color, wrestlerRank }) {
+function MatchGrid({ matches, color, wrestlerRank, rikishiId, rikishiName }) {
   const [selectedKimarite, setSelectedKimarite] = useState(null);
   const [selectedKimariteInfo, setSelectedKimariteInfo] = useState(null);
+  const [selectedOpponent, setSelectedOpponent] = useState(null);
   const { rankLookup, openModal, allWrestlers } = useDivisionStore();
 
   if (!matches || matches.length === 0) {
@@ -118,6 +120,14 @@ function MatchGrid({ matches, color, wrestlerRank }) {
     setSelectedKimariteInfo(null);
   };
 
+  const handleH2HClick = (match) => {
+    setSelectedOpponent({ id: match.opponentID, name: match.opponentShikonaEn || 'Unknown' });
+  };
+
+  const handleCloseH2HModal = () => {
+    setSelectedOpponent(null);
+  };
+
   const renderKimarite = (kimarite) => {
     if (!kimarite) return '—';
 
@@ -205,6 +215,7 @@ function MatchGrid({ matches, color, wrestlerRank }) {
           <div className={styles.headerCell}>Result</div>
           <div className={styles.headerCell}>Opponent</div>
           <div className={styles.headerCell}>Kimarite</div>
+          <div className={styles.headerCell}>H2H</div>
         </div>
 
         {/* Matches */}
@@ -227,6 +238,18 @@ function MatchGrid({ matches, color, wrestlerRank }) {
               <div className={styles.cell}>
                 {renderKimarite(match.kimarite)}
               </div>
+              <div className={styles.cell}>
+                {rikishiId && match.opponentID ? (
+                  <button
+                    type="button"
+                    className={styles.h2hButton}
+                    onClick={() => handleH2HClick(match)}
+                    aria-label={`View head-to-head history with ${match.opponentShikonaEn || 'opponent'}`}
+                  >
+                    H2H
+                  </button>
+                ) : '—'}
+              </div>
             </div>
           ))}
         </div>
@@ -237,6 +260,14 @@ function MatchGrid({ matches, color, wrestlerRank }) {
         onClose={handleCloseKimariteModal}
         kimarite={selectedKimarite}
         kimariteInfo={selectedKimariteInfo}
+      />
+      <HeadToHeadModal
+        isOpen={selectedOpponent !== null}
+        onClose={handleCloseH2HModal}
+        rikishiId={rikishiId}
+        opponentId={selectedOpponent?.id}
+        rikishiName={rikishiName}
+        opponentName={selectedOpponent?.name}
       />
     </>
   );
