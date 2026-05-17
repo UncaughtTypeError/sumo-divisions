@@ -29,6 +29,7 @@ describe('MatchGrid', () => {
     expect(screen.getByText('Result')).toBeInTheDocument()
     expect(screen.getByText('Opponent')).toBeInTheDocument()
     expect(screen.getByText('Kimarite')).toBeInTheDocument()
+    expect(screen.getByText('H2H')).toBeInTheDocument()
   })
 
   it('should render match results in uppercase', () => {
@@ -199,9 +200,9 @@ describe('MatchGrid', () => {
       { result: 'loss', opponentShikonaEn: 'Kotozakura', opponentID: 99, kimarite: 'oshidashi' },
     ]
 
-    it('should render H2H column header with crossed swords icon', () => {
+    it('should render H2H column header', () => {
       render(<MatchGrid matches={mockMatches} />)
-      expect(screen.getByText('⚔')).toBeInTheDocument()
+      expect(screen.getByText('H2H')).toBeInTheDocument()
     })
 
     it('should not render H2H button when rikishiId is not provided', () => {
@@ -212,6 +213,12 @@ describe('MatchGrid', () => {
     it('should not render H2H button when opponentID is missing', () => {
       const matchesNoId = [{ result: 'win', opponentShikonaEn: 'Test', kimarite: 'yorikiri' }]
       render(<MatchGrid matches={matchesNoId} rikishiId={1} rikishiName="Terunofuji" />)
+      expect(screen.queryByRole('button', { name: /head-to-head/i })).not.toBeInTheDocument()
+    })
+
+    it('should not render H2H button when opponent name is unknown', () => {
+      const matchesUnknown = [{ result: 'win', opponentShikonaEn: null, opponentID: 42, kimarite: 'yorikiri' }]
+      render(<MatchGrid matches={matchesUnknown} rikishiId={1} rikishiName="Terunofuji" />)
       expect(screen.queryByRole('button', { name: /head-to-head/i })).not.toBeInTheDocument()
     })
 
