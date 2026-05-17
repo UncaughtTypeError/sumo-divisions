@@ -4,6 +4,11 @@ import { renderWithQueryClient } from '../../testUtils'
 import WrestlerRow from '../../../components/sidebar/WrestlerRow'
 import { AWARD_TYPES, RECORD_STATUS_TYPES } from '../../../utils/awards'
 
+vi.mock('../../../components/modal/RikishiDetailModal', () => ({
+  default: ({ isOpen }) =>
+    isOpen ? <div data-testid="rikishi-detail-modal">Detail Modal</div> : null,
+}))
+
 describe('WrestlerRow', () => {
   const mockWrestler = {
     rikishiID: 1,
@@ -162,6 +167,55 @@ describe('WrestlerRow', () => {
       // Both badges should be present
       expect(screen.getByText('KK')).toBeInTheDocument()
       expect(screen.getByText(/🏆/)).toBeInTheDocument()
+    })
+  })
+
+  describe('rikishi detail info button', () => {
+    const rikishiDetails = {
+      shikonaEn: 'Terunofuji',
+      shikonaJp: '照ノ富士',
+      currentRank: 'Yokozuna',
+      heya: 'Isegahama',
+      shusshin: 'Mongolia, Ulaanbaatar',
+      height: 192,
+      weight: 167,
+    }
+    const rikishiMap = new Map([[1, rikishiDetails]])
+
+    it('should not render info button when rikishiMap is not provided', () => {
+      renderWithQueryClient(<WrestlerRow wrestler={mockWrestler} onClick={() => {}} />)
+      expect(screen.queryByLabelText('View rikishi details')).not.toBeInTheDocument()
+    })
+
+    it('should not render info button when wrestler has no entry in rikishiMap', () => {
+      const emptyMap = new Map()
+      renderWithQueryClient(<WrestlerRow wrestler={mockWrestler} onClick={() => {}} rikishiMap={emptyMap} />)
+      expect(screen.queryByLabelText('View rikishi details')).not.toBeInTheDocument()
+    })
+
+    it('should render info button when rikishiDetails is available', () => {
+      renderWithQueryClient(
+        <WrestlerRow wrestler={mockWrestler} onClick={() => {}} rikishiMap={rikishiMap} />
+      )
+      expect(screen.getByLabelText('View rikishi details')).toBeInTheDocument()
+    })
+
+    it('should not call row onClick when info button is clicked', () => {
+      const onClick = vi.fn()
+      renderWithQueryClient(
+        <WrestlerRow wrestler={mockWrestler} onClick={onClick} rikishiMap={rikishiMap} />
+      )
+      fireEvent.click(screen.getByLabelText('View rikishi details'))
+      expect(onClick).not.toHaveBeenCalled()
+    })
+
+    it('should open the detail modal when info button is clicked', () => {
+      renderWithQueryClient(
+        <WrestlerRow wrestler={mockWrestler} onClick={() => {}} rikishiMap={rikishiMap} />
+      )
+      expect(screen.queryByTestId('rikishi-detail-modal')).not.toBeInTheDocument()
+      fireEvent.click(screen.getByLabelText('View rikishi details'))
+      expect(screen.getByTestId('rikishi-detail-modal')).toBeInTheDocument()
     })
   })
 })

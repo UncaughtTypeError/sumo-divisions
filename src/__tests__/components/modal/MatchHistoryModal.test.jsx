@@ -19,7 +19,13 @@ vi.mock('../../../hooks/useRikishi', () => ({
   useAllRikishi: vi.fn(() => ({ rikishiMap: new Map(), isLoading: false })),
 }))
 
+vi.mock('../../../components/modal/RikishiDetailModal', () => ({
+  default: ({ isOpen }) =>
+    isOpen ? <div data-testid="rikishi-detail-modal">Detail Modal</div> : null,
+}))
+
 import useDivisionStore from '../../../store/divisionStore'
+import { useAllRikishi } from '../../../hooks/useRikishi'
 
 describe('MatchHistoryModal', () => {
   const mockCloseModal = vi.fn()
@@ -268,6 +274,56 @@ describe('MatchHistoryModal', () => {
       const kkBadges = screen.getAllByText('Kachi-koshi')
       expect(kkBadges.length).toBeGreaterThanOrEqual(1)
       expect(screen.getByText(/🏆.*Yusho/)).toBeInTheDocument()
+    })
+  })
+
+  describe('rikishi detail info button', () => {
+    const rikishiDetails = {
+      shikonaEn: 'Terunofuji',
+      shikonaJp: '照ノ富士',
+      currentRank: 'Yokozuna',
+      heya: 'Isegahama',
+      shusshin: 'Mongolia, Ulaanbaatar',
+      height: 192,
+      weight: 167,
+      birthDate: '1990-01-01',
+      debut: '201303',
+    }
+
+    beforeEach(() => {
+      useDivisionStore.mockReturnValue({
+        isModalOpen: true,
+        selectedWrestler: mockWrestler,
+        selectedColor: 'makuuchi',
+        closeModal: mockCloseModal,
+        clearSelectedWrestler: mockClearSelectedWrestler,
+      })
+    })
+
+    it('should not render info button when rikishiMap has no entry for the wrestler', () => {
+      useAllRikishi.mockReturnValue({ rikishiMap: new Map(), isLoading: false })
+      render(<MatchHistoryModal />)
+      expect(screen.queryByLabelText('View rikishi details')).not.toBeInTheDocument()
+    })
+
+    it('should render info button when rikishiDetails is available', () => {
+      useAllRikishi.mockReturnValue({
+        rikishiMap: new Map([[mockWrestler.rikishiID, rikishiDetails]]),
+        isLoading: false,
+      })
+      render(<MatchHistoryModal />)
+      expect(screen.getByLabelText('View rikishi details')).toBeInTheDocument()
+    })
+
+    it('should open the detail modal when info button is clicked', () => {
+      useAllRikishi.mockReturnValue({
+        rikishiMap: new Map([[mockWrestler.rikishiID, rikishiDetails]]),
+        isLoading: false,
+      })
+      render(<MatchHistoryModal />)
+      expect(screen.queryByTestId('rikishi-detail-modal')).not.toBeInTheDocument()
+      fireEvent.click(screen.getByLabelText('View rikishi details'))
+      expect(screen.getByTestId('rikishi-detail-modal')).toBeInTheDocument()
     })
   })
 })
