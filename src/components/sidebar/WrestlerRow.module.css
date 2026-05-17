@@ -127,6 +127,31 @@
   text-align: right;
 }
 
+.infoButton {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-background);
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-accent);
+  font-size: 0.6875rem;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0;
+  margin-left: auto;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.infoButton:hover {
+  color: var(--color-text);
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
   .wrestlerRow {

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   AWARD_INFO,
   AWARD_TYPES,
@@ -10,10 +11,12 @@ import {
 import { getFlagData } from '../common/flags';
 import useDivisionStore from '../../store/divisionStore';
 import Tooltip from '../common/Tooltip';
+import RikishiDetailModal from '../modal/RikishiDetailModal';
 import styles from './WrestlerRow.module.css';
 
 function WrestlerRow({ wrestler, onClick, color, division, rikishiMap }) {
   const { rankLookup } = useDivisionStore();
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   // Get rikishi details from the pre-fetched map (no individual API calls)
   const rikishiDetails = rikishiMap?.get(wrestler.rikishiID);
@@ -48,6 +51,7 @@ function WrestlerRow({ wrestler, onClick, color, division, rikishiMap }) {
   const hasAnyBadges = recordStatus || awards.length > 0 || kinboshiCount > 0;
 
   return (
+    <>
     <div
       className={styles.wrestlerRow}
       onClick={() => onClick(wrestler)}
@@ -154,8 +158,29 @@ function WrestlerRow({ wrestler, onClick, color, division, rikishiMap }) {
             <span className={styles.heya}>{heya}</span>
           </Tooltip>
         )}
+        {rikishiDetails && (
+          <Tooltip content="Rikishi Details" position="top">
+            <button
+              className={styles.infoButton}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsDetailOpen(true);
+              }}
+              aria-label="View rikishi details"
+            >
+              i
+            </button>
+          </Tooltip>
+        )}
       </div>
     </div>
+    <RikishiDetailModal
+      isOpen={isDetailOpen}
+      onClose={() => setIsDetailOpen(false)}
+      rikishiDetails={rikishiDetails}
+      color={color}
+    />
+    </>
   );
 }
 

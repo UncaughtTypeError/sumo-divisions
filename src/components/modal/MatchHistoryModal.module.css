@@ -138,6 +138,30 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
+.infoButton {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  cursor: pointer;
+  color: white;
+  font-size: 0.6875rem;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+}
+
+.infoButton:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
 .closeButton {
   background: none;
   border: none;
