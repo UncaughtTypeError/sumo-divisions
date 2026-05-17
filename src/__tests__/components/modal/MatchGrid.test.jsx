@@ -199,9 +199,9 @@ describe('MatchGrid', () => {
       { result: 'loss', opponentShikonaEn: 'Kotozakura', opponentID: 99, kimarite: 'oshidashi' },
     ]
 
-    it('should render H2H column header', () => {
+    it('should render H2H column header with crossed swords icon', () => {
       render(<MatchGrid matches={mockMatches} />)
-      expect(screen.getByText('H2H')).toBeInTheDocument()
+      expect(screen.getByText('⚔')).toBeInTheDocument()
     })
 
     it('should not render H2H button when rikishiId is not provided', () => {

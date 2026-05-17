@@ -17,9 +17,13 @@ function HeadToHeadModal({ isOpen, onClose, rikishiId, opponentId, rikishiName, 
     enabled: isOpen,
   });
 
-  const matches = Array.isArray(data) ? data : (data?.records ?? []);
-  const wins = matches.filter((m) => m.result === 'win' || m.result === 'fusen win').length;
-  const losses = matches.filter((m) => m.result === 'loss' || m.result === 'fusen loss').length;
+  const matches = data?.matches ?? [];
+  const wins = data?.rikishiWins ?? 0;
+  const losses = data?.opponentWins ?? 0;
+  const total = data?.total ?? 0;
+
+  const isMatchWin = (match) => Number(match.winnerId) === Number(rikishiId);
+  const isFusen = (match) => match.kimarite === 'fusen';
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -54,9 +58,9 @@ function HeadToHeadModal({ isOpen, onClose, rikishiId, opponentId, rikishiName, 
                     <span className={styles.vs}>vs</span>{' '}
                     {opponentName}
                   </Dialog.Title>
-                  {matches.length > 0 && (
+                  {total > 0 && (
                     <p className={styles.modalSubtitle}>
-                      {matches.length} match{matches.length !== 1 ? 'es' : ''}{' '}
+                      {total} match{total !== 1 ? 'es' : ''}{' '}
                       &bull; <span className={styles.wins}>{wins}W</span>{' '}
                       &ndash; <span className={styles.losses}>{losses}L</span>
                     </p>
@@ -74,7 +78,7 @@ function HeadToHeadModal({ isOpen, onClose, rikishiId, opponentId, rikishiName, 
                 {isError && (
                   <p className={styles.statusMessage}>Failed to load match history.</p>
                 )}
-                {!isLoading && !isError && matches.length === 0 && (
+                {!isLoading && !isError && total === 0 && (
                   <p className={styles.statusMessage}>No head-to-head records found.</p>
                 )}
                 {!isLoading && !isError && matches.length > 0 && (
@@ -85,26 +89,26 @@ function HeadToHeadModal({ isOpen, onClose, rikishiId, opponentId, rikishiName, 
                       <span>Result</span>
                       <span>Kimarite</span>
                     </div>
-                    {matches.map((match, i) => (
-                      <div key={i} className={styles.matchRow}>
-                        <span>{formatBasho(match.bashoId)}</span>
-                        <span>{match.day != null ? `Day ${match.day}` : '—'}</span>
-                        <span
-                          className={
-                            match.result === 'win' || match.result === 'fusen win'
-                              ? styles.win
-                              : match.result === 'loss' || match.result === 'fusen loss'
-                              ? styles.loss
-                              : styles.neutral
-                          }
-                        >
-                          {match.result
-                            ? match.result.charAt(0).toUpperCase() + match.result.slice(1)
-                            : '—'}
-                        </span>
-                        <span>{match.kimarite || '—'}</span>
-                      </div>
-                    ))}
+                    {matches.map((match, i) => {
+                      const won = isMatchWin(match);
+                      const fusen = isFusen(match);
+                      return (
+                        <div key={i} className={styles.matchRow}>
+                          <span>
+                            {formatBasho(match.bashoId)}
+                            {match.division && (
+                              <span className={styles.division}>{match.division}</span>
+                            )}
+                          </span>
+                          <span>{match.day != null ? `Day ${match.day}` : '—'}</span>
+                          <span className={won ? styles.win : styles.loss}>
+                            {won ? 'Win' : 'Loss'}
+                            {fusen && <span className={styles.fusenBadge}>fusen</span>}
+                          </span>
+                          <span>{match.kimarite !== 'fusen' ? (match.kimarite || '—') : '—'}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

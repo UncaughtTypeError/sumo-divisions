@@ -68,7 +68,11 @@
 }
 
 .awardBadge.yushoBadge {
-  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-gold) 0%,
+    var(--color-gold-dark) 100%
+  );
   color: var(--color-gold-text);
 }
 
@@ -184,7 +188,6 @@
 
 .modalContent {
   flex: 1;
-  overflow-y: auto;
   padding: 1.5rem;
 }
 
@@ -244,7 +247,9 @@
 
 /* Panel transitions */
 .panelEnter {
-  transition: opacity 200ms ease-out, transform 200ms ease-out;
+  transition:
+    opacity 200ms ease-out,
+    transform 200ms ease-out;
 }
 
 .panelEnterFrom {
@@ -258,7 +263,9 @@
 }
 
 .panelLeave {
-  transition: opacity 150ms ease-in, transform 150ms ease-in;
+  transition:
+    opacity 150ms ease-in,
+    transform 150ms ease-in;
 }
 
 .panelLeaveFrom {

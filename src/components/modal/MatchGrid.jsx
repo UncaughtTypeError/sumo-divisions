@@ -215,7 +215,11 @@ function MatchGrid({ matches, color, wrestlerRank, rikishiId, rikishiName }) {
           <div className={styles.headerCell}>Result</div>
           <div className={styles.headerCell}>Opponent</div>
           <div className={styles.headerCell}>Kimarite</div>
-          <div className={styles.headerCell}>H2H</div>
+          <div className={styles.headerCell}>
+            <Tooltip content="Head-to-head history" position="bottom">
+              <span>⚔</span>
+            </Tooltip>
+          </div>
         </div>
 
         {/* Matches */}
@@ -246,7 +250,7 @@ function MatchGrid({ matches, color, wrestlerRank, rikishiId, rikishiName }) {
                     onClick={() => handleH2HClick(match)}
                     aria-label={`View head-to-head history with ${match.opponentShikonaEn || 'opponent'}`}
                   >
-                    H2H
+                    ⚔
                   </button>
                 ) : '—'}
               </div>
