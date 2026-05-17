@@ -1,6 +1,6 @@
 .dialog {
   position: fixed;
-  z-index: 150;
+  z-index: 300;
   inset: 0;
 }
 

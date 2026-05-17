@@ -150,6 +150,9 @@
   color: var(--color-text-accent);
   transition: color var(--transition-fast);
   line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .h2hButton:hover {

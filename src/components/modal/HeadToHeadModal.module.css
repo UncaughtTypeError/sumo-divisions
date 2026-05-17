@@ -69,6 +69,41 @@
   font-weight: 600;
 }
 
+.winPct {
+  color: var(--color-text-accent);
+}
+
+.winPctPositive {
+  color: var(--color-success);
+}
+
+.winPctNegative {
+  color: var(--color-error);
+}
+
+.kimariteBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+  color: inherit;
+  transition: color var(--transition-fast);
+}
+
+.kimariteBtn:hover {
+  color: var(--color-link);
+}
+
+.kimariteBtn:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
 .closeButton {
   background: none;
   border: none;
@@ -114,15 +149,43 @@
   display: grid;
   grid-template-columns: 90px 70px 1fr 1fr;
   gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
+  padding: 0.5rem 1.25rem;
   background: var(--color-background);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.sortBtn {
+  background: none;
+  border: none;
+  padding: 0;
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-text-accent);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  position: sticky;
-  top: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  width: 100%;
+  transition: color var(--transition-fast);
+}
+
+.sortBtn:hover {
+  color: var(--color-text);
+}
+
+.sortBtnActive {
+  color: var(--color-text);
+}
+
+.sortIndicator {
+  font-size: 0.625rem;
+  line-height: 1;
+  min-width: 0.625rem;
 }
 
 .matchRow {
@@ -134,6 +197,7 @@
   border-bottom: 1px solid var(--color-border);
   transition: background var(--transition-fast);
   align-items: center;
+  text-align: center;
 }
 
 .matchRow:last-child {
@@ -242,6 +306,13 @@
     grid-template-columns: 72px 56px 1fr 1fr;
     gap: 0.375rem;
     padding: 0.5rem 1rem;
+  }
+
+  .sortBtn {
+    font-size: 0.6875rem;
+  }
+
+  .matchRow {
     font-size: 0.8125rem;
   }
 }
