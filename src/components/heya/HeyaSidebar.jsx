@@ -1,0 +1,262 @@
+import { useMemo, useState, useEffect, useCallback } from 'react';
+import useDivisionStore from '../../store/divisionStore';
+import { useAllDivisionsBanzuke } from '../../hooks/useAllDivisionsBanzuke';
+import { useAllRikishi } from '../../hooks/useRikishi';
+import useBashoResults from '../../hooks/useBashoResults';
+import { getCurrentBashoId } from '../../utils/bashoId';
+import { RANK_ORDER, RANK_INFO, RANK_TO_API_DIVISION, RANK_COLORS } from '../../utils/constants';
+import { getWrestlerAwards } from '../../utils/awards';
+import WrestlerGrid from '../sidebar/WrestlerGrid';
+import BashoSelector from '../sidebar/BashoSelector';
+import MatchHistoryModal from '../modal/MatchHistoryModal';
+import Loading from '../common/Loading';
+import ErrorMessage from '../common/ErrorMessage';
+import styles from '../sidebar/WrestlerSidebar.module.css';
+
+function HeyaSidebar() {
+  const {
+    selectedHeya,
+    isHeyaSidebarOpen,
+    closeHeyaSidebar,
+    openModal,
+    setRankLookup,
+    setAllWrestlers,
+  } = useDivisionStore();
+
+  const [isVisible, setIsVisible] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+  const [currentBashoId, setCurrentBashoId] = useState(getCurrentBashoId());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState('rank-asc');
+
+  const { allWrestlers: allBanzukeWrestlers, isLoading, isError } = useAllDivisionsBanzuke(
+    currentBashoId,
+    { enabled: isHeyaSidebarOpen }
+  );
+
+  const { rikishiMap } = useAllRikishi({ enabled: isHeyaSidebarOpen });
+
+  const { data: bashoResults } = useBashoResults(currentBashoId, {
+    enabled: isHeyaSidebarOpen,
+  });
+
+  // Build rank lookup across ALL divisions so kinboshi calculation is accurate
+  const rankLookupMap = useMemo(() => {
+    const map = new Map();
+    for (const w of allBanzukeWrestlers) {
+      if (w.rikishiID && w.rank) map.set(w.rikishiID, w.rank);
+    }
+    return map;
+  }, [allBanzukeWrestlers]);
+
+  useEffect(() => {
+    if (rankLookupMap.size > 0) setRankLookup(rankLookupMap);
+  }, [rankLookupMap, setRankLookup]);
+
+  // All banzuke wrestlers stored for MatchGrid opponent lookups
+  useEffect(() => {
+    setAllWrestlers(allBanzukeWrestlers);
+  }, [allBanzukeWrestlers, setAllWrestlers]);
+
+  // Filter banzuke wrestlers to those belonging to the selected heya
+  const heyaWrestlers = useMemo(() => {
+    if (!allBanzukeWrestlers.length || !rikishiMap.size) return [];
+    return allBanzukeWrestlers.filter((w) => {
+      const info = rikishiMap.get(w.rikishiID);
+      return info?.heya === selectedHeya;
+    });
+  }, [allBanzukeWrestlers, rikishiMap, selectedHeya]);
+
+  // Group by rank, enriching with awards
+  const rankGroups = useMemo(() => {
+    if (!heyaWrestlers.length) return [];
+
+    const enrichWithAwards = (w) => {
+      const apiDivision = RANK_TO_API_DIVISION[w.rank?.split(' ')[0]] ?? w.rank?.split(' ')[0];
+      return {
+        ...w,
+        awards: getWrestlerAwards(w.rikishiID, bashoResults, apiDivision),
+      };
+    };
+
+    const groups = [];
+    for (const rank of RANK_ORDER) {
+      const inRank = heyaWrestlers
+        .filter((w) => w.rank?.startsWith(rank))
+        .map(enrichWithAwards);
+
+      if (inRank.length === 0) continue;
+
+      const east = inRank
+        .filter((w) => w.rank?.includes('East'))
+        .sort((a, b) => a.rankValue - b.rankValue);
+      const west = inRank
+        .filter((w) => w.rank?.includes('West'))
+        .sort((a, b) => a.rankValue - b.rankValue);
+
+      groups.push({ rank, rankInfo: RANK_INFO[rank], east, west });
+    }
+    return groups;
+  }, [heyaWrestlers, bashoResults]);
+
+  // Derive rank colour + API division from the wrestler's rank string so the
+  // modal header and record-status badge render correctly for heya-view clicks.
+  const handleWrestlerClick = useCallback((wrestler) => {
+    const rankBase = wrestler.rank?.split(' ')[0];
+    openModal(
+      wrestler,
+      RANK_COLORS[rankBase] ?? null,
+      RANK_TO_API_DIVISION[rankBase] ?? null
+    );
+  }, [openModal]);
+
+  const filterAndSort = (wrestlers) => {
+    let result = wrestlers;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = wrestlers.filter((w) => w.shikonaEn.toLowerCase().includes(q));
+    }
+    const sorted = [...result];
+    if (sortOrder === 'rank-asc') return sorted.sort((a, b) => a.rankValue - b.rankValue);
+    if (sortOrder === 'rank-desc') return sorted.sort((a, b) => b.rankValue - a.rankValue);
+    if (sortOrder === 'wins-asc') return sorted.sort((a, b) => a.wins - b.wins);
+    if (sortOrder === 'wins-desc') return sorted.sort((a, b) => b.wins - a.wins);
+    return sorted;
+  };
+
+  useEffect(() => {
+    if (isHeyaSidebarOpen) {
+      setIsVisible(true);
+      setIsClosing(false);
+      setCurrentBashoId(getCurrentBashoId());
+      setSearchQuery('');
+      setSortOrder('rank-asc');
+    }
+  }, [isHeyaSidebarOpen]);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsVisible(false);
+      closeHeyaSidebar();
+    }, 150);
+  };
+
+  if (!isVisible) return null;
+
+  return (
+    <>
+      <div
+        className={`${styles.sidebarOverlay} ${isClosing ? styles.closing : ''}`}
+        onClick={handleClose}
+      />
+      <div className={`${styles.sidebar} ${isClosing ? styles.closing : ''}`}>
+        <div className={styles.sidebarHeader} style={{ backgroundColor: 'var(--color-text)' }}>
+          <div>
+            <h2>{selectedHeya}</h2>
+            <BashoSelector
+              selectedBashoId={currentBashoId}
+              onBashoChange={setCurrentBashoId}
+              bashoResults={bashoResults}
+            />
+          </div>
+          <button
+            onClick={handleClose}
+            className={styles.closeButton}
+            aria-label="Close heya sidebar"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className={styles.sidebarContent}>
+          {isLoading && <Loading message="Loading heya rikishi..." />}
+
+          {isError && !isLoading && (
+            <ErrorMessage error={new Error('Failed to load banzuke data')} />
+          )}
+
+          {!isLoading && !isError && (
+            <>
+              <div className={styles.searchContainer}>
+                <div className={styles.searchInputWrapper}>
+                  <input
+                    type="text"
+                    className={styles.searchInput}
+                    placeholder="Search rikishi..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  {searchQuery && (
+                    <button
+                      className={styles.clearSearch}
+                      onClick={() => setSearchQuery('')}
+                      aria-label="Clear search"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+                <select
+                  className={styles.sortSelect}
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value)}
+                  aria-label="Sort order"
+                >
+                  <option value="rank-asc">Rank ↑</option>
+                  <option value="rank-desc">Rank ↓</option>
+                  <option value="wins-asc">Wins ↑</option>
+                  <option value="wins-desc">Wins ↓</option>
+                </select>
+              </div>
+
+              {rankGroups.length === 0 && (
+                <div className={styles.noData}>
+                  <p>No rikishi found in {selectedHeya} for this basho</p>
+                </div>
+              )}
+
+              <div className={styles.rankGroupsContainer}>
+                {rankGroups.map((group, index) => (
+                  <div key={group.rank} className={styles.rankSection}>
+                    {index > 0 && <div className={styles.rankDivider} />}
+                    <div className={styles.rankSectionHeader}>
+                      <h3 className={styles.rankSectionTitle}>{group.rank}</h3>
+                      {group.rankInfo && (
+                        <span className={styles.rankSectionKanji}>
+                          {group.rankInfo.nameJp}
+                        </span>
+                      )}
+                    </div>
+                    <div className={styles.gridContainer}>
+                      <WrestlerGrid
+                        wrestlers={filterAndSort(group.east)}
+                        side="East"
+                        onWrestlerClick={handleWrestlerClick}
+                        color="text"
+                        division={RANK_TO_API_DIVISION[group.rank]}
+                        rikishiMap={rikishiMap}
+                      />
+                      <WrestlerGrid
+                        wrestlers={filterAndSort(group.west)}
+                        side="West"
+                        onWrestlerClick={handleWrestlerClick}
+                        color="text"
+                        division={RANK_TO_API_DIVISION[group.rank]}
+                        rikishiMap={rikishiMap}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      <MatchHistoryModal />
+    </>
+  );
+}
+
+export default HeyaSidebar;

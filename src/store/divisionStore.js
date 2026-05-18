@@ -14,6 +14,10 @@ const useDivisionStore = create((set) => ({
   isSidebarOpen: false,
   isDivisionView: false,
 
+  // Heya sidebar state
+  selectedHeya: null,
+  isHeyaSidebarOpen: false,
+
   // Modal state
   isModalOpen: false,
   selectedWrestler: null,
@@ -45,6 +49,18 @@ const useDivisionStore = create((set) => ({
       isDivisionView: true,
     }),
 
+  selectHeya: (heyaName) =>
+    set({
+      selectedHeya: heyaName,
+      isHeyaSidebarOpen: true,
+    }),
+
+  closeHeyaSidebar: () =>
+    set({
+      selectedHeya: null,
+      isHeyaSidebarOpen: false,
+    }),
+
   setRankLookup: (lookup) =>
     set({
       rankLookup: lookup,
@@ -66,11 +82,15 @@ const useDivisionStore = create((set) => ({
       allWrestlers: [],
     }),
 
-  openModal: (wrestler) =>
-    set({
+  // color and division are optional — callers that know the context (e.g.
+  // HeyaSidebar) supply them so the modal header renders with the right colour.
+  openModal: (wrestler, color = null, division = null) =>
+    set((state) => ({
       isModalOpen: true,
       selectedWrestler: wrestler,
-    }),
+      selectedColor: color !== null ? color : state.selectedColor,
+      selectedApiDivision: division !== null ? division : state.selectedApiDivision,
+    })),
 
   closeModal: () =>
     set({
@@ -90,6 +110,8 @@ const useDivisionStore = create((set) => ({
       selectedColor: null,
       isSidebarOpen: false,
       isDivisionView: false,
+      selectedHeya: null,
+      isHeyaSidebarOpen: false,
       isModalOpen: false,
       selectedWrestler: null,
       rankLookup: new Map(),

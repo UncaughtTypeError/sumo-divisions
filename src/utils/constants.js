@@ -275,3 +275,77 @@ export const MATCH_RESULTS = {
   FUSEN_LOSS: 'fusen loss',
   EMPTY: '',
 };
+
+// Ordered rank list from highest to lowest
+export const RANK_ORDER = [
+  RANKS.YOKOZUNA,
+  RANKS.OZEKI,
+  RANKS.SEKIWAKE,
+  RANKS.KOMUSUBI,
+  RANKS.MAEGASHIRA,
+  RANKS.JURYO,
+  RANKS.MAKUSHITA,
+  RANKS.SANDANME,
+  RANKS.JONIDAN,
+  RANKS.JONOKUCHI,
+];
+
+// Sekitori (professional) ranks - 15-bout tournaments, 8-win kachi-koshi
+export const SEKITORI_RANK_ORDER = [
+  RANKS.YOKOZUNA,
+  RANKS.OZEKI,
+  RANKS.SEKIWAKE,
+  RANKS.KOMUSUBI,
+  RANKS.MAEGASHIRA,
+  RANKS.JURYO,
+];
+
+// Apprentice (lower division) ranks - 7-bout tournaments, 4-win kachi-koshi
+export const APPRENTICE_RANK_ORDER = [
+  RANKS.MAKUSHITA,
+  RANKS.SANDANME,
+  RANKS.JONIDAN,
+  RANKS.JONOKUCHI,
+];
+
+// Short abbreviations for rank display in badges
+export const RANK_ABBREVIATIONS = {
+  [RANKS.YOKOZUNA]: 'Y',
+  [RANKS.OZEKI]: 'O',
+  [RANKS.SEKIWAKE]: 'S',
+  [RANKS.KOMUSUBI]: 'K',
+  [RANKS.MAEGASHIRA]: 'M',
+  [RANKS.JURYO]: 'J',
+  [RANKS.MAKUSHITA]: 'Ms',
+  [RANKS.SANDANME]: 'Sd',
+  [RANKS.JONIDAN]: 'Jd',
+  [RANKS.JONOKUCHI]: 'Jk',
+};
+
+// CSS variable color name per rank (matches --color-* variables)
+export const RANK_COLORS = {
+  [RANKS.YOKOZUNA]: 'yokozuna',
+  [RANKS.OZEKI]: 'sanyaku',
+  [RANKS.SEKIWAKE]: 'sanyaku',
+  [RANKS.KOMUSUBI]: 'sanyaku',
+  [RANKS.MAEGASHIRA]: 'makuuchi',
+  [RANKS.JURYO]: 'juryo',
+  [RANKS.MAKUSHITA]: 'makushita',
+  [RANKS.SANDANME]: 'sandanme',
+  [RANKS.JONIDAN]: 'jonidan',
+  [RANKS.JONOKUCHI]: 'jonokuchi',
+};
+
+// Maps a rank name to its API division string (used for award/record lookups)
+export const RANK_TO_API_DIVISION = {
+  [RANKS.YOKOZUNA]: 'Makuuchi',
+  [RANKS.OZEKI]: 'Makuuchi',
+  [RANKS.SEKIWAKE]: 'Makuuchi',
+  [RANKS.KOMUSUBI]: 'Makuuchi',
+  [RANKS.MAEGASHIRA]: 'Makuuchi',
+  [RANKS.JURYO]: 'Juryo',
+  [RANKS.MAKUSHITA]: 'Makushita',
+  [RANKS.SANDANME]: 'Sandanme',
+  [RANKS.JONIDAN]: 'Jonidan',
+  [RANKS.JONOKUCHI]: 'Jonokuchi',
+};

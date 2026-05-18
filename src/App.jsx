@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import DivisionPyramid from './components/pyramid/DivisionPyramid';
+import HeyaDashboard from './components/heya/HeyaDashboard';
+import ViewTabs from './components/views/ViewTabs';
 import styles from './App.module.css';
 
 const queryClient = new QueryClient({
@@ -27,6 +30,8 @@ function GitHubIcon() {
 }
 
 function App() {
+  const [activeView, setActiveView] = useState('rankings');
+
   return (
     <QueryClientProvider client={queryClient}>
       <div className={styles.appContainer}>
@@ -45,7 +50,8 @@ function App() {
           </div>
         </header>
         <main className={styles.appMain}>
-          <DivisionPyramid />
+          <ViewTabs activeView={activeView} onViewChange={setActiveView} />
+          {activeView === 'rankings' ? <DivisionPyramid /> : <HeyaDashboard />}
         </main>
         <footer className={styles.appFooter}>
           <a

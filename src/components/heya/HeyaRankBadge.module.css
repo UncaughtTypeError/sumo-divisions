@@ -1,0 +1,28 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.active {
+  color: white;
+}
+
+.empty {
+  background: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+.abbr {
+  letter-spacing: 0.01em;
+}
+
+.count {
+  font-weight: 700;
+}
