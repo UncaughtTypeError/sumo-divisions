@@ -13,6 +13,17 @@
   gap: 2rem;
 }
 
+/* Becomes fixed only after scrolling past the header's own height */
+.appHeaderFixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: var(--color-background);
+  box-shadow: var(--shadow-sm);
+}
+
 .appHeader h1 {
   font-size: 2.5rem;
   font-weight: 400;
@@ -66,7 +77,9 @@
   margin: 0 auto;
   width: 100%;
   position: relative;
-  z-index: 9;
+  /* No z-index here — it would create a stacking context that traps the sidebar
+     and overlay behind the fixed header. Sidebar z-index (40/50) now competes
+     directly in the root context and beats the header's z-index: 10. */
 }
 
 .appFooter {
@@ -133,4 +146,44 @@
   .appCredits {
     display: none;
   }
+}
+
+/* Scroll-to-top button */
+.scrollToTop {
+  position: fixed;
+  bottom: 3.5rem;
+  right: 2rem;
+  z-index: 30;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  color: var(--color-text-accent);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(0.5rem);
+  transition:
+    opacity var(--transition-fast),
+    visibility var(--transition-fast),
+    transform var(--transition-fast),
+    color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.scrollToTopVisible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.scrollToTop:hover {
+  background: var(--color-text);
+  color: white;
+  border-color: var(--color-text);
 }

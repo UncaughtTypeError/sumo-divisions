@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import DivisionPyramid from './components/pyramid/DivisionPyramid';
 import HeyaDashboard from './components/heya/HeyaDashboard';
@@ -29,13 +29,46 @@ function GitHubIcon() {
   );
 }
 
+function ScrollToTopButton({ visible }) {
+  const handleClick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+  return (
+    <button
+      className={`${styles.scrollToTop} ${visible ? styles.scrollToTopVisible : ''}`}
+      onClick={handleClick}
+      aria-label="Scroll to top"
+    >
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path d="M8 3.5 L14 10 L13 11 L8 5.5 L3 11 L2 10 Z" />
+      </svg>
+    </button>
+  );
+}
+
 function App() {
   const [activeView, setActiveView] = useState('rankings');
+  const [headerFixed, setHeaderFixed] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const headerRef = useRef(null);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const threshold = headerRef.current?.offsetHeight ?? 80;
+      const y = window.scrollY;
+      setHeaderFixed(y > threshold);
+      setShowScrollTop(y > 300);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <div className={styles.appContainer}>
-        <header className={styles.appHeader}>
+        <header
+          ref={headerRef}
+          data-fixed={headerFixed || undefined}
+          className={`${styles.appHeader} ${headerFixed ? styles.appHeaderFixed : ''}`}
+        >
           <h1>
             <img src="/favicon.svg" alt="" className={styles.appLogo} />
             Sumo Divisions
@@ -49,6 +82,13 @@ function App() {
             </a>
           </div>
         </header>
+        {headerFixed && (
+          <div
+            data-testid="header-spacer"
+            aria-hidden="true"
+            style={{ height: headerRef.current?.offsetHeight ?? 0 }}
+          />
+        )}
         <main className={styles.appMain}>
           <ViewTabs activeView={activeView} onViewChange={setActiveView} />
           {activeView === 'rankings' ? <DivisionPyramid /> : <HeyaDashboard />}
@@ -63,6 +103,7 @@ function App() {
             View on GitHub
           </a>
         </footer>
+        <ScrollToTopButton visible={showScrollTop} />
       </div>
     </QueryClientProvider>
   );
