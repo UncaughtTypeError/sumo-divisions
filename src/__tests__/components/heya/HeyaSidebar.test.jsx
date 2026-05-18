@@ -237,4 +237,184 @@ describe('HeyaSidebar', () => {
       expect(screen.getByText(/No rikishi found in Isegahama/)).toBeInTheDocument()
     })
   })
+
+  describe('filter by day', () => {
+    // Records are always 3 entries; Nishikigi has result:'absent' on day 2
+    const wrestlerWithThreeBouts = {
+      rikishiID: 1,
+      shikonaEn: 'Terunofuji',
+      rank: 'Yokozuna 1 East',
+      rankValue: 1,
+      wins: 2,
+      losses: 1,
+      absences: 0,
+      record: [
+        { result: 'win', opponentShikonaEn: 'Hoshoryu', opponentID: 3, kimarite: 'yorikiri' },
+        { result: 'loss', opponentShikonaEn: 'Onosato', opponentID: 4, kimarite: 'oshidashi' },
+        { result: 'win', opponentShikonaEn: 'Kotozakura', opponentID: 5, kimarite: 'uwatenage' },
+      ],
+      awards: [],
+    }
+
+    const wrestlerWithAbsence = {
+      rikishiID: 2,
+      shikonaEn: 'Nishikigi',
+      rank: 'Maegashira 3 East',
+      rankValue: 80,
+      wins: 2,
+      losses: 0,
+      absences: 1,
+      record: [
+        { result: 'win', opponentShikonaEn: 'Abi', opponentID: 6, kimarite: 'oshidashi' },
+        { result: 'absent', opponentShikonaEn: '', opponentID: null, kimarite: '' },
+        { result: 'win', opponentShikonaEn: 'Tobizaru', opponentID: 7, kimarite: 'yorikiri' },
+      ],
+      awards: [],
+    }
+
+    const heyaRikishiMap = new Map([
+      [1, { id: 1, heya: 'Isegahama', shikonaEn: 'Terunofuji' }],
+      [2, { id: 2, heya: 'Isegahama', shikonaEn: 'Nishikigi' }],
+    ])
+
+    beforeEach(() => {
+      setupStore()
+      useAllDivisionsBanzuke.mockReturnValue({
+        allWrestlers: [wrestlerWithThreeBouts, wrestlerWithAbsence],
+        isLoading: false,
+        isError: false,
+      })
+      useAllRikishi.mockReturnValue({ rikishiMap: heyaRikishiMap, isLoading: false })
+    })
+
+    it('renders the day filter dropdown when records exist', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      expect(screen.getByLabelText('Filter by day')).toBeInTheDocument()
+    })
+
+    it('defaults to "Any day"', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      expect(screen.getByLabelText('Filter by day')).toHaveValue('0')
+    })
+
+    it('dropdown has an option per recorded day plus the Any day option', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      // maxDay = 3 (Terunofuji has 3 records); options = Any day + Day 1 + Day 2 + Day 3
+      const select = screen.getByLabelText('Filter by day')
+      expect(select.options).toHaveLength(4)
+      expect(select.options[0].text).toBe('Any day')
+      expect(select.options[1].text).toBe('Day 1')
+      expect(select.options[3].text).toBe('Day 3')
+    })
+
+    it('hides a wrestler with result:"absent" on the selected day', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      expect(screen.getByText('Terunofuji')).toBeInTheDocument()
+      expect(screen.getByText('Nishikigi')).toBeInTheDocument()
+
+      // Nishikigi has result:'absent' on day 2 → not competing → excluded
+      fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '2' } })
+
+      expect(screen.getByText('Terunofuji')).toBeInTheDocument()
+      expect(screen.queryByText('Nishikigi')).not.toBeInTheDocument()
+    })
+
+    it('hides a wrestler with result:"fusen loss" on the selected day', () => {
+      useAllDivisionsBanzuke.mockReturnValue({
+        allWrestlers: [
+          wrestlerWithThreeBouts,
+          {
+            ...wrestlerWithAbsence,
+            record: [
+              { result: 'win', opponentShikonaEn: 'Abi', opponentID: 6, kimarite: 'oshidashi' },
+              { result: 'fusen loss', opponentShikonaEn: 'Tobizaru', opponentID: 7, kimarite: 'fusen' },
+              { result: 'win', opponentShikonaEn: 'Daieisho', opponentID: 8, kimarite: 'yorikiri' },
+            ],
+          },
+        ],
+        isLoading: false,
+        isError: false,
+      })
+      renderWithQueryClient(<HeyaSidebar />)
+
+      fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '2' } })
+
+      // fusen loss = wrestler forfeited (was absent) → excluded
+      expect(screen.queryByText('Nishikigi')).not.toBeInTheDocument()
+    })
+
+    it('shows a wrestler with result:"fusen win" on the selected day', () => {
+      useAllDivisionsBanzuke.mockReturnValue({
+        allWrestlers: [
+          wrestlerWithThreeBouts,
+          {
+            ...wrestlerWithAbsence,
+            record: [
+              { result: 'win', opponentShikonaEn: 'Abi', opponentID: 6, kimarite: 'oshidashi' },
+              { result: 'fusen win', opponentShikonaEn: 'Tobizaru', opponentID: 7, kimarite: 'fusen' },
+              { result: 'win', opponentShikonaEn: 'Daieisho', opponentID: 8, kimarite: 'yorikiri' },
+            ],
+          },
+        ],
+        isLoading: false,
+        isError: false,
+      })
+      renderWithQueryClient(<HeyaSidebar />)
+
+      fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '2' } })
+
+      // fusen win = opponent absent, wrestler was present → included
+      expect(screen.getByText('Nishikigi')).toBeInTheDocument()
+    })
+
+    it('dropdown does not include future days (result:"")', () => {
+      useAllDivisionsBanzuke.mockReturnValue({
+        allWrestlers: [
+          {
+            ...wrestlerWithThreeBouts,
+            record: [
+              { result: 'win', opponentShikonaEn: 'Hoshoryu', opponentID: 3, kimarite: 'yorikiri' },
+              { result: 'loss', opponentShikonaEn: 'Onosato', opponentID: 4, kimarite: 'oshidashi' },
+              { result: '', opponentShikonaEn: '', opponentID: null, kimarite: '' }, // future
+            ],
+          },
+          wrestlerWithAbsence,
+        ],
+        isLoading: false,
+        isError: false,
+      })
+      renderWithQueryClient(<HeyaSidebar />)
+
+      const select = screen.getByLabelText('Filter by day')
+      // maxDay = 3 (Nishikigi's last non-empty is index 2); Day 3 from future record excluded
+      // Terunofuji's last non-empty is index 1 (day 2), Nishikigi's is index 2 (day 3)
+      expect(select.options).toHaveLength(4) // Any day + Day 1 + Day 2 + Day 3
+      expect(Array.from(select.options).map(o => o.text)).not.toContain('Day 4')
+    })
+
+    it('shows wrestlers who competed on day 1', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '1' } })
+      expect(screen.getByText('Terunofuji')).toBeInTheDocument()
+      expect(screen.getByText('Nishikigi')).toBeInTheDocument()
+    })
+
+    it('switching back to "Any day" restores all wrestlers', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '2' } })
+      fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '0' } })
+      expect(screen.getByText('Terunofuji')).toBeInTheDocument()
+      expect(screen.getByText('Nishikigi')).toBeInTheDocument()
+    })
+
+    it('does not render day dropdown when heya has no wrestlers with records', () => {
+      useAllDivisionsBanzuke.mockReturnValue({
+        allWrestlers: [{ ...wrestlerWithThreeBouts, record: [] }, { ...wrestlerWithAbsence, record: [] }],
+        isLoading: false,
+        isError: false,
+      })
+      renderWithQueryClient(<HeyaSidebar />)
+      expect(screen.queryByLabelText('Filter by day')).not.toBeInTheDocument()
+    })
+  })
 })

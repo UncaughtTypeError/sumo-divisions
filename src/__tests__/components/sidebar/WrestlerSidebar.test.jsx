@@ -351,4 +351,210 @@ describe('WrestlerSidebar', () => {
       expect(h2).toHaveTextContent('Makuuchi')
     })
   })
+
+  describe('filter by day', () => {
+    // Records are always 3 entries (index = day - 1); Hoshoryu has result:'absent' on day 2
+    const mockBanzukeWithRecords = {
+      bashoId: '202601',
+      division: 'Makuuchi',
+      east: [
+        {
+          rikishiID: 1,
+          shikonaEn: 'Terunofuji',
+          rank: 'Yokozuna 1 East',
+          rankValue: 1,
+          wins: 2,
+          losses: 1,
+          absences: 0,
+          record: [
+            { result: 'win', opponentShikonaEn: 'Hoshoryu', opponentID: 2, kimarite: 'yorikiri' },
+            { result: 'loss', opponentShikonaEn: 'Onosato', opponentID: 3, kimarite: 'oshidashi' },
+            { result: 'win', opponentShikonaEn: 'Kotozakura', opponentID: 4, kimarite: 'uwatenage' },
+          ],
+          awards: [],
+        },
+      ],
+      west: [
+        {
+          rikishiID: 2,
+          shikonaEn: 'Hoshoryu',
+          rank: 'Yokozuna 1 West',
+          rankValue: 1,
+          wins: 1,
+          losses: 1,
+          absences: 1,
+          record: [
+            { result: 'win', opponentShikonaEn: 'Kotozakura', opponentID: 4, kimarite: 'uwatenage' },
+            { result: 'absent', opponentShikonaEn: '', opponentID: null, kimarite: '' },
+            { result: 'loss', opponentShikonaEn: 'Onosato', opponentID: 3, kimarite: 'yorikiri' },
+          ],
+          awards: [],
+        },
+      ],
+      isEmpty: false,
+    }
+
+    beforeEach(() => {
+      useDivisionStore.mockReturnValue({
+        isSidebarOpen: true,
+        isDivisionView: false,
+        selectedRank: 'Yokozuna',
+        selectedDivision: 'Makuuchi',
+        selectedApiDivision: 'Makuuchi',
+        selectedColor: 'yokozuna',
+        closeSidebar: mockCloseSidebar,
+        openModal: mockOpenModal,
+        setRankLookup: mockSetRankLookup,
+        setAllWrestlers: mockSetAllWrestlers,
+      })
+      useBanzuke.mockReturnValue({
+        data: mockBanzukeWithRecords,
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+      })
+      useBashoResults.mockReturnValue({ data: null })
+    })
+
+    it('renders the day filter dropdown when records exist', () => {
+      renderWithQueryClient(<WrestlerSidebar />)
+      expect(screen.getByLabelText('Filter by day')).toBeInTheDocument()
+    })
+
+    it('defaults to "Any day"', () => {
+      renderWithQueryClient(<WrestlerSidebar />)
+      expect(screen.getByLabelText('Filter by day')).toHaveValue('0')
+    })
+
+    it('dropdown has an option per recorded day plus the Any day option', () => {
+      renderWithQueryClient(<WrestlerSidebar />)
+      // maxDay = 3 (Terunofuji has 3 records); options = Any day + Day 1 + Day 2 + Day 3
+      const select = screen.getByLabelText('Filter by day')
+      expect(select.options).toHaveLength(4)
+      expect(select.options[0].text).toBe('Any day')
+      expect(select.options[1].text).toBe('Day 1')
+      expect(select.options[3].text).toBe('Day 3')
+    })
+
+    it('does not render day dropdown when all records are empty', () => {
+      useBanzuke.mockReturnValue({
+        data: mockMakuuchiBanzukeData, // all record: []
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+      })
+      renderWithQueryClient(<WrestlerSidebar />)
+      expect(screen.queryByLabelText('Filter by day')).not.toBeInTheDocument()
+    })
+
+    it('hides a wrestler with result:"absent" on the selected day', () => {
+      renderWithQueryClient(<WrestlerSidebar />)
+      expect(screen.getByText('Terunofuji')).toBeInTheDocument()
+      expect(screen.getByText('Hoshoryu')).toBeInTheDocument()
+
+      // Hoshoryu has result:'absent' on day 2 → not competing → excluded
+      fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '2' } })
+
+      expect(screen.getByText('Terunofuji')).toBeInTheDocument()
+      expect(screen.queryByText('Hoshoryu')).not.toBeInTheDocument()
+    })
+
+    it('hides a wrestler with result:"fusen loss" on the selected day', () => {
+      useBanzuke.mockReturnValue({
+        data: {
+          ...mockBanzukeWithRecords,
+          west: [{
+            ...mockBanzukeWithRecords.west[0],
+            record: [
+              { result: 'win', opponentShikonaEn: 'Onosato', opponentID: 3, kimarite: 'yorikiri' },
+              { result: 'fusen loss', opponentShikonaEn: 'Kotozakura', opponentID: 4, kimarite: 'fusen' },
+              { result: 'loss', opponentShikonaEn: 'Onosato', opponentID: 3, kimarite: 'oshidashi' },
+            ],
+          }],
+        },
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+      })
+      renderWithQueryClient(<WrestlerSidebar />)
+
+      fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '2' } })
+
+      // fusen loss = wrestler forfeited (was absent) → excluded
+      expect(screen.queryByText('Hoshoryu')).not.toBeInTheDocument()
+    })
+
+    it('shows a wrestler with result:"fusen win" on the selected day', () => {
+      useBanzuke.mockReturnValue({
+        data: {
+          ...mockBanzukeWithRecords,
+          west: [{
+            ...mockBanzukeWithRecords.west[0],
+            record: [
+              { result: 'win', opponentShikonaEn: 'Onosato', opponentID: 3, kimarite: 'yorikiri' },
+              { result: 'fusen win', opponentShikonaEn: 'Kotozakura', opponentID: 4, kimarite: 'fusen' },
+              { result: 'loss', opponentShikonaEn: 'Onosato', opponentID: 3, kimarite: 'oshidashi' },
+            ],
+          }],
+        },
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+      })
+      renderWithQueryClient(<WrestlerSidebar />)
+
+      fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '2' } })
+
+      // fusen win = opponent absent, wrestler was present → included
+      expect(screen.getByText('Hoshoryu')).toBeInTheDocument()
+    })
+
+    it('dropdown does not include future days (result:"")', () => {
+      useBanzuke.mockReturnValue({
+        data: {
+          ...mockBanzukeWithRecords,
+          east: [{
+            ...mockBanzukeWithRecords.east[0],
+            record: [
+              { result: 'win', opponentShikonaEn: 'Hoshoryu', opponentID: 2, kimarite: 'yorikiri' },
+              { result: 'loss', opponentShikonaEn: 'Onosato', opponentID: 3, kimarite: 'oshidashi' },
+              { result: '', opponentShikonaEn: '', opponentID: null, kimarite: '' }, // future
+            ],
+          }],
+          west: [{
+            ...mockBanzukeWithRecords.west[0],
+            record: [
+              { result: 'win', opponentShikonaEn: 'Kotozakura', opponentID: 4, kimarite: 'uwatenage' },
+              { result: '', opponentShikonaEn: '', opponentID: null, kimarite: '' }, // future
+              { result: '', opponentShikonaEn: '', opponentID: null, kimarite: '' }, // future
+            ],
+          }],
+        },
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+      })
+      renderWithQueryClient(<WrestlerSidebar />)
+
+      const select = screen.getByLabelText('Filter by day')
+      // maxDay = 2 (last non-empty result is index 1), so Day 3 should not appear
+      expect(select.options).toHaveLength(3) // Any day + Day 1 + Day 2
+      expect(Array.from(select.options).map(o => o.text)).not.toContain('Day 3')
+    })
+
+    it('shows wrestlers who competed on day 1', () => {
+      renderWithQueryClient(<WrestlerSidebar />)
+      fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '1' } })
+      expect(screen.getByText('Terunofuji')).toBeInTheDocument()
+      expect(screen.getByText('Hoshoryu')).toBeInTheDocument()
+    })
+
+    it('switching back to "Any day" restores all wrestlers', () => {
+      renderWithQueryClient(<WrestlerSidebar />)
+      fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '2' } })
+      fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '0' } })
+      expect(screen.getByText('Terunofuji')).toBeInTheDocument()
+      expect(screen.getByText('Hoshoryu')).toBeInTheDocument()
+    })
+  })
 })

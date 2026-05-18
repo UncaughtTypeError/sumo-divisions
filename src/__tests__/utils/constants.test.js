@@ -183,6 +183,7 @@ describe('constants', () => {
         LOSS: 'loss',
         FUSEN_WIN: 'fusen win',
         FUSEN_LOSS: 'fusen loss',
+        ABSENT: 'absent',
         EMPTY: '',
       })
     })
