@@ -7,6 +7,12 @@ import {
   DIVISION_LEGEND,
   RANK_GROUPS,
   MATCH_RESULTS,
+  RANK_ORDER,
+  SEKITORI_RANK_ORDER,
+  APPRENTICE_RANK_ORDER,
+  RANK_ABBREVIATIONS,
+  RANK_COLORS,
+  RANK_TO_API_DIVISION,
 } from '../../utils/constants'
 
 describe('constants', () => {
@@ -179,6 +185,118 @@ describe('constants', () => {
         FUSEN_LOSS: 'fusen loss',
         EMPTY: '',
       })
+    })
+  })
+
+  describe('RANK_ORDER', () => {
+    it('should contain all 10 ranks', () => {
+      expect(RANK_ORDER).toHaveLength(10)
+    })
+
+    it('should start with Yokozuna and end with Jonokuchi', () => {
+      expect(RANK_ORDER[0]).toBe('Yokozuna')
+      expect(RANK_ORDER[RANK_ORDER.length - 1]).toBe('Jonokuchi')
+    })
+
+    it('should list Makuuchi ranks before lower divisions', () => {
+      const maegashiraIdx = RANK_ORDER.indexOf('Maegashira')
+      const juryoIdx = RANK_ORDER.indexOf('Juryo')
+      expect(maegashiraIdx).toBeLessThan(juryoIdx)
+    })
+  })
+
+  describe('SEKITORI_RANK_ORDER', () => {
+    it('should contain 6 ranks (Yokozuna through Juryo)', () => {
+      expect(SEKITORI_RANK_ORDER).toHaveLength(6)
+    })
+
+    it('should start with Yokozuna and end with Juryo', () => {
+      expect(SEKITORI_RANK_ORDER[0]).toBe('Yokozuna')
+      expect(SEKITORI_RANK_ORDER[SEKITORI_RANK_ORDER.length - 1]).toBe('Juryo')
+    })
+
+    it('should not include apprentice ranks', () => {
+      expect(SEKITORI_RANK_ORDER).not.toContain('Makushita')
+      expect(SEKITORI_RANK_ORDER).not.toContain('Jonokuchi')
+    })
+  })
+
+  describe('APPRENTICE_RANK_ORDER', () => {
+    it('should contain 4 ranks (Makushita through Jonokuchi)', () => {
+      expect(APPRENTICE_RANK_ORDER).toHaveLength(4)
+    })
+
+    it('should start with Makushita and end with Jonokuchi', () => {
+      expect(APPRENTICE_RANK_ORDER[0]).toBe('Makushita')
+      expect(APPRENTICE_RANK_ORDER[APPRENTICE_RANK_ORDER.length - 1]).toBe('Jonokuchi')
+    })
+
+    it('should not include sekitori ranks', () => {
+      expect(APPRENTICE_RANK_ORDER).not.toContain('Yokozuna')
+      expect(APPRENTICE_RANK_ORDER).not.toContain('Juryo')
+    })
+  })
+
+  describe('RANK_ABBREVIATIONS', () => {
+    it('should have an entry for every rank in RANK_ORDER', () => {
+      RANK_ORDER.forEach((rank) => {
+        expect(RANK_ABBREVIATIONS).toHaveProperty(rank)
+      })
+    })
+
+    it('should use expected abbreviations', () => {
+      expect(RANK_ABBREVIATIONS['Yokozuna']).toBe('Y')
+      expect(RANK_ABBREVIATIONS['Ozeki']).toBe('O')
+      expect(RANK_ABBREVIATIONS['Maegashira']).toBe('M')
+      expect(RANK_ABBREVIATIONS['Makushita']).toBe('Ms')
+      expect(RANK_ABBREVIATIONS['Sandanme']).toBe('Sd')
+      expect(RANK_ABBREVIATIONS['Jonidan']).toBe('Jd')
+      expect(RANK_ABBREVIATIONS['Jonokuchi']).toBe('Jk')
+    })
+  })
+
+  describe('RANK_COLORS', () => {
+    it('should have an entry for every rank in RANK_ORDER', () => {
+      RANK_ORDER.forEach((rank) => {
+        expect(RANK_COLORS).toHaveProperty(rank)
+      })
+    })
+
+    it('should map Yokozuna to yokozuna color', () => {
+      expect(RANK_COLORS['Yokozuna']).toBe('yokozuna')
+    })
+
+    it('should map sanyaku ranks to sanyaku color', () => {
+      expect(RANK_COLORS['Ozeki']).toBe('sanyaku')
+      expect(RANK_COLORS['Sekiwake']).toBe('sanyaku')
+      expect(RANK_COLORS['Komusubi']).toBe('sanyaku')
+    })
+
+    it('should map Maegashira to makuuchi color', () => {
+      expect(RANK_COLORS['Maegashira']).toBe('makuuchi')
+    })
+  })
+
+  describe('RANK_TO_API_DIVISION', () => {
+    it('should have an entry for every rank in RANK_ORDER', () => {
+      RANK_ORDER.forEach((rank) => {
+        expect(RANK_TO_API_DIVISION).toHaveProperty(rank)
+      })
+    })
+
+    it('should map all Makuuchi ranks to Makuuchi', () => {
+      expect(RANK_TO_API_DIVISION['Yokozuna']).toBe('Makuuchi')
+      expect(RANK_TO_API_DIVISION['Ozeki']).toBe('Makuuchi')
+      expect(RANK_TO_API_DIVISION['Maegashira']).toBe('Makuuchi')
+    })
+
+    it('should map Juryo to Juryo', () => {
+      expect(RANK_TO_API_DIVISION['Juryo']).toBe('Juryo')
+    })
+
+    it('should map lower division ranks to their own names', () => {
+      expect(RANK_TO_API_DIVISION['Makushita']).toBe('Makushita')
+      expect(RANK_TO_API_DIVISION['Jonokuchi']).toBe('Jonokuchi')
     })
   })
 })

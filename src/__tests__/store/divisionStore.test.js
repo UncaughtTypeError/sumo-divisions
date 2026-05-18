@@ -211,5 +211,57 @@ describe('divisionStore', () => {
       expect(state.selectedWrestler).toBeNull()
       expect(state.allWrestlers).toEqual([])
     })
+
+    it('should reset heya state to initial values', () => {
+      useDivisionStore.getState().selectHeya('Isegahama')
+      useDivisionStore.getState().reset()
+
+      const state = useDivisionStore.getState()
+      expect(state.selectedHeya).toBeNull()
+      expect(state.isHeyaSidebarOpen).toBe(false)
+    })
+  })
+
+  describe('initial heya state', () => {
+    it('should have null selectedHeya', () => {
+      expect(useDivisionStore.getState().selectedHeya).toBeNull()
+    })
+
+    it('should have isHeyaSidebarOpen as false', () => {
+      expect(useDivisionStore.getState().isHeyaSidebarOpen).toBe(false)
+    })
+  })
+
+  describe('selectHeya', () => {
+    it('should set selectedHeya', () => {
+      useDivisionStore.getState().selectHeya('Isegahama')
+      expect(useDivisionStore.getState().selectedHeya).toBe('Isegahama')
+    })
+
+    it('should open heya sidebar', () => {
+      useDivisionStore.getState().selectHeya('Isegahama')
+      expect(useDivisionStore.getState().isHeyaSidebarOpen).toBe(true)
+    })
+
+    it('should not affect regular sidebar state', () => {
+      useDivisionStore.getState().selectHeya('Isegahama')
+      expect(useDivisionStore.getState().isSidebarOpen).toBe(false)
+    })
+  })
+
+  describe('closeHeyaSidebar', () => {
+    beforeEach(() => {
+      useDivisionStore.getState().selectHeya('Isegahama')
+    })
+
+    it('should close heya sidebar', () => {
+      useDivisionStore.getState().closeHeyaSidebar()
+      expect(useDivisionStore.getState().isHeyaSidebarOpen).toBe(false)
+    })
+
+    it('should clear selectedHeya', () => {
+      useDivisionStore.getState().closeHeyaSidebar()
+      expect(useDivisionStore.getState().selectedHeya).toBeNull()
+    })
   })
 })
