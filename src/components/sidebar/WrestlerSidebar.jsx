@@ -4,7 +4,7 @@ import useBanzuke from '../../hooks/useBanzuke';
 import useBashoResults from '../../hooks/useBashoResults';
 import { useAllRikishi } from '../../hooks/useRikishi';
 import { getCurrentBashoId } from '../../utils/bashoId';
-import { RANKS, RANK_INFO, DIVISION_INFO } from '../../utils/constants';
+import { RANKS, RANK_INFO, DIVISION_INFO, COMPETING_RESULTS } from '../../utils/constants';
 import { getWrestlerAwards, buildRankLookup } from '../../utils/awards';
 import WrestlerGrid from './WrestlerGrid';
 import BashoSelector from './BashoSelector';
@@ -43,6 +43,7 @@ function WrestlerSidebar() {
   const [currentBashoId, setCurrentBashoId] = useState(getCurrentBashoId());
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState('rank-asc');
+  const [selectedDay, setSelectedDay] = useState(0);
 
   const { data, isLoading, error, refetch } = useBanzuke(
     currentBashoId,
@@ -118,12 +119,30 @@ function WrestlerSidebar() {
       : [buildGroup(selectedRank)];
   }, [isDivisionView, data, selectedRank, bashoResults, selectedApiDivision]);
 
-  // Filter by search and apply sort order
+  // Highest day that has already occurred — last index with a non-empty result, plus one.
+  // Excludes future days (result: '') and caps the dropdown at the current day.
+  const maxDay = useMemo(() => {
+    if (!allWrestlers.length) return 0;
+    return Math.max(
+      0,
+      ...allWrestlers.map((w) => {
+        const records = w.record ?? [];
+        return records.reduce((max, r, i) => (r.result !== '' ? i + 1 : max), 0);
+      }),
+    );
+  }, [allWrestlers]);
+
+  // Filter by search and day, then apply sort order
   const filterAndSort = (wrestlers) => {
     let result = wrestlers;
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      result = wrestlers.filter((w) => w.shikonaEn.toLowerCase().includes(query));
+      result = result.filter((w) => w.shikonaEn.toLowerCase().includes(query));
+    }
+    if (selectedDay > 0) {
+      result = result.filter((w) =>
+        COMPETING_RESULTS.has(w.record?.[selectedDay - 1]?.result)
+      );
     }
     const sorted = [...result];
     if (sortOrder === 'rank-asc') return sorted.sort((a, b) => a.rankValue - b.rankValue);
@@ -140,6 +159,7 @@ function WrestlerSidebar() {
       setCurrentBashoId(getCurrentBashoId());
       setSearchQuery('');
       setSortOrder('rank-asc');
+      setSelectedDay(0);
     }
   }, [isSidebarOpen]);
 
@@ -244,6 +264,19 @@ function WrestlerSidebar() {
                   <option value="wins-asc">Wins ↑</option>
                   <option value="wins-desc">Wins ↓</option>
                 </select>
+                {maxDay > 0 && (
+                  <select
+                    className={styles.sortSelect}
+                    value={selectedDay}
+                    onChange={(e) => setSelectedDay(Number(e.target.value))}
+                    aria-label="Filter by day"
+                  >
+                    <option value={0}>Any day</option>
+                    {Array.from({ length: maxDay }, (_, i) => (
+                      <option key={i + 1} value={i + 1}>Day {i + 1}</option>
+                    ))}
+                  </select>
+                )}
               </div>
               <div className={isDivisionView ? styles.rankGroupsContainer : undefined}>
                 {rankGroups.map((group, index) => (

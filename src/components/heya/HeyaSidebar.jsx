@@ -4,7 +4,7 @@ import { useAllDivisionsBanzuke } from '../../hooks/useAllDivisionsBanzuke';
 import { useAllRikishi } from '../../hooks/useRikishi';
 import useBashoResults from '../../hooks/useBashoResults';
 import { getCurrentBashoId } from '../../utils/bashoId';
-import { RANK_ORDER, RANK_INFO, RANK_TO_API_DIVISION, RANK_COLORS } from '../../utils/constants';
+import { RANK_ORDER, RANK_INFO, RANK_TO_API_DIVISION, RANK_COLORS, COMPETING_RESULTS } from '../../utils/constants';
 import { getWrestlerAwards } from '../../utils/awards';
 import WrestlerGrid from '../sidebar/WrestlerGrid';
 import BashoSelector from '../sidebar/BashoSelector';
@@ -28,6 +28,7 @@ function HeyaSidebar() {
   const [currentBashoId, setCurrentBashoId] = useState(getCurrentBashoId());
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState('rank-asc');
+  const [selectedDay, setSelectedDay] = useState(0);
 
   const { allWrestlers: allBanzukeWrestlers, isLoading, isError } = useAllDivisionsBanzuke(
     currentBashoId,
@@ -110,11 +111,28 @@ function HeyaSidebar() {
     );
   }, [openModal]);
 
+  // Highest day that has already occurred across heya wrestlers.
+  const maxDay = useMemo(() => {
+    if (!heyaWrestlers.length) return 0;
+    return Math.max(
+      0,
+      ...heyaWrestlers.map((w) => {
+        const records = w.record ?? [];
+        return records.reduce((max, r, i) => (r.result !== '' ? i + 1 : max), 0);
+      }),
+    );
+  }, [heyaWrestlers]);
+
   const filterAndSort = (wrestlers) => {
     let result = wrestlers;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      result = wrestlers.filter((w) => w.shikonaEn.toLowerCase().includes(q));
+      result = result.filter((w) => w.shikonaEn.toLowerCase().includes(q));
+    }
+    if (selectedDay > 0) {
+      result = result.filter((w) =>
+        COMPETING_RESULTS.has(w.record?.[selectedDay - 1]?.result)
+      );
     }
     const sorted = [...result];
     if (sortOrder === 'rank-asc') return sorted.sort((a, b) => a.rankValue - b.rankValue);
@@ -131,6 +149,7 @@ function HeyaSidebar() {
       setCurrentBashoId(getCurrentBashoId());
       setSearchQuery('');
       setSortOrder('rank-asc');
+      setSelectedDay(0);
     }
   }, [isHeyaSidebarOpen]);
 
@@ -208,6 +227,19 @@ function HeyaSidebar() {
                   <option value="wins-asc">Wins ↑</option>
                   <option value="wins-desc">Wins ↓</option>
                 </select>
+                {maxDay > 0 && (
+                  <select
+                    className={styles.sortSelect}
+                    value={selectedDay}
+                    onChange={(e) => setSelectedDay(Number(e.target.value))}
+                    aria-label="Filter by day"
+                  >
+                    <option value={0}>Any day</option>
+                    {Array.from({ length: maxDay }, (_, i) => (
+                      <option key={i + 1} value={i + 1}>Day {i + 1}</option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               {rankGroups.length === 0 && (

@@ -273,8 +273,13 @@ export const MATCH_RESULTS = {
   LOSS: 'loss',
   FUSEN_WIN: 'fusen win',
   FUSEN_LOSS: 'fusen loss',
+  ABSENT: 'absent',
   EMPTY: '',
 };
+
+// Results that count as "competing" on a given day
+// (wrestler was present and had a bout outcome — fusen win counts, fusen loss does not)
+export const COMPETING_RESULTS = new Set(['win', 'loss', 'fusen win']);
 
 // Ordered rank list from highest to lowest
 export const RANK_ORDER = [
