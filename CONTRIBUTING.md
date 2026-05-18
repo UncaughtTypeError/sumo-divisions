@@ -50,7 +50,7 @@ chore: upgrade vitest to v4
 
 - **CSS Modules** - Component-scoped styling
 - **CSS Custom Properties** - Design tokens and theming
-- **CSS Grid & Flexbox** - Modern layout (no HTML tables)
+- **CSS Grid & Flexbox** - Primary layout primitives; `<table>` is used only where tabular data semantics apply (Heya grid)
 
 ### UI Components
 
@@ -72,8 +72,11 @@ This application uses the **Sumo API** (https://www.sumo-api.com/) to fetch real
 
 ### Key Endpoints Used
 
-- `GET /api/basho/:bashoId/banzuke/:division` - Fetch wrestler rankings and records
+- `GET /api/rikishis` - Fetch all active rikishi (heya, shusshin, current rank, personal details). Cached for 1 hour; used by both the Rankings sidebar and the Heya dashboard.
+- `GET /api/basho/:bashoId/banzuke/:division` - Fetch wrestler rankings and records for one division. Cached under the key `['banzuke', bashoId, division]` — the same key is used by `useBanzuke` (single division) and `useAllDivisionsBanzuke` (all six in parallel), so data fetched in one view is immediately available in the other.
 - `GET /api/basho/:bashoId` - Fetch tournament results (yusho winners, special prizes)
+- `GET /api/rikishi/:id` - Fetch a single rikishi's profile (opened via the detail modal)
+- `GET /api/rikishi/:id/matches/:opponentId` - Head-to-head match history between two wrestlers
 
 ### BashoId Logic
 
@@ -204,28 +207,44 @@ The report provides:
   - `src/__tests__/components/sidebar/` - Sidebar component tests
   - `src/__tests__/components/modal/` - Modal component tests
   - `src/__tests__/components/common/` - Common component tests
+  - `src/__tests__/components/views/` - ViewTabs tests
+  - `src/__tests__/components/heya/` - Heya dashboard component tests
 
 ## Project Structure
+
+<details>
+<summary>Expand project tree</summary>
 
 ```
 sumo-divisions/
 ├── src/
 │   ├── components/
-│   │   ├── pyramid/           # Pyramid visualization
+│   │   ├── views/             # Top-level view switching
+│   │   │   └── ViewTabs.jsx   # Rankings / Heya tab bar
+│   │   ├── pyramid/           # Rankings pyramid view
 │   │   │   ├── DivisionPyramid.jsx
 │   │   │   ├── DivisionLegend.jsx
 │   │   │   ├── RankGroupLegend.jsx
 │   │   │   └── RankCard.jsx
-│   │   ├── sidebar/           # Wrestler list sidebar
+│   │   ├── heya/              # Heya (stable) dashboard view
+│   │   │   ├── HeyaDashboard.jsx   # Root container — search, sort, layout toggle
+│   │   │   ├── HeyaGrid.jsx        # Sortable table (one row per stable)
+│   │   │   ├── HeyaCardGrid.jsx    # Responsive card grid wrapper
+│   │   │   ├── HeyaCard.jsx        # Individual stable card
+│   │   │   ├── HeyaRankBadge.jsx   # Coloured rank badge with tooltip
+│   │   │   └── HeyaSidebar.jsx     # Sidebar listing all wrestlers in a stable
+│   │   ├── sidebar/           # Shared wrestler list sidebar
 │   │   │   ├── WrestlerSidebar.jsx
 │   │   │   ├── WrestlerGrid.jsx
 │   │   │   ├── WrestlerRow.jsx
 │   │   │   ├── BashoSelector.jsx
 │   │   │   └── BashoWinners.jsx
-│   │   ├── modal/             # Match history modal
+│   │   ├── modal/             # Modals
 │   │   │   ├── MatchHistoryModal.jsx
 │   │   │   ├── MatchGrid.jsx
-│   │   │   └── KimariteModal.jsx
+│   │   │   ├── HeadToHeadModal.jsx
+│   │   │   ├── KimariteModal.jsx
+│   │   │   └── RikishiDetailModal.jsx
 │   │   └── common/            # Shared components
 │   │       ├── Loading.jsx
 │   │       ├── ErrorMessage.jsx
@@ -242,22 +261,25 @@ sumo-divisions/
 │   │   └── rateLimiter/       # Rate limiting
 │   │       └── rateLimiter.js
 │   ├── store/
-│   │   └── divisionStore.js   # Zustand state management
+│   │   └── divisionStore.js   # Zustand state (rankings sidebar + heya sidebar + modals)
 │   ├── hooks/
-│   │   ├── useBanzuke.js      # Banzuke data hook
-│   │   ├── useBashoResults.js # Basho results hook
-│   │   └── useRikishi.js      # Rikishi data hook
+│   │   ├── useBanzuke.js           # Single-division banzuke data
+│   │   ├── useBashoResults.js      # Tournament results (yusho, special prizes)
+│   │   ├── useRikishi.js           # All rikishi roster + single rikishi + head-to-head
+│   │   ├── useHeyaData.js          # Derives stable list from useAllRikishi
+│   │   └── useAllDivisionsBanzuke.js  # Parallel fetch across all 6 divisions (shared cache)
 │   ├── utils/
 │   │   ├── bashoId.js         # BashoId calculation
 │   │   ├── awards.js          # Awards & record status logic
-│   │   ├── constants.js       # App constants
-│   │   └── kimarite.js        # Kimarite (technique) data
+│   │   ├── constants.js       # App constants (ranks, divisions, colours, abbreviations)
+│   │   ├── kimarite.js        # Kimarite (technique) data
+│   │   └── flags.js           # Country flag lookup
 │   ├── styles/
 │   │   ├── global.css         # Global styles
 │   │   └── variables.css      # CSS custom properties
 │   ├── __tests__/             # Test files (mirrors src structure)
 │   │   └── testUtils.jsx      # Shared render helpers & mock data
-│   ├── App.jsx                # Root component
+│   ├── App.jsx                # Root component — view state + QueryClientProvider
 │   └── main.jsx               # Entry point
 ├── .github/
 │   └── PULL_REQUEST_TEMPLATE.md
@@ -269,14 +291,17 @@ sumo-divisions/
 └── README.md
 ```
 
+</details>
+
 ## Key Implementation Details
 
 ### Caching Strategy
 
-- All API responses cached for 5 minutes (stale time)
-- Cache persists for 30 minutes
-- Automatic request deduplication via React Query
-- Makuuchi division cached once, filtered for San'yaku ranks
+- All API responses have a 5-minute stale time; entries are garbage-collected after 30 minutes of inactivity
+- Automatic request deduplication via React Query — identical query keys are never fetched twice concurrently
+- `useBanzuke` and `useAllDivisionsBanzuke` deliberately share the same query key shape — `['banzuke', bashoId, division]` — so data fetched from the Rankings sidebar is already in cache when the Heya sidebar opens, and vice versa
+- `useAllRikishi` is cached for 1 hour (roster data changes infrequently); the resulting `rikishiMap` is memoized separately for O(1) lookups
+- `HeyaDashboard` prefetches all six division banzuke queries for the current basho on mount, so the Heya sidebar opens with no loading state on the first click
 
 ### Rate Limiting
 
@@ -284,6 +309,17 @@ sumo-divisions/
 - Token bucket algorithm
 - Automatic queuing when limit approached
 - User-friendly error messages
+
+### State Management
+
+The Zustand store (`divisionStore`) manages two independent sidebar surfaces:
+
+| State slice | Purpose |
+|---|---|
+| `selectedRank/Division`, `isSidebarOpen`, `isDivisionView` | Rankings pyramid sidebar |
+| `selectedHeya`, `isHeyaSidebarOpen` | Heya stable sidebar |
+| `isModalOpen`, `selectedWrestler`, `selectedColor`, `selectedApiDivision` | Match history modal — `openModal` accepts optional `color` and `division` so callers outside the rankings view (e.g. the heya sidebar) can supply the correct header colour |
+| `rankLookup`, `allWrestlers` | Cross-component data shared between the sidebar and MatchGrid for kinboshi calculation and opponent lookups |
 
 ### Division Hierarchy
 
