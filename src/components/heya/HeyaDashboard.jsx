@@ -3,6 +3,7 @@ import { useHeyaData } from '../../hooks/useHeyaData';
 import { useAllDivisionsBanzuke } from '../../hooks/useAllDivisionsBanzuke';
 import { getCurrentBashoId } from '../../utils/bashoId';
 import { RANK_ORDER } from '../../utils/constants';
+import useLocalStorage from '../../hooks/useLocalStorage';
 import HeyaGrid from './HeyaGrid';
 import HeyaCardGrid from './HeyaCardGrid';
 import HeyaSidebar from './HeyaSidebar';
@@ -17,7 +18,7 @@ function HeyaDashboard() {
   const [prefetchBashoId] = useState(getCurrentBashoId);
   useAllDivisionsBanzuke(prefetchBashoId);
 
-  const [layout, setLayout] = useState('card');
+  const [layout, setLayout] = useLocalStorage('sumo-heya-layout', 'card');
   const [heyaSearch, setHeyaSearch] = useState('');
   const [rikishiSearch, setRikishiSearch] = useState('');
   const [sortKey, setSortKey] = useState('name');

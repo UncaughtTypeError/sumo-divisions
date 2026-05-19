@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import DivisionPyramid from './components/pyramid/DivisionPyramid';
 import HeyaDashboard from './components/heya/HeyaDashboard';
 import ViewTabs from './components/views/ViewTabs';
+import useLocalStorage from './hooks/useLocalStorage';
 import styles from './App.module.css';
 
 const queryClient = new QueryClient({
@@ -45,7 +46,7 @@ function ScrollToTopButton({ visible }) {
 }
 
 function App() {
-  const [activeView, setActiveView] = useState('rankings');
+  const [activeView, setActiveView] = useLocalStorage('sumo-active-view', 'rankings');
   const [headerFixed, setHeaderFixed] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const headerRef = useRef(null);
