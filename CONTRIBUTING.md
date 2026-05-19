@@ -45,6 +45,7 @@ chore: upgrade vitest to v4
 - **Zustand** - Lightweight state management
 - **React Query (TanStack Query)** - Data fetching, caching, and synchronization
 - **Axios** - HTTP client with interceptors
+- **localStorage** - User preference persistence (active view, heya layout) via the `useLocalStorage` hook; survives page reload and return visits without a server or auth layer
 
 ### Styling
 
@@ -267,7 +268,8 @@ sumo-divisions/
 │   │   ├── useBashoResults.js      # Tournament results (yusho, special prizes)
 │   │   ├── useRikishi.js           # All rikishi roster + single rikishi + head-to-head
 │   │   ├── useHeyaData.js          # Derives stable list from useAllRikishi
-│   │   └── useAllDivisionsBanzuke.js  # Parallel fetch across all 6 divisions (shared cache)
+│   │   ├── useAllDivisionsBanzuke.js  # Parallel fetch across all 6 divisions (shared cache)
+│   │   └── useLocalStorage.js      # useState wrapper that reads/writes localStorage (user preferences)
 │   ├── utils/
 │   │   ├── bashoId.js         # BashoId calculation
 │   │   ├── awards.js          # Awards & record status logic
