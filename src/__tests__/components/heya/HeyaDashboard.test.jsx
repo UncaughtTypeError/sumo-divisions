@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { screen, fireEvent } from '@testing-library/react'
 import HeyaDashboard from '../../../components/heya/HeyaDashboard'
 import { renderWithQueryClient } from '../../testUtils'
@@ -65,6 +65,11 @@ const mockHeyaList = [
 describe('HeyaDashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.clear() // useLocalStorage persists layout; reset between tests
+  })
+
+  afterEach(() => {
+    localStorage.clear()
   })
 
   it('shows loading state', () => {
