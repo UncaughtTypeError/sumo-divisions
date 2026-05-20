@@ -17,6 +17,7 @@ const useDivisionStore = create((set) => ({
   // Heya sidebar state
   selectedHeya: null,
   isHeyaSidebarOpen: false,
+  selectedHeyaRikishiIds: [], // IDs of wrestlers in the selected heya (from heya card click)
 
   // Modal state
   isModalOpen: false,
@@ -49,16 +50,18 @@ const useDivisionStore = create((set) => ({
       isDivisionView: true,
     }),
 
-  selectHeya: (heyaName) =>
+  selectHeya: (heyaName, rikishiIds = []) =>
     set({
       selectedHeya: heyaName,
       isHeyaSidebarOpen: true,
+      selectedHeyaRikishiIds: rikishiIds,
     }),
 
   closeHeyaSidebar: () =>
     set({
       selectedHeya: null,
       isHeyaSidebarOpen: false,
+      selectedHeyaRikishiIds: [],
     }),
 
   setRankLookup: (lookup) =>
@@ -112,6 +115,7 @@ const useDivisionStore = create((set) => ({
       isDivisionView: false,
       selectedHeya: null,
       isHeyaSidebarOpen: false,
+      selectedHeyaRikishiIds: [],
       isModalOpen: false,
       selectedWrestler: null,
       rankLookup: new Map(),

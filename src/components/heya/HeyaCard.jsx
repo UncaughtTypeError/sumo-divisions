@@ -6,7 +6,8 @@ import styles from './HeyaCard.module.css';
 function HeyaCard({ heya }) {
   const { selectHeya } = useDivisionStore();
 
-  const handleSelect = () => selectHeya(heya.name);
+  const rikishiIds = heya.rikishi.map((r) => r.id).filter(Boolean);
+  const handleSelect = () => selectHeya(heya.name, rikishiIds);
 
   return (
     <div

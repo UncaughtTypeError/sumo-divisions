@@ -37,12 +37,13 @@ function SortableHeader({ label, rankInfo, sortKey, currentSortKey, sortDir, onS
 
 function HeyaGridRow({ heya }) {
   const { selectHeya } = useDivisionStore();
+  const rikishiIds = heya.rikishi.map((r) => r.id).filter(Boolean);
 
   return (
     <tr
       className={styles.row}
-      onClick={() => selectHeya(heya.name)}
-      onKeyDown={(e) => e.key === 'Enter' && selectHeya(heya.name)}
+      onClick={() => selectHeya(heya.name, rikishiIds)}
+      onKeyDown={(e) => e.key === 'Enter' && selectHeya(heya.name, rikishiIds)}
       tabIndex={0}
       aria-label={`${heya.name}, ${heya.total} total`}
     >
