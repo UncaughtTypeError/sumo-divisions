@@ -16,7 +16,7 @@ vi.mock('../../../components/modal/MatchGrid', () => ({
 }))
 
 vi.mock('../../../hooks/useRikishi', () => ({
-  useAllRikishi: vi.fn(() => ({ rikishiMap: new Map(), isLoading: false })),
+  useRikishi: vi.fn(() => ({ data: null, isLoading: false, error: null })),
 }))
 
 vi.mock('../../../components/modal/RikishiDetailModal', () => ({
@@ -24,8 +24,13 @@ vi.mock('../../../components/modal/RikishiDetailModal', () => ({
     isOpen ? <div data-testid="rikishi-detail-modal">Detail Modal</div> : null,
 }))
 
+vi.mock('../../../components/modal/RankHistoryModal', () => ({
+  default: ({ isOpen }) =>
+    isOpen ? <div data-testid="rank-history-modal">Rank History Modal</div> : null,
+}))
+
 import useDivisionStore from '../../../store/divisionStore'
-import { useAllRikishi } from '../../../hooks/useRikishi'
+import { useRikishi } from '../../../hooks/useRikishi'
 
 describe('MatchHistoryModal', () => {
   const mockCloseModal = vi.fn()
@@ -277,6 +282,58 @@ describe('MatchHistoryModal', () => {
     })
   })
 
+  describe('rank indicators in modal subtitle', () => {
+    const makeStore = (wrestlerOverrides = {}) =>
+      useDivisionStore.mockReturnValue({
+        isModalOpen: true,
+        selectedWrestler: { ...mockWrestler, ...wrestlerOverrides },
+        closeModal: mockCloseModal,
+        clearSelectedWrestler: mockClearSelectedWrestler,
+        selectedColor: 'yokozuna',
+        selectedApiDivision: 'Makuuchi',
+        rankLookup: new Map(),
+      })
+
+    it('renders up arrow in subtitle when rankMovement is "up"', () => {
+      makeStore({ rankMovement: 'up', rankDelta: 2.5 })
+      render(<MatchHistoryModal />)
+      expect(screen.getByText('▲ 2.5')).toBeInTheDocument()
+    })
+
+    it('renders down arrow in subtitle when rankMovement is "down"', () => {
+      makeStore({ rankMovement: 'down', rankDelta: 1.0 })
+      render(<MatchHistoryModal />)
+      expect(screen.getByText('▼ 1.0')).toBeInTheDocument()
+    })
+
+    it('renders "Debut" badge for sanyaku-debut in subtitle', () => {
+      makeStore({ debutType: 'sanyaku-debut' })
+      render(<MatchHistoryModal />)
+      expect(screen.getByText('Debut')).toBeInTheDocument()
+    })
+
+    it('renders "Debut" badge for division-debut in subtitle', () => {
+      makeStore({ debutType: 'division-debut' })
+      render(<MatchHistoryModal />)
+      expect(screen.getByText('Debut')).toBeInTheDocument()
+    })
+
+    it('renders "High" badge in subtitle for career high', () => {
+      makeStore({ isCareerHigh: true })
+      render(<MatchHistoryModal />)
+      expect(screen.getByText('High')).toBeInTheDocument()
+    })
+
+    it('renders no rank indicators when all are null/false', () => {
+      makeStore({ rankMovement: 'same', rankDelta: 0, isCareerHigh: false, debutType: null })
+      render(<MatchHistoryModal />)
+      expect(screen.queryByText(/▲/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/▼/)).not.toBeInTheDocument()
+      expect(screen.queryByText('Debut')).not.toBeInTheDocument()
+      expect(screen.queryByText('High')).not.toBeInTheDocument()
+    })
+  })
+
   describe('rikishi detail info button', () => {
     const rikishiDetails = {
       shikonaEn: 'Terunofuji',
@@ -300,30 +357,69 @@ describe('MatchHistoryModal', () => {
       })
     })
 
-    it('should not render info button when rikishiMap has no entry for the wrestler', () => {
-      useAllRikishi.mockReturnValue({ rikishiMap: new Map(), isLoading: false })
+    it('should not render info button when rikishi data is unavailable', () => {
+      useRikishi.mockReturnValue({ data: null, isLoading: false })
       render(<MatchHistoryModal />)
       expect(screen.queryByLabelText('View rikishi details')).not.toBeInTheDocument()
     })
 
     it('should render info button when rikishiDetails is available', () => {
-      useAllRikishi.mockReturnValue({
-        rikishiMap: new Map([[mockWrestler.rikishiID, rikishiDetails]]),
-        isLoading: false,
-      })
+      useRikishi.mockReturnValue({ data: rikishiDetails, isLoading: false })
       render(<MatchHistoryModal />)
       expect(screen.getByLabelText('View rikishi details')).toBeInTheDocument()
     })
 
     it('should open the detail modal when info button is clicked', () => {
-      useAllRikishi.mockReturnValue({
-        rikishiMap: new Map([[mockWrestler.rikishiID, rikishiDetails]]),
-        isLoading: false,
-      })
+      useRikishi.mockReturnValue({ data: rikishiDetails, isLoading: false })
       render(<MatchHistoryModal />)
       expect(screen.queryByTestId('rikishi-detail-modal')).not.toBeInTheDocument()
       fireEvent.click(screen.getByLabelText('View rikishi details'))
       expect(screen.getByTestId('rikishi-detail-modal')).toBeInTheDocument()
+    })
+  })
+
+  describe('rank history button in modal', () => {
+    // heya is required so the modalMeta wrapper (FlagComponent || heya) renders
+    const rikishiWithHistory = {
+      shikonaEn: 'Terunofuji',
+      heya: 'Isegahama',
+      rankHistory: [{ id: '202605-1', bashoId: '202605', rank: 'Yokozuna 1 East', rankValue: 101 }],
+    }
+
+    beforeEach(() => {
+      useDivisionStore.mockReturnValue({
+        isModalOpen: true,
+        selectedWrestler: mockWrestler,
+        selectedColor: 'makuuchi',
+        closeModal: mockCloseModal,
+        clearSelectedWrestler: mockClearSelectedWrestler,
+      })
+    })
+
+    it('renders rank history button when rikishi has rank history', () => {
+      useRikishi.mockReturnValue({ data: rikishiWithHistory, isLoading: false })
+      render(<MatchHistoryModal />)
+      expect(screen.getByLabelText('View rank history')).toBeInTheDocument()
+    })
+
+    it('does not render rank history button when rikishi data is unavailable', () => {
+      useRikishi.mockReturnValue({ data: null, isLoading: false })
+      render(<MatchHistoryModal />)
+      expect(screen.queryByLabelText('View rank history')).not.toBeInTheDocument()
+    })
+
+    it('does not render rank history button when rankHistory is empty', () => {
+      useRikishi.mockReturnValue({ data: { shikonaEn: 'Test', rankHistory: [] }, isLoading: false })
+      render(<MatchHistoryModal />)
+      expect(screen.queryByLabelText('View rank history')).not.toBeInTheDocument()
+    })
+
+    it('opens rank history modal when button is clicked', () => {
+      useRikishi.mockReturnValue({ data: rikishiWithHistory, isLoading: false })
+      render(<MatchHistoryModal />)
+      expect(screen.queryByTestId('rank-history-modal')).not.toBeInTheDocument()
+      fireEvent.click(screen.getByLabelText('View rank history'))
+      expect(screen.getByTestId('rank-history-modal')).toBeInTheDocument()
     })
   })
 })
