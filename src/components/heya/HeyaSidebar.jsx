@@ -1,11 +1,12 @@
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import useDivisionStore from '../../store/divisionStore';
 import { useAllDivisionsBanzuke } from '../../hooks/useAllDivisionsBanzuke';
-import { useAllRikishi } from '../../hooks/useRikishi';
+import { useRikishiList } from '../../hooks/useRikishi';
 import useBashoResults from '../../hooks/useBashoResults';
 import { getCurrentBashoId } from '../../utils/bashoId';
 import { RANK_ORDER, RANK_INFO, RANK_TO_API_DIVISION, RANK_COLORS, COMPETING_RESULTS } from '../../utils/constants';
 import { getWrestlerAwards } from '../../utils/awards';
+import { getPreviousBashoId, computeWrestlerRankIndicators } from '../../utils/rankMovement';
 import WrestlerGrid from '../sidebar/WrestlerGrid';
 import BashoSelector from '../sidebar/BashoSelector';
 import MatchHistoryModal from '../modal/MatchHistoryModal';
@@ -16,6 +17,7 @@ import styles from '../sidebar/WrestlerSidebar.module.css';
 function HeyaSidebar() {
   const {
     selectedHeya,
+    selectedHeyaRikishiIds,
     isHeyaSidebarOpen,
     closeHeyaSidebar,
     openModal,
@@ -35,11 +37,16 @@ function HeyaSidebar() {
     { enabled: isHeyaSidebarOpen }
   );
 
-  const { rikishiMap } = useAllRikishi({ enabled: isHeyaSidebarOpen });
-
   const { data: bashoResults } = useBashoResults(currentBashoId, {
     enabled: isHeyaSidebarOpen,
   });
+
+  // Filter banzuke wrestlers using the heya's rikishi IDs passed from the card click.
+  // This avoids a circular dependency (rikishiMap needed to know heya → heya needed to fetch IDs).
+  const heyaIdSet = useMemo(
+    () => new Set(selectedHeyaRikishiIds),
+    [selectedHeyaRikishiIds],
+  );
 
   // Build rank lookup across ALL divisions so kinboshi calculation is accurate
   const rankLookupMap = useMemo(() => {
@@ -59,16 +66,24 @@ function HeyaSidebar() {
     setAllWrestlers(allBanzukeWrestlers);
   }, [allBanzukeWrestlers, setAllWrestlers]);
 
-  // Filter banzuke wrestlers to those belonging to the selected heya
+  // Filter banzuke wrestlers using the ID set populated when the heya card was clicked
   const heyaWrestlers = useMemo(() => {
-    if (!allBanzukeWrestlers.length || !rikishiMap.size) return [];
-    return allBanzukeWrestlers.filter((w) => {
-      const info = rikishiMap.get(w.rikishiID);
-      return info?.heya === selectedHeya;
-    });
-  }, [allBanzukeWrestlers, rikishiMap, selectedHeya]);
+    if (!allBanzukeWrestlers.length || !heyaIdSet.size) return [];
+    return allBanzukeWrestlers.filter((w) => heyaIdSet.has(w.rikishiID));
+  }, [allBanzukeWrestlers, heyaIdSet]);
 
-  // Group by rank, enriching with awards
+  // Fetch individual rikishi records for this heya's wrestlers — no bulk-endpoint limits
+  const heyaRikishiIds = useMemo(
+    () => heyaWrestlers.map((w) => w.rikishiID).filter(Boolean),
+    [heyaWrestlers],
+  );
+  const { rikishiMap, rankHistoryMap, isLoading: isRankDataLoading } = useRikishiList(heyaRikishiIds, {
+    enabled: isHeyaSidebarOpen,
+  });
+
+  const previousBashoId = useMemo(() => getPreviousBashoId(currentBashoId), [currentBashoId]);
+
+  // Group by rank, enriching with awards and rank movement indicators
   const rankGroups = useMemo(() => {
     if (!heyaWrestlers.length) return [];
 
@@ -77,6 +92,13 @@ function HeyaSidebar() {
       return {
         ...w,
         awards: getWrestlerAwards(w.rikishiID, bashoResults, apiDivision),
+        rankDataLoading: isRankDataLoading,
+        ...computeWrestlerRankIndicators(
+          w,
+          rankHistoryMap.get(w.rikishiID) ?? null,
+          currentBashoId,
+          previousBashoId,
+        ),
       };
     };
 
@@ -98,7 +120,7 @@ function HeyaSidebar() {
       groups.push({ rank, rankInfo: RANK_INFO[rank], east, west });
     }
     return groups;
-  }, [heyaWrestlers, bashoResults]);
+  }, [heyaWrestlers, bashoResults, rankHistoryMap, currentBashoId, previousBashoId]);
 
   // Derive rank colour + API division from the wrestler's rank string so the
   // modal header and record-status badge render correctly for heya-view clicks.

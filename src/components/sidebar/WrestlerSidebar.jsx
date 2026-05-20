@@ -2,10 +2,11 @@ import { useMemo, useState, useEffect } from 'react';
 import useDivisionStore from '../../store/divisionStore';
 import useBanzuke from '../../hooks/useBanzuke';
 import useBashoResults from '../../hooks/useBashoResults';
-import { useAllRikishi } from '../../hooks/useRikishi';
+import { useRikishiList } from '../../hooks/useRikishi';
 import { getCurrentBashoId } from '../../utils/bashoId';
 import { RANKS, RANK_INFO, DIVISION_INFO, COMPETING_RESULTS } from '../../utils/constants';
 import { getWrestlerAwards, buildRankLookup } from '../../utils/awards';
+import { getPreviousBashoId, computeWrestlerRankIndicators } from '../../utils/rankMovement';
 import WrestlerGrid from './WrestlerGrid';
 import BashoSelector from './BashoSelector';
 import BashoWinners from './BashoWinners';
@@ -58,16 +59,21 @@ function WrestlerSidebar() {
     enabled: isSidebarOpen,
   });
 
-  // Fetch all rikishi data for heya and shusshin lookup (single API call)
-  const { rikishiMap } = useAllRikishi({
-    enabled: isSidebarOpen,
-  });
-
   // All wrestlers from banzuke (for looking up full wrestler data)
   const allWrestlers = useMemo(() => {
     if (!data) return [];
     return [...(data.east || []), ...(data.west || [])];
   }, [data]);
+
+  // Fetch individual rikishi records for the wrestlers currently in view.
+  // Each result is cached under ['rikishi', id] — no bulk-endpoint page limits.
+  const rikishiIds = useMemo(
+    () => allWrestlers.map((w) => w.rikishiID).filter(Boolean),
+    [allWrestlers],
+  );
+  const { rikishiMap, rankHistoryMap, isLoading: isRankDataLoading } = useRikishiList(rikishiIds, {
+    enabled: isSidebarOpen,
+  });
 
   // Build and set rank lookup when data changes
   useEffect(() => {
@@ -98,26 +104,35 @@ function WrestlerSidebar() {
     };
   }, [bashoResults, data, allWrestlers]);
 
+  const previousBashoId = useMemo(() => getPreviousBashoId(currentBashoId), [currentBashoId]);
+
   // Unified rank groups: multiple groups for division view, one group for single-rank view
   const rankGroups = useMemo(() => {
     if (!data || data.isEmpty) return [];
 
-    const enrichWithAwards = (wrestler) => ({
+    const enrich = (wrestler) => ({
       ...wrestler,
       awards: getWrestlerAwards(wrestler.rikishiID, bashoResults, selectedApiDivision),
+      rankDataLoading: isRankDataLoading,
+      ...computeWrestlerRankIndicators(
+        wrestler,
+        rankHistoryMap.get(wrestler.rikishiID) ?? null,
+        currentBashoId,
+        previousBashoId,
+      ),
     });
     const sortByRank = (a, b) => a.rankValue - b.rankValue;
     const buildGroup = (rank) => ({
       rank,
       rankInfo: RANK_INFO[rank],
-      east: (data.east?.filter((w) => w.rank.startsWith(rank)).map(enrichWithAwards) || []).sort(sortByRank),
-      west: (data.west?.filter((w) => w.rank.startsWith(rank)).map(enrichWithAwards) || []).sort(sortByRank),
+      east: (data.east?.filter((w) => w.rank.startsWith(rank)).map(enrich) || []).sort(sortByRank),
+      west: (data.west?.filter((w) => w.rank.startsWith(rank)).map(enrich) || []).sort(sortByRank),
     });
 
     return isDivisionView
       ? MAKUUCHI_RANK_ORDER.map(buildGroup)
       : [buildGroup(selectedRank)];
-  }, [isDivisionView, data, selectedRank, bashoResults, selectedApiDivision]);
+  }, [isDivisionView, data, selectedRank, bashoResults, selectedApiDivision, rankHistoryMap, currentBashoId, previousBashoId]);
 
   // Highest day that has already occurred — last index with a non-empty result, plus one.
   // Excludes future days (result: '') and caps the dropdown at the current day.
