@@ -102,6 +102,29 @@ function directionFromRankValue(currRankValue, prevRankValue, currRank, prevRank
 }
 
 /**
+ * Corrected delta for cross-group movements where the position formula returns 0
+ * due to rank-number bleeding (e.g. Ozeki 2 West ≡ Sekiwake 1 West in position space).
+ *
+ * The worse-ranked entry's within-group position tells us how many banzuke slots
+ * separate it from the group boundary.  Add 1 for the boundary crossing itself.
+ * e.g. S1W → O2W: worseWithin(S1W)=1 → (1+1)×0.5 = 1.0 ✓
+ *      S1E → O1W: worseWithin(S1E)=0 → (0+1)×0.5 = 0.5 ✓ (but position gives 0.5 anyway)
+ *
+ * Returns the corrected delta, or null if the ranks are in the same group (no fix needed).
+ */
+function crossGroupDelta(currRank, currRankValue, prevRank, prevRankValue) {
+  const currM = currRank?.match(/^(.+?)\s+(\d+)\s+(East|West)$/i);
+  const prevM = prevRank?.match(/^(.+?)\s+(\d+)\s+(East|West)$/i);
+  if (!currM || !prevM || currM[1] === prevM[1]) return null; // same group — no fix needed
+
+  // The worse entry (higher rankValue) is the one further from the group boundary
+  const worseM = (currRankValue ?? Infinity) > (prevRankValue ?? 0) ? currM : prevM;
+  const worseNum    = parseInt(worseM[2], 10);
+  const worseIsWest = worseM[3].toLowerCase() === 'west';
+  return ((worseNum - 1) * 2 + (worseIsWest ? 1 : 0) + 1) * 0.5;
+}
+
+/**
  * Compute signed rank delta between two rank strings.
  * Negative = improved (moved up banzuke), positive = worsened (moved down).
  * Each East/West slot = 0.5 "rank units" displayed to the user.
@@ -191,7 +214,15 @@ export function computeHistoryRowIndicators(entry, index, validHistory) {
   if (prevEntry) {
     movement = directionFromRankValue(entry.rankValue, prevEntry.rankValue, entry.rank, prevEntry.rank);
     delta    = Math.abs(computeRankDelta(entry.rank, prevEntry.rank));
-    if (movement === 'same') movement = null; // no indicator when unchanged
+
+    if (movement === 'same') {
+      movement = null; // no indicator when rank is unchanged
+    } else if (delta === 0 && movement !== null) {
+      // Position formula returned 0 due to rank-number bleeding (e.g. O2W ≡ S1W).
+      // Apply cross-group correction; if still 0, suppress the arrow entirely.
+      delta    = crossGroupDelta(entry.rank, entry.rankValue, prevEntry.rank, prevEntry.rankValue) ?? 0;
+      if (delta === 0) movement = null;
+    }
   }
 
   return { movement, delta, debutType, isCareerHigh };
@@ -274,6 +305,13 @@ export function computeWrestlerRankIndicators(wrestler, rankHistory, currentBash
     if (prevEntry) {
       rankMovement = directionFromRankValue(wrestler.rankValue, prevEntry.rankValue, wrestler.rank, prevEntry.rank);
       rankDelta    = Math.abs(computeRankDelta(wrestler.rank, prevEntry.rank));
+
+      if (rankMovement === 'same') {
+        rankMovement = null;
+      } else if (rankDelta === 0 && rankMovement !== null) {
+        rankDelta    = crossGroupDelta(wrestler.rank, wrestler.rankValue, prevEntry.rank, prevEntry.rankValue) ?? 0;
+        if (rankDelta === 0) rankMovement = null;
+      }
     }
   }
 
