@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
-import { useRikishi, useAllRikishi } from '../../hooks/useRikishi'
+import { useRikishi, useAllRikishi, useRikishiList, useRikishiMatches } from '../../hooks/useRikishi'
 import { QueryClientWrapper } from '../testUtils'
 import * as rikishiService from '../../services/api/rikishiService'
 
@@ -8,6 +8,7 @@ import * as rikishiService from '../../services/api/rikishiService'
 vi.mock('../../services/api/rikishiService', () => ({
   getRikishi: vi.fn(),
   getAllRikishi: vi.fn(),
+  getRikishiMatches: vi.fn(),
 }))
 
 describe('useRikishi', () => {
@@ -64,6 +65,94 @@ describe('useRikishi', () => {
     await waitFor(() => expect(result.current.isError).toBe(true))
 
     expect(result.current.error).toEqual(error)
+  })
+})
+
+describe('useRikishiList', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('returns empty maps and no loading when IDs list is empty', () => {
+    const { result } = renderHook(() => useRikishiList([]), { wrapper: QueryClientWrapper })
+    expect(result.current.rikishiMap.size).toBe(0)
+    expect(result.current.rankHistoryMap.size).toBe(0)
+    expect(result.current.isLoading).toBe(false)
+    expect(rikishiService.getRikishi).not.toHaveBeenCalled()
+  })
+
+  it('does not fetch when enabled is false', () => {
+    renderHook(() => useRikishiList([1, 2], { enabled: false }), { wrapper: QueryClientWrapper })
+    expect(rikishiService.getRikishi).not.toHaveBeenCalled()
+  })
+
+  it('fetches one query per ID and builds rikishiMap', async () => {
+    const record1 = { id: 1, shikonaEn: 'Terunofuji', heya: 'Isegahama' }
+    const record2 = { id: 2, shikonaEn: 'Hoshoryu',   heya: 'Tatsunami' }
+    rikishiService.getRikishi
+      .mockResolvedValueOnce(record1)
+      .mockResolvedValueOnce(record2)
+
+    const { result } = renderHook(() => useRikishiList([1, 2]), { wrapper: QueryClientWrapper })
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+
+    expect(result.current.rikishiMap.size).toBe(2)
+    expect(result.current.rikishiMap.get(1).heya).toBe('Isegahama')
+    expect(result.current.rikishiMap.get(2).heya).toBe('Tatsunami')
+  })
+
+  it('builds rankHistoryMap only for wrestlers that have rankHistory', async () => {
+    const rankHistory = [{ bashoId: '202605', rank: 'Yokozuna 1 East', rankValue: 101 }]
+    const record1 = { id: 1, shikonaEn: 'Terunofuji', rankHistory }
+    const record2 = { id: 2, shikonaEn: 'Hoshoryu' }            // no rankHistory
+    rikishiService.getRikishi
+      .mockResolvedValueOnce(record1)
+      .mockResolvedValueOnce(record2)
+
+    const { result } = renderHook(() => useRikishiList([1, 2]), { wrapper: QueryClientWrapper })
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+
+    expect(result.current.rankHistoryMap.size).toBe(1)
+    expect(result.current.rankHistoryMap.get(1)).toEqual(rankHistory)
+    expect(result.current.rankHistoryMap.has(2)).toBe(false)
+  })
+
+  it('does not include wrestler in rankHistoryMap when rankHistory is empty array', async () => {
+    const record = { id: 1, shikonaEn: 'Terunofuji', rankHistory: [] }
+    rikishiService.getRikishi.mockResolvedValueOnce(record)
+
+    const { result } = renderHook(() => useRikishiList([1]), { wrapper: QueryClientWrapper })
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+
+    expect(result.current.rikishiMap.size).toBe(1)  // wrestler found
+    expect(result.current.rankHistoryMap.size).toBe(0) // but no rank history
+  })
+})
+
+describe('useRikishiMatches', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('does not fetch when either ID is missing', () => {
+    renderHook(() => useRikishiMatches(null, 2), { wrapper: QueryClientWrapper })
+    renderHook(() => useRikishiMatches(1, null), { wrapper: QueryClientWrapper })
+    expect(rikishiService.getRikishiMatches).not.toHaveBeenCalled()
+  })
+
+  it('fetches match history when both IDs are provided', async () => {
+    const mockMatches = { records: [{ bashoId: '202605', result: 'win' }] }
+    rikishiService.getRikishiMatches.mockResolvedValueOnce(mockMatches)
+
+    const { result } = renderHook(() => useRikishiMatches(1, 2), { wrapper: QueryClientWrapper })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+
+    expect(rikishiService.getRikishiMatches).toHaveBeenCalledWith(1, 2)
+    expect(result.current.data).toEqual(mockMatches)
   })
 })
 

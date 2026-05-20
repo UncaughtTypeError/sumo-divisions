@@ -62,7 +62,7 @@ describe('rikishiService', () => {
 
       const result = await getRikishi(19)
 
-      expect(sumoApiClient.get).toHaveBeenCalledWith('/rikishi/19')
+      expect(sumoApiClient.get).toHaveBeenCalledWith('/rikishi/19?ranks=true')
       expect(result).toEqual(mockRikishi)
     })
 
@@ -103,7 +103,7 @@ describe('rikishiService', () => {
 
       const result = await rikishiQueryFn({ queryKey: ['rikishi', 19] })
 
-      expect(sumoApiClient.get).toHaveBeenCalledWith('/rikishi/19')
+      expect(sumoApiClient.get).toHaveBeenCalledWith('/rikishi/19?ranks=true')
       expect(result).toEqual(mockRikishi)
     })
   })
