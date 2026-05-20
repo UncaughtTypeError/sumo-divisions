@@ -11,6 +11,8 @@ import sumoApiClient from './sumoApi'
  */
 export async function getAllRikishi() {
   try {
+    // Used only for the heya overview (grouping active wrestlers by stable).
+    // Sidebar meta and rank history are fetched per-wrestler via getRikishi().
     const response = await sumoApiClient.get('/rikishis')
     return response.data
   } catch (error) {
@@ -31,7 +33,9 @@ export async function getAllRikishi() {
  */
 export async function getRikishi(rikishiId) {
   try {
-    const response = await sumoApiClient.get(`/rikishi/${rikishiId}`)
+    // ranks=true – include full rankHistory for career-high and rank movement.
+    // Individual endpoint has no pagination limit so this is always complete.
+    const response = await sumoApiClient.get(`/rikishi/${rikishiId}?ranks=true`)
     return response.data
   } catch (error) {
     console.error(`Failed to fetch rikishi ${rikishiId}:`, error)
