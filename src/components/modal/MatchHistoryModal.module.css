@@ -102,6 +102,49 @@
   opacity: 0.9;
 }
 
+.rankWithIndicators {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* Rank movement badges — same visual language as WrestlerRow */
+.rankUp {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+
+.rankDown {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+
+.rankDebut {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+
+.careerHigh {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+
 .modalWinRate {
   opacity: 0.8;
 }

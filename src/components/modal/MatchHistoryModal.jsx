@@ -9,12 +9,24 @@ import {
   getKinboshiCount,
   isYokozuna,
 } from '../../utils/awards';
-import { useAllRikishi } from '../../hooks/useRikishi';
+import { useRikishi } from '../../hooks/useRikishi';
 import { getFlagData } from '../common/flags';
 import Tooltip from '../common/Tooltip';
 import MatchGrid from './MatchGrid';
 import RikishiDetailModal from './RikishiDetailModal';
+import RankHistoryModal from './RankHistoryModal';
 import styles from './MatchHistoryModal.module.css';
+
+function RankHistoryIcon() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 11 11" fill="currentColor" aria-hidden="true">
+      <rect x="0"  y="6" width="2" height="5" rx="0.5" />
+      <rect x="3"  y="3" width="2" height="8" rx="0.5" />
+      <rect x="6"  y="1" width="2" height="10" rx="0.5" />
+      <rect x="9"  y="4" width="2" height="7" rx="0.5" />
+    </svg>
+  );
+}
 
 function getWinPercentage(record) {
   const totalDecidedMatches = record.wins + record.losses;
@@ -37,8 +49,10 @@ function MatchHistoryModal() {
     rankLookup,
   } = useDivisionStore();
 
-  const { rikishiMap } = useAllRikishi();
+  // Fetch the single wrestler's details — cache hit if the sidebar already loaded it
+  const { data: rikishiDetails } = useRikishi(selectedWrestler?.rikishiID);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isRankHistoryOpen, setIsRankHistoryOpen] = useState(false);
 
   if (!selectedWrestler) {
     return null;
@@ -51,9 +65,12 @@ function MatchHistoryModal() {
     awards = [],
     rank,
     record: matchRecord = [],
+    rankMovement = null,
+    rankDelta = 0,
+    isCareerHigh = false,
+    debutType = null,
   } = selectedWrestler;
 
-  const rikishiDetails = rikishiMap?.get(selectedWrestler.rikishiID);
   const heya = rikishiDetails?.heya;
   const shusshin = rikishiDetails?.shusshin;
   const flagData = getFlagData(shusshin);
@@ -210,7 +227,35 @@ function MatchHistoryModal() {
                       )}
                     </Dialog.Title>
                     <p className={styles.modalSubtitle}>
-                      {selectedWrestler.rank} • <strong>{record}</strong>{' '}
+                      <span className={styles.rankWithIndicators}>
+                        {selectedWrestler.rank}
+                        {rankMovement === 'up' && (
+                          <Tooltip content={`Up ${rankDelta.toFixed(1)} ranks`}>
+                            <span className={styles.rankUp}>▲ {rankDelta.toFixed(1)}</span>
+                          </Tooltip>
+                        )}
+                        {rankMovement === 'down' && (
+                          <Tooltip content={`Down ${rankDelta.toFixed(1)} ranks`}>
+                            <span className={styles.rankDown}>▼ {rankDelta.toFixed(1)}</span>
+                          </Tooltip>
+                        )}
+                        {debutType === 'sanyaku-debut' && (
+                          <Tooltip content={`First appearance at ${rank?.split(' ')[0] ?? 'this rank'}`}>
+                            <span className={styles.rankDebut}>Debut</span>
+                          </Tooltip>
+                        )}
+                        {debutType === 'division-debut' && (
+                          <Tooltip content="Division debut">
+                            <span className={styles.rankDebut}>Debut</span>
+                          </Tooltip>
+                        )}
+                        {isCareerHigh && (
+                          <Tooltip content="New career highest rank">
+                            <span className={styles.careerHigh}>High</span>
+                          </Tooltip>
+                        )}
+                      </span>
+                      {' '}• <strong>{record}</strong>{' '}
                       <small className={styles.modalWinRate}>
                         ({getWinPercentage({ wins, losses })}% Win Rate)
                       </small>
@@ -242,6 +287,17 @@ function MatchHistoryModal() {
                               aria-label="View rikishi details"
                             >
                               i
+                            </button>
+                          </Tooltip>
+                        )}
+                        {rikishiDetails?.rankHistory?.length > 0 && (
+                          <Tooltip content="Rank history" position="right">
+                            <button
+                              className={styles.infoButton}
+                              onClick={() => setIsRankHistoryOpen(true)}
+                              aria-label="View rank history"
+                            >
+                              <RankHistoryIcon />
                             </button>
                           </Tooltip>
                         )}
@@ -287,6 +343,12 @@ function MatchHistoryModal() {
       <RikishiDetailModal
         isOpen={isDetailOpen}
         onClose={() => setIsDetailOpen(false)}
+        rikishiDetails={rikishiDetails}
+        color={selectedColor}
+      />
+      <RankHistoryModal
+        isOpen={isRankHistoryOpen}
+        onClose={() => setIsRankHistoryOpen(false)}
         rikishiDetails={rikishiDetails}
         color={selectedColor}
       />
