@@ -158,6 +158,19 @@ describe('computeHistoryRowIndicators', () => {
     })
   })
 
+  it('returns "up" with delta 1.0 for S1W → O2W (cross-group bleeding fix)', () => {
+    // Position formula puts O2W (pos 5) ≡ S1W (pos 5) → delta 0, which is wrong.
+    // crossGroupDelta correction: worseWithin(S1W)=1, delta=(1+1)×0.5=1.0
+    const h = [
+      { bashoId: '202311', rank: 'Ozeki 2 West',    rankValue: 202 },
+      { bashoId: '202309', rank: 'Sekiwake 1 West', rankValue: 301 },
+    ]
+    const { movement, delta, debutType } = computeHistoryRowIndicators(h[0], 0, h)
+    expect(movement).toBe('up')
+    expect(delta).toBe(1.0)
+    expect(debutType).toBe('sanyaku-debut')
+  })
+
   it('returns "up" when going from Sekiwake 1 East to Ozeki 2 West (rankValue fixes direction)', () => {
     // Position formula incorrectly puts O2W (pos 5) below S1E (pos 4).
     // rankValue correctly shows O2W (202) < S1E (301) → improvement → "up".
@@ -165,9 +178,22 @@ describe('computeHistoryRowIndicators', () => {
       { bashoId: '202309', rank: 'Ozeki 2 West',    rankValue: 202 },
       { bashoId: '202307', rank: 'Sekiwake 1 East', rankValue: 301 },
     ]
-    const { movement, debutType } = computeHistoryRowIndicators(h[0], 0, h)
+    const { movement, delta, debutType } = computeHistoryRowIndicators(h[0], 0, h)
     expect(movement).toBe('up')
+    // S1E worseWithin=0, delta=(0+1)×0.5=0.5
+    expect(delta).toBe(0.5)
     expect(debutType).toBe('sanyaku-debut')
+  })
+
+  it('suppresses movement arrow when delta is 0 (no actual rank movement)', () => {
+    // Identical rank across bashos — no arrow should ever show "▲ 0.0" or "▼ 0.0"
+    const h = [
+      { bashoId: '202605', rank: 'Ozeki 1 West', rankValue: 201 },
+      { bashoId: '202603', rank: 'Ozeki 1 West', rankValue: 201 },
+    ]
+    const { movement, delta } = computeHistoryRowIndicators(h[0], 0, h)
+    expect(movement).toBeNull()
+    expect(delta).toBe(0)
   })
 
   it('no indicators for repeated same rank (no change, no debut, not a new high)', () => {
@@ -540,14 +566,15 @@ describe('computeWrestlerRankIndicators — rankMovement', () => {
     expect(rankDelta).toBeGreaterThan(0)
   })
 
-  it('returns same when rank is unchanged since previous basho', () => {
+  it('returns null when rank is unchanged since previous basho (no arrow shown)', () => {
+    // Unchanged rank → 'same' is normalised to null so the UI shows no indicator
     const wrestler = mkWrestler('Maegashira 8 East', 508)
     const history  = [
       h('202605', 'Maegashira 8 East', 508),
       h('202603', 'Maegashira 8 East', 508),
     ]
     const { rankMovement } = computeWrestlerRankIndicators(wrestler, history, '202605', '202603')
-    expect(rankMovement).toBe('same')
+    expect(rankMovement).toBeNull()
   })
 
   it('rankMovement is computed independently — can accompany a debut', () => {
