@@ -26,11 +26,28 @@ function calculateAge(birthDate) {
   return age;
 }
 
+function formatIntai(intai) {
+  if (!intai) return null;
+  const d = new Date(intai);
+  if (isNaN(d.getTime())) return null;
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ];
+  return `${months[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+}
+
 function RikishiDetailModal({ isOpen, onClose, rikishiDetails, color }) {
   if (!rikishiDetails) return null;
 
-  const { shikonaEn, shikonaJp, currentRank, heya, shusshin, height, weight, birthDate, debut } =
+  const { shikonaEn, shikonaJp, currentRank, heya, shusshin, height, weight, birthDate, debut, intai, rankHistory } =
     rikishiDetails;
+
+  // Career high = the entry with the lowest rankValue (best rank), ignoring pre-banzuke statuses
+  const validHistory = (rankHistory ?? []).filter(h => h.rankValue != null && h.rankValue < 2000);
+  const careerHighRank = validHistory.length > 0
+    ? validHistory.reduce((best, h) => h.rankValue < best.rankValue ? h : best).rank
+    : null;
 
   const flagData = getFlagData(shusshin);
   const FlagComponent = flagData?.component;
@@ -38,6 +55,8 @@ function RikishiDetailModal({ isOpen, onClose, rikishiDetails, color }) {
   const countryName = flagData?.name;
   const age = calculateAge(birthDate);
   const debutFormatted = formatDebut(debut);
+  const intaiFormatted = formatIntai(intai);
+  const isRetired = !!intai;
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
@@ -74,7 +93,12 @@ function RikishiDetailModal({ isOpen, onClose, rikishiDetails, color }) {
                     {shikonaEn}
                     {shikonaJp && <span className={styles.shikonaJp}>{shikonaJp}</span>}
                   </Dialog.Title>
-                  {currentRank && <p className={styles.modalSubtitle}>{currentRank}</p>}
+                  {(currentRank || isRetired) && (
+                    <p className={styles.modalSubtitle}>
+                      {currentRank}
+                      {isRetired && <span className={styles.retiredBadge}>Retired</span>}
+                    </p>
+                  )}
                 </div>
                 <button onClick={onClose} className={styles.closeButton} aria-label="Close">
                   ✕
@@ -100,6 +124,12 @@ function RikishiDetailModal({ isOpen, onClose, rikishiDetails, color }) {
                       <dd>{heya}</dd>
                     </div>
                   )}
+                  {careerHighRank && (
+                    <div className={styles.detailRow}>
+                      <dt>Career High</dt>
+                      <dd>{careerHighRank}</dd>
+                    </div>
+                  )}
                   {height && (
                     <div className={styles.detailRow}>
                       <dt>Height</dt>
@@ -122,6 +152,12 @@ function RikishiDetailModal({ isOpen, onClose, rikishiDetails, color }) {
                     <div className={styles.detailRow}>
                       <dt>Debut</dt>
                       <dd>{debutFormatted}</dd>
+                    </div>
+                  )}
+                  {intaiFormatted && (
+                    <div className={styles.detailRow}>
+                      <dt>Retired</dt>
+                      <dd>{intaiFormatted}</dd>
                     </div>
                   )}
                 </dl>
