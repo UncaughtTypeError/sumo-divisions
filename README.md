@@ -14,9 +14,16 @@ An interactive React application for visualizing sumo wrestling divisions, ranki
 - **East/West Rankings**: Side-by-side grid layout showing wrestlers ranked by East and West positions
 - **Win-Loss-Forfeit Records**: Fetched directly from API data for each wrestler
 - **Search & Sort**: Filter rikishi by name within any rank or division view; sort by rank or win count in either direction
+- **Filter by Day**: Dropdown to show only wrestlers who competed on a specific tournament day, excluding absences and forfeits
 - **Wrestler Metadata**: Each wrestler card includes heya (stable), country of origin, and rank context
+- **Rank Movement Indicators**: Each wrestler card shows how their rank changed since the previous basho — promotion (▲) or demotion (▼) with the number of rank positions moved, a debut badge for first appearances at a sanyaku rank or division, and a career-high badge the first time a wrestler reaches their personal best rank
 - **Match History**: Detailed view of each wrestler's matches including opponents and winning techniques (kimarite)
 - **Head-to-Head Records**: Historical match record between any two wrestlers, including win/loss totals, win percentage, and sortable match details
+
+### Rikishi detail
+
+- **Rikishi Info Pop-up**: Country, stable, height, weight, age, debut date, career highest rank, and retirement date for retired wrestlers
+- **Full Rank History**: A separate pop-up showing every basho's rank entry with movement indicators (▲/▼), debut badges, and career-high badges per row, plus a summary of total bashos, climbs, and drops
 
 ### Heya (Stable) dashboard
 
@@ -24,7 +31,7 @@ An interactive React application for visualizing sumo wrestling divisions, ranki
 - **Heya Cards**: Responsive card layout for each stable showing name, total count, and rank badge rows split by sekitori and apprentice tiers
 - **Dual Search**: Filter stables by name or by any rikishi within them
 - **Sort Controls**: Sort by heya name, any individual rank, or total count (ascending/descending) in both grid and card layouts
-- **Heya Sidebar**: Click any stable to open a sidebar listing all its wrestlers for the current basho, grouped by rank/division — same wrestler rows, awards, records, and match-history as the rankings sidebar
+- **Heya Sidebar**: Click any stable to open a sidebar listing all its wrestlers for the current basho, grouped by rank/division — same wrestler rows, awards, records, rank movement indicators, and match-history as the rankings sidebar
 
 ### General
 
@@ -43,11 +50,12 @@ An interactive React application for visualizing sumo wrestling divisions, ranki
 1. **View Pyramid**: The Rankings tab displays a pyramid showing all 10 sumo ranks
 2. **Select a Rank**: Click any rank card in the pyramid (e.g., Yokozuna, Maegashira, Juryo) to open that rank's wrestler sidebar
 3. **Select a Division**: Click any division label in the legend (e.g., Makuuchi) to open the full division view, showing all ranks within that division grouped with dividers
-4. **View Wrestlers**: A sidebar slides in showing all wrestlers in that rank or division, divided by East and West
-5. **Filter & Sort**: Use the search bar to filter wrestlers by name; use the sort control to order by rank or win count
-6. **View Match History**: Click any wrestler to see their complete match record for the selected basho
-7. **Browse History**: Use the basho selector in the sidebar header to switch between tournaments, with records going back to 1958
-8. **Navigate**: Close the sidebar or modal to return to the pyramid
+4. **View Wrestlers**: A sidebar slides in showing all wrestlers in that rank or division, divided by East and West; rank movement indicators (▲/▼), debut badges, and career-high badges appear automatically once wrestler data loads
+5. **Filter & Sort**: Use the search bar to filter wrestlers by name; use the sort control to order by rank or win count; use the day dropdown to show only wrestlers who competed on a specific tournament day
+6. **View Match History**: Click any wrestler to see their complete match record for the selected basho; rank movement indicators also appear in the match history pop-up header
+7. **View Rikishi Detail**: Click the **i** icon on any wrestler card to see personal details including career highest rank and retirement date (for retired wrestlers); click the bar-chart icon to open the full rank history across all bashos
+8. **Browse History**: Use the basho selector in the sidebar header to switch between tournaments, with records going back to 1958
+9. **Navigate**: Close the sidebar or modal to return to the pyramid
 
 ### Heya dashboard
 
@@ -55,7 +63,7 @@ An interactive React application for visualizing sumo wrestling divisions, ranki
 2. **Browse Stables**: View all heya in card layout (default) or switch to the sortable grid layout
 3. **Search**: Type in the heya search box to filter by stable name, or use the rikishi search to find the stable any wrestler belongs to
 4. **Sort**: In card layout use the sort dropdown; in grid layout click any column header to sort ascending or descending
-5. **Open a Stable**: Click any card or grid row to open the heya sidebar — all rikishi in that stable for the current basho, grouped by rank
+5. **Open a Stable**: Click any card or grid row to open the heya sidebar — all rikishi in that stable for the current basho, grouped by rank, with rank movement indicators
 6. **Explore Wrestlers**: The heya sidebar behaves identically to the rankings sidebar — click any wrestler for full match history, use search and sort, switch basho via the selector
 7. **Navigate**: Close the heya sidebar to return to the dashboard
 
