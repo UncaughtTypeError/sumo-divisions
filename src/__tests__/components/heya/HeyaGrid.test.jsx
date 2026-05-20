@@ -13,13 +13,13 @@ const mockHeyaList = [
     name: 'Isegahama',
     total: 10,
     byRank: { Yokozuna: [{ id: 1 }], Maegashira: [{ id: 2 }, { id: 3 }] },
-    rikishi: [],
+    rikishi: [{ id: 10 }, { id: 11 }],
   },
   {
     name: 'Tatsunami',
     total: 5,
     byRank: { Ozeki: [{ id: 4 }] },
-    rikishi: [],
+    rikishi: [{ id: 20 }],
   },
 ]
 
@@ -109,7 +109,7 @@ describe('HeyaGrid', () => {
       />
     )
     fireEvent.click(screen.getByText('Isegahama'))
-    expect(mockSelectHeya).toHaveBeenCalledWith('Isegahama')
+    expect(mockSelectHeya).toHaveBeenCalledWith('Isegahama', [10, 11])
   })
 
   it('calls selectHeya on Enter key press on a row', () => {
@@ -123,7 +123,23 @@ describe('HeyaGrid', () => {
     )
     const row = screen.getByRole('row', { name: /Isegahama/ })
     fireEvent.keyDown(row, { key: 'Enter' })
-    expect(mockSelectHeya).toHaveBeenCalledWith('Isegahama')
+    expect(mockSelectHeya).toHaveBeenCalledWith('Isegahama', [10, 11])
+  })
+
+  it('passes the heya rikishi IDs to selectHeya (regression: grid row must match card behaviour)', () => {
+    render(
+      <HeyaGrid
+        heyaList={mockHeyaList}
+        sortKey="name"
+        sortDir="asc"
+        onSort={mockOnSort}
+      />
+    )
+    fireEvent.click(screen.getByText('Isegahama'))
+    // Clicking a grid row must pass IDs just like HeyaCard — empty IDs would
+    // leave selectedHeyaRikishiIds as [] and show no wrestlers in the sidebar.
+    const [, ids] = mockSelectHeya.mock.calls[0]
+    expect(ids).toEqual([10, 11])
   })
 
   it('renders dash for zero rank counts', () => {

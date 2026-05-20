@@ -213,12 +213,13 @@ describe('divisionStore', () => {
     })
 
     it('should reset heya state to initial values', () => {
-      useDivisionStore.getState().selectHeya('Isegahama')
+      useDivisionStore.getState().selectHeya('Isegahama', [1, 2, 3])
       useDivisionStore.getState().reset()
 
       const state = useDivisionStore.getState()
       expect(state.selectedHeya).toBeNull()
       expect(state.isHeyaSidebarOpen).toBe(false)
+      expect(state.selectedHeyaRikishiIds).toEqual([])
     })
   })
 
@@ -229,6 +230,10 @@ describe('divisionStore', () => {
 
     it('should have isHeyaSidebarOpen as false', () => {
       expect(useDivisionStore.getState().isHeyaSidebarOpen).toBe(false)
+    })
+
+    it('should have empty selectedHeyaRikishiIds', () => {
+      expect(useDivisionStore.getState().selectedHeyaRikishiIds).toEqual([])
     })
   })
 
@@ -243,6 +248,16 @@ describe('divisionStore', () => {
       expect(useDivisionStore.getState().isHeyaSidebarOpen).toBe(true)
     })
 
+    it('should store rikishi IDs when provided', () => {
+      useDivisionStore.getState().selectHeya('Isegahama', [1, 2, 3])
+      expect(useDivisionStore.getState().selectedHeyaRikishiIds).toEqual([1, 2, 3])
+    })
+
+    it('should default to empty IDs when none provided', () => {
+      useDivisionStore.getState().selectHeya('Isegahama')
+      expect(useDivisionStore.getState().selectedHeyaRikishiIds).toEqual([])
+    })
+
     it('should not affect regular sidebar state', () => {
       useDivisionStore.getState().selectHeya('Isegahama')
       expect(useDivisionStore.getState().isSidebarOpen).toBe(false)
@@ -251,7 +266,7 @@ describe('divisionStore', () => {
 
   describe('closeHeyaSidebar', () => {
     beforeEach(() => {
-      useDivisionStore.getState().selectHeya('Isegahama')
+      useDivisionStore.getState().selectHeya('Isegahama', [1, 2])
     })
 
     it('should close heya sidebar', () => {
@@ -262,6 +277,11 @@ describe('divisionStore', () => {
     it('should clear selectedHeya', () => {
       useDivisionStore.getState().closeHeyaSidebar()
       expect(useDivisionStore.getState().selectedHeya).toBeNull()
+    })
+
+    it('should clear selectedHeyaRikishiIds', () => {
+      useDivisionStore.getState().closeHeyaSidebar()
+      expect(useDivisionStore.getState().selectedHeyaRikishiIds).toEqual([])
     })
   })
 })

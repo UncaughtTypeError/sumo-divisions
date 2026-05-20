@@ -18,7 +18,7 @@ const mockHeya = {
     Juryo: [{ id: 5 }],
     Makushita: [{ id: 6 }, { id: 7 }, { id: 8 }],
   },
-  rikishi: [],
+  rikishi: [{ id: 10 }, { id: 11 }, { id: 12 }],
 }
 
 describe('HeyaCard', () => {
@@ -55,13 +55,20 @@ describe('HeyaCard', () => {
   it('calls selectHeya with heya name on click', () => {
     render(<HeyaCard heya={mockHeya} />)
     fireEvent.click(screen.getByRole('button'))
-    expect(mockSelectHeya).toHaveBeenCalledWith('Isegahama')
+    expect(mockSelectHeya).toHaveBeenCalledWith('Isegahama', [10, 11, 12])
   })
 
   it('calls selectHeya on Enter key press', () => {
     render(<HeyaCard heya={mockHeya} />)
     fireEvent.keyDown(screen.getByRole('button'), { key: 'Enter' })
-    expect(mockSelectHeya).toHaveBeenCalledWith('Isegahama')
+    expect(mockSelectHeya).toHaveBeenCalledWith('Isegahama', [10, 11, 12])
+  })
+
+  it('passes the heya rikishi IDs to selectHeya (regression: empty IDs would show no wrestlers in sidebar)', () => {
+    render(<HeyaCard heya={mockHeya} />)
+    fireEvent.click(screen.getByRole('button'))
+    const [, ids] = mockSelectHeya.mock.calls[0]
+    expect(ids).toEqual([10, 11, 12])
   })
 
   it('does not call selectHeya on non-Enter key press', () => {
