@@ -12,7 +12,7 @@ vi.mock('../../../hooks/useAllDivisionsBanzuke', () => ({
 }))
 
 vi.mock('../../../hooks/useRikishi', () => ({
-  useAllRikishi: vi.fn(),
+  useRikishiList: vi.fn(() => ({ rikishiMap: new Map(), rankHistoryMap: new Map(), isLoading: false })),
 }))
 
 vi.mock('../../../hooks/useBashoResults', () => ({
@@ -56,7 +56,7 @@ vi.mock('../../../components/common/ErrorMessage', () => ({
 
 import useDivisionStore from '../../../store/divisionStore'
 import { useAllDivisionsBanzuke } from '../../../hooks/useAllDivisionsBanzuke'
-import { useAllRikishi } from '../../../hooks/useRikishi'
+import { useRikishiList } from '../../../hooks/useRikishi'
 import useBashoResults from '../../../hooks/useBashoResults'
 
 const mockCloseHeyaSidebar = vi.fn()
@@ -88,14 +88,11 @@ const juryoWrestler = {
   awards: [],
 }
 
-const rikishiMap = new Map([
-  [1, { id: 1, heya: 'Isegahama', shikonaEn: 'Terunofuji' }],
-  [2, { id: 2, heya: 'Tatsunami', shikonaEn: 'Mitoryu' }],
-])
-
 function setupStore(overrides = {}) {
   useDivisionStore.mockReturnValue({
     selectedHeya: 'Isegahama',
+    // IDs of wrestlers in this heya — passed from HeyaCard on click
+    selectedHeyaRikishiIds: [1], // Terunofuji belongs to Isegahama
     isHeyaSidebarOpen: true,
     closeHeyaSidebar: mockCloseHeyaSidebar,
     openModal: mockOpenModal,
@@ -110,7 +107,6 @@ describe('HeyaSidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     useBashoResults.mockReturnValue({ data: null })
-    useAllRikishi.mockReturnValue({ rikishiMap: new Map(), isLoading: false })
     useAllDivisionsBanzuke.mockReturnValue({
       allWrestlers: [],
       isLoading: false,
@@ -192,23 +188,19 @@ describe('HeyaSidebar', () => {
 
   describe('with heya wrestlers', () => {
     beforeEach(() => {
+      // Store has selectedHeyaRikishiIds: [1] → only Terunofuji passes the ID filter
       setupStore()
       useAllDivisionsBanzuke.mockReturnValue({
         allWrestlers: [makuuchiWrestler, juryoWrestler],
         isLoading: false,
         isError: false,
       })
-      useAllRikishi.mockReturnValue({
-        rikishiMap,
-        isLoading: false,
-      })
     })
 
-    it('shows only wrestlers from the selected heya', () => {
+    it('shows only wrestlers whose ID is in selectedHeyaRikishiIds', () => {
       renderWithQueryClient(<HeyaSidebar />)
-      // Terunofuji belongs to Isegahama → should appear
       expect(screen.getByText('Terunofuji')).toBeInTheDocument()
-      // Mitoryu belongs to Tatsunami → should not appear
+      // Mitoryu (ID 2) is not in selectedHeyaRikishiIds: [1] → filtered out
       expect(screen.queryByText('Mitoryu')).not.toBeInTheDocument()
     })
 
@@ -227,12 +219,9 @@ describe('HeyaSidebar', () => {
       expect(screen.getByLabelText('Sort order')).toBeInTheDocument()
     })
 
-    it('renders no-data message when heya has no wrestlers in this basho', () => {
-      // Override so all wrestlers belong to a different heya
-      useAllRikishi.mockReturnValue({
-        rikishiMap: new Map([[1, { id: 1, heya: 'OtherHeya' }]]),
-        isLoading: false,
-      })
+    it('renders no-data message when no banzuke wrestlers match the heya IDs', () => {
+      // Store passes ID 99 which doesn't exist in the banzuke
+      setupStore({ selectedHeyaRikishiIds: [99] })
       renderWithQueryClient(<HeyaSidebar />)
       expect(screen.getByText(/No rikishi found in Isegahama/)).toBeInTheDocument()
     })
@@ -272,19 +261,14 @@ describe('HeyaSidebar', () => {
       awards: [],
     }
 
-    const heyaRikishiMap = new Map([
-      [1, { id: 1, heya: 'Isegahama', shikonaEn: 'Terunofuji' }],
-      [2, { id: 2, heya: 'Isegahama', shikonaEn: 'Nishikigi' }],
-    ])
-
     beforeEach(() => {
-      setupStore()
+      // Both wrestlers (IDs 1 and 2) are in the heya
+      setupStore({ selectedHeyaRikishiIds: [1, 2] })
       useAllDivisionsBanzuke.mockReturnValue({
         allWrestlers: [wrestlerWithThreeBouts, wrestlerWithAbsence],
         isLoading: false,
         isError: false,
       })
-      useAllRikishi.mockReturnValue({ rikishiMap: heyaRikishiMap, isLoading: false })
     })
 
     it('renders the day filter dropdown when records exist', () => {

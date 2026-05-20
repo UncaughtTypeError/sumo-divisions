@@ -18,7 +18,7 @@ vi.mock('../../../hooks/useBashoResults', () => ({
 }))
 
 vi.mock('../../../hooks/useRikishi', () => ({
-  useAllRikishi: vi.fn(() => ({ rikishiMap: new Map(), isLoading: false })),
+  useRikishiList: vi.fn(() => ({ rikishiMap: new Map(), rankHistoryMap: new Map(), isLoading: false })),
 }))
 
 // Mock child components
