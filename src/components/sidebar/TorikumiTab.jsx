@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import TorikumiList from './TorikumiList';
 import Loading from '../common/Loading';
 import ErrorMessage from '../common/ErrorMessage';
+import Tooltip from '../common/Tooltip';
 import { useTorikumiAutoRefresh } from '../../hooks/useTorikumiAutoRefresh';
 import styles from './WrestlerSidebar.module.css';
 
@@ -134,15 +135,25 @@ function TorikumiTab({
           </select>
         )}
         {showRefreshButton && (
-          <button
-            className={styles.refreshButton}
-            onClick={handleManualRefresh}
-            disabled={!canRefresh}
-            aria-label="Refresh torikumi results"
-            title={canRefresh ? 'Refresh results' : 'Refresh unavailable'}
+          <Tooltip
+            content={
+              isFetching
+                ? 'Refreshing…'
+                : canRefresh
+                  ? 'Refresh results'
+                  : 'Please wait — refreshed recently'
+            }
+            position="left"
           >
-            ↻
-          </button>
+            <button
+              className={styles.refreshButton}
+              onClick={handleManualRefresh}
+              disabled={!canRefresh}
+              aria-label="Refresh torikumi results"
+            >
+              ↻
+            </button>
+          </Tooltip>
         )}
       </div>
 
