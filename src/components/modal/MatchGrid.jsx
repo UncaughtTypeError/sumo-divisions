@@ -3,7 +3,7 @@ import Tooltip from '../common/Tooltip';
 import KimariteModal from './KimariteModal';
 import HeadToHeadModal from './HeadToHeadModal';
 import { getKimariteInfo } from '../../utils/kimarite';
-import { isKinboshiMatch, isYokozuna } from '../../utils/awards';
+import { isKinboshiMatch, isYokozuna } from '../../utils/records';
 import useDivisionStore from '../../store/divisionStore';
 import styles from './MatchGrid.module.css';
 

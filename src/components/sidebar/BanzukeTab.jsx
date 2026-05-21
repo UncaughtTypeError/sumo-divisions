@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { computeRecordOnDay, isAbsentKyujo } from '../../utils/awards';
+import { computeRecordOnDay, isAbsentKyujo } from '../../utils/records';
 import WrestlerGrid from './WrestlerGrid';
 import BashoWinners from './BashoWinners';
 import Loading from '../common/Loading';

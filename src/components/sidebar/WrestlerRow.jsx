@@ -1,13 +1,12 @@
 import { useState } from 'react';
+import { AWARD_INFO, AWARD_TYPES } from '../../utils/awards';
 import {
-  AWARD_INFO,
-  AWARD_TYPES,
   RECORD_STATUS_INFO,
   getRecordStatus,
   getKinboshiCount,
   isMaegashira,
   isYokozuna,
-} from '../../utils/awards';
+} from '../../utils/records';
 import { getFlagData } from '../common/flags';
 import useDivisionStore from '../../store/divisionStore';
 import Tooltip from '../common/Tooltip';

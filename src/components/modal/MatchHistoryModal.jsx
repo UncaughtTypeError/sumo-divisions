@@ -4,11 +4,13 @@ import useDivisionStore from '../../store/divisionStore';
 import {
   AWARD_INFO,
   AWARD_TYPES,
+} from '../../utils/awards';
+import {
   RECORD_STATUS_INFO,
   getRecordStatus,
   getKinboshiCount,
   isYokozuna,
-} from '../../utils/awards';
+} from '../../utils/records';
 import { useRikishi } from '../../hooks/useRikishi';
 import { getFlagData } from '../common/flags';
 import Tooltip from '../common/Tooltip';

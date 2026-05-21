@@ -4,7 +4,7 @@ import KimariteModal from '../modal/KimariteModal';
 import { getKimariteInfo } from '../../utils/kimarite';
 import {
   computeRecordOnDay, getRecordStatus, RECORD_STATUS_INFO,
-} from '../../utils/awards';
+} from '../../utils/records';
 import styles from './TorikumiList.module.css';
 
 // ── Result icon ───────────────────────────────────────────────────────────────
