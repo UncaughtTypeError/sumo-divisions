@@ -2,13 +2,16 @@ import { useState, useMemo } from 'react';
 import TorikumiList from './TorikumiList';
 import Loading from '../common/Loading';
 import ErrorMessage from '../common/ErrorMessage';
+import { useTorikumiAutoRefresh } from '../../hooks/useTorikumiAutoRefresh';
 import styles from './WrestlerSidebar.module.css';
 
 function TorikumiTab({
   torikumiData,
   isLoading,
   error,
+  refetch,
   torikumiMaxDay,
+  maxDay,
   day,
   onDayChange,
   currentApiDivision,
@@ -21,9 +24,10 @@ function TorikumiTab({
   const [filter, setFilter] = useState('');
   const [sort,   setSort]   = useState('asc');
 
+  const allBouts = torikumiData?.bouts ?? [];
+
   const filteredBouts = useMemo(() => {
-    const bouts = torikumiData?.bouts ?? [];
-    let result = bouts;
+    let result = allBouts;
 
     if (!currentIsDivisionView && currentRank) {
       result = result.filter(
@@ -41,7 +45,20 @@ function TorikumiTab({
     }
 
     return sort === 'desc' ? [...result].reverse() : result;
-  }, [torikumiData, filter, sort, currentIsDivisionView, currentRank]);
+  }, [allBouts, filter, sort, currentIsDivisionView, currentRank]);
+
+  const {
+    showRefreshButton,
+    canRefresh,
+    handleManualRefresh,
+  } = useTorikumiAutoRefresh({
+    bouts:     allBouts,
+    day,
+    maxDay,
+    isLoading,
+    refetch,
+    enabled:   true,
+  });
 
   return (
     <>
@@ -84,6 +101,17 @@ function TorikumiTab({
               <option key={i + 1} value={i + 1}>Day {i + 1}</option>
             ))}
           </select>
+        )}
+        {showRefreshButton && (
+          <button
+            className={styles.refreshButton}
+            onClick={handleManualRefresh}
+            disabled={!canRefresh}
+            aria-label="Refresh torikumi results"
+            title={canRefresh ? 'Refresh results' : 'Refresh unavailable'}
+          >
+            ↻
+          </button>
         )}
       </div>
 

@@ -35,12 +35,83 @@
 .sidebarHeader {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 1.5rem;
+  align-items: flex-start;
+  padding: 1rem 1.25rem;
   border-bottom: 2px solid var(--color-border);
   color: white;
-  gap: 3em;
+  gap: 1rem;
+  flex-shrink: 0;
 }
+
+.headerMain {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Division / rank selector inside the header */
+.divisionSelectorRow {
+  display: flex;
+  align-items: center;
+}
+
+.divisionSelect {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  appearance: none;
+  max-width: 100%;
+}
+
+.divisionSelect option {
+  background: var(--color-text);
+  color: white;
+  font-size: 0.9rem;
+}
+
+.divisionSelect:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* Tab bar */
+.tabBar {
+  display: flex;
+  border-bottom: 2px solid var(--color-border);
+  background: white;
+  flex-shrink: 0;
+}
+
+.tab {
+  flex: 1;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-accent);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.tab:hover {
+  color: var(--color-text);
+}
+
+.tabActive {
+  color: var(--color-text);
+  border-bottom-color: var(--color-text);
+}
+
 
 .sidebarHeader h2 {
   margin: 0;
@@ -156,6 +227,32 @@
 .sortSelect:focus {
   outline: none;
   border-color: var(--color-text-accent);
+}
+
+.refreshButton {
+  padding: 0.5rem 0.625rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  line-height: 1;
+  background: var(--color-bg, white);
+  color: var(--color-text-accent);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.refreshButton:hover:not(:disabled) {
+  color: var(--color-text);
+  border-color: var(--color-text-accent);
+}
+
+.refreshButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .gridContainer {
