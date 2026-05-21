@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import TorikumiTab from '../../../components/sidebar/TorikumiTab'
 
 vi.mock('../../../components/sidebar/TorikumiList', () => ({
@@ -35,6 +35,7 @@ const makeBout = (east, west, eastRank = 'Yokozuna 1 East', westRank = 'Ozeki 1 
 const defaultProps = {
   torikumiData: null,
   isLoading: false,
+  isFetching: false,
   error: null,
   refetch: vi.fn(),
   torikumiMaxDay: 5,
@@ -53,6 +54,7 @@ const defaultProps = {
 
 describe('TorikumiTab', () => {
   beforeEach(() => vi.clearAllMocks())
+  afterEach(() => vi.useRealTimers())
 
   // ── Controls ──────────────────────────────────────────────────────────────
 
@@ -87,12 +89,35 @@ describe('TorikumiTab', () => {
 
   // ── Loading / error ───────────────────────────────────────────────────────
 
-  it('shows loading indicator', () => {
-    render(<TorikumiTab {...defaultProps} isLoading={true} />)
-    expect(screen.getByTestId('loading')).toBeInTheDocument()
+  it('shows loading indicator during initial load (isLoading)', () => {
+    render(<TorikumiTab {...defaultProps} isLoading={true} isFetching={true} />)
+    expect(screen.getByTestId('loading')).toHaveTextContent('Loading torikumi...')
   })
 
-  it('shows error message', () => {
+  it('shows refresh loader when isFetching with existing data (refetch)', () => {
+    vi.useFakeTimers()
+    const bouts = [makeBout('Terunofuji', 'Hoshoryu')]
+    render(<TorikumiTab {...defaultProps} torikumiData={{ bouts }} isFetching={true} />)
+    expect(screen.getByTestId('loading')).toHaveTextContent('Refreshing results...')
+  })
+
+  it('keeps refresh loader visible for at least 1.5 s after refetch completes', () => {
+    vi.useFakeTimers()
+    const bouts = [makeBout('Terunofuji', 'Hoshoryu')]
+    const { rerender } = render(
+      <TorikumiTab {...defaultProps} torikumiData={{ bouts }} isFetching={true} />,
+    )
+    // Refetch completes
+    act(() => { rerender(<TorikumiTab {...defaultProps} torikumiData={{ bouts }} isFetching={false} />) })
+    // Before 1.5 s the loader is still shown
+    act(() => { vi.advanceTimersByTime(1000) })
+    expect(screen.getByTestId('loading')).toBeInTheDocument()
+    // After 1.5 s it disappears
+    act(() => { vi.advanceTimersByTime(600) })
+    expect(screen.queryByTestId('loading')).not.toBeInTheDocument()
+  })
+
+  it('shows error message when not loading', () => {
     render(<TorikumiTab {...defaultProps} error={{ message: 'Fetch failed' }} />)
     expect(screen.getByTestId('error-message')).toBeInTheDocument()
   })
