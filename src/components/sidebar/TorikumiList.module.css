@@ -1,0 +1,231 @@
+.torikumiList {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Sticky header ─────────────────────────────────────────────────────────── */
+.torikumiHeader {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-text);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  position: sticky;
+  top: -15px;
+  z-index: 1;
+}
+
+/* White strip that covers content bleeding above the sticky bar */
+.torikumiHeader::before {
+  content: '';
+  height: 10px;
+  width: 100%;
+  background: white;
+  position: absolute;
+  top: -10px;
+}
+
+.torikumiHeaderEast {
+  text-align: left;
+}
+
+.torikumiHeaderCenter {
+  text-align: center;
+  min-width: 80px;
+}
+
+.torikumiHeaderWest {
+  text-align: right;
+}
+
+/* ── Bout row ──────────────────────────────────────────────────────────────── */
+.torikumiRow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  transition: background var(--transition-fast);
+}
+
+.torikumiRow:last-child {
+  border-bottom: none;
+}
+
+.torikumiRow:hover {
+  background: var(--color-background-alt);
+}
+
+/* ── Wrestler cell ─────────────────────────────────────────────────────────── */
+.torikumiWrestler {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.torikumiEast {
+  align-items: flex-start;
+}
+
+.torikumiWest {
+  align-items: flex-end;
+}
+
+/* Name row: [badge] [name] [icon] for east; reversed for west */
+.torikumiNameRow {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: nowrap;
+}
+
+.torikumiWest .torikumiNameRow {
+  flex-direction: row-reverse;
+}
+
+/* Plain name (non-clickable) */
+.torikumiName {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+/* Clickable name (looks like a link) */
+.torikumiNameBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--color-text);
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+  transition: color var(--transition-fast);
+}
+
+.torikumiNameBtn:hover {
+  color: var(--color-link);
+}
+
+.torikumiNameWinner {
+  color: var(--color-success);
+}
+
+.torikumiRank {
+  font-size: 0.65rem;
+  color: var(--color-text-muted);
+}
+
+.torikumiRecord {
+  font-size: 0.7rem;
+  color: var(--color-text-accent);
+  font-family: 'Courier New', monospace;
+}
+
+/* ── KK / MK badge ─────────────────────────────────────────────────────────── */
+.torikumiBadge {
+  font-size: 0.55rem;
+  font-weight: 700;
+  padding: 0.1rem 0.2rem;
+  border-radius: 3px;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.torikumiBadgeKK {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.torikumiBadgeMK {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+/* ── Result icons ──────────────────────────────────────────────────────────── */
+.shiroboshi,
+.kuroboshi,
+.fusenshoSquare,
+.fusenpaiSquare {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  flex-shrink: 0;
+}
+
+.shiroboshi,
+.kuroboshi {
+  border-radius: 50%;
+}
+
+.shiroboshi,
+.fusenshoSquare {
+  background: white;
+  border: 2px solid var(--color-text);
+}
+
+.kuroboshi,
+.fusenpaiSquare {
+  background: var(--color-text);
+  border: 2px solid var(--color-text);
+}
+
+/* ── Centre kimarite column ────────────────────────────────────────────────── */
+.torikumiCenter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 72px;
+  padding-top: 0.15rem;
+}
+
+/* Clickable kimarite (known technique) */
+.torikumiKimariteBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--color-text-accent);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+  text-align: center;
+  transition: color var(--transition-fast);
+}
+
+.torikumiKimariteBtn:hover {
+  color: var(--color-link);
+}
+
+.torikumiKimariteBtn:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Non-clickable kimarite (unknown technique) */
+.torikumiKimarite {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text-accent);
+  text-align: center;
+}
+
+.torikumiVs {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
