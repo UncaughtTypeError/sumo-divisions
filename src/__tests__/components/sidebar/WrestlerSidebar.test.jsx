@@ -9,7 +9,7 @@ vi.mock('../../../store/divisionStore', () => ({ default: vi.fn() }))
 vi.mock('../../../hooks/useBanzuke', () => ({ default: vi.fn() }))
 vi.mock('../../../hooks/useBashoResults', () => ({ default: vi.fn() }))
 vi.mock('../../../hooks/useTorikumi', () => ({
-  default: vi.fn(() => ({ data: null, isLoading: false, error: null, refetch: vi.fn() })),
+  default: vi.fn(() => ({ data: null, isLoading: false, isFetching: false, error: null, refetch: vi.fn() })),
 }))
 vi.mock('../../../hooks/useRikishi', () => ({
   useRikishiList: vi.fn(() => ({ rikishiMap: new Map(), rankHistoryMap: new Map(), isLoading: false })),

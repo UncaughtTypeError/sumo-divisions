@@ -28,8 +28,9 @@ import {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const pendingBout  = { matchNo: 1, eastId: 1, westId: 2, winnerId: null }
-const done = (n)  => ({ matchNo: n, eastId: 1, westId: 2, winnerId: 10 })
+// API returns winnerId: 0 (not null) for unplayed bouts
+const pendingBout  = { matchNo: 1, eastId: 1, westId: 2, winnerId: 0 }
+const done = (n)   => ({ matchNo: n, eastId: 1, westId: 2, winnerId: 10 })
 
 const makeProps = (overrides = {}) => ({
   bouts:     [pendingBout],
@@ -76,6 +77,24 @@ describe('useTorikumiAutoRefresh', () => {
         useTorikumiAutoRefresh(makeProps({ day: 6, maxDay: 5, bouts: [pendingBout] })),
       )
       expect(result.current.showRefreshButton).toBe(true)
+    })
+
+    it('treats winnerId: 0 as pending (the real API shape for an unplayed bout)', () => {
+      const { result } = renderHook(() =>
+        useTorikumiAutoRefresh(makeProps({
+          bouts: [{ matchNo: 1, eastId: 1, westId: 2, winnerId: 0 }],
+        })),
+      )
+      expect(result.current.showRefreshButton).toBe(true)
+    })
+
+    it('treats any truthy winnerId as a completed bout', () => {
+      const { result } = renderHook(() =>
+        useTorikumiAutoRefresh(makeProps({
+          bouts: [{ matchNo: 1, eastId: 1, westId: 2, winnerId: 42 }],
+        })),
+      )
+      expect(result.current.showRefreshButton).toBe(false)
     })
 
     it('is false when on a past day (day < maxDay)', () => {
@@ -279,6 +298,40 @@ describe('useTorikumiAutoRefresh', () => {
   describe('consecutive no-results tracking', () => {
     it('starts in active phase', () => {
       const { result } = renderHook(() => useTorikumiAutoRefresh(makeProps()))
+      expect(result.current.autoRefreshPhase).toBe('active')
+    })
+
+    it('detects new results when winnerId changes from 0 to a positive integer', () => {
+      const refetch = vi.fn()
+      const initial = [{ matchNo: 1, eastId: 1, westId: 2, winnerId: 0 }]
+      const updated = [{ matchNo: 1, eastId: 1, westId: 2, winnerId: 10 }]
+      const props = makeProps({ refetch, bouts: initial })
+      const { result, rerender } = renderHook((p) => useTorikumiAutoRefresh(p), {
+        initialProps: props,
+      })
+
+      // Perform 2 no-result refreshes (threshold is 3)
+      for (let i = 0; i < CONSECUTIVE_THRESHOLD - 1; i++) {
+        act(() => { vi.advanceTimersByTime(NORMAL_INTERVAL_MS) })
+        rerender({ ...props, isLoading: true, bouts: initial })
+        act(() => { rerender({ ...props, isLoading: false, bouts: initial }) })
+      }
+      expect(result.current.autoRefreshPhase).toBe('active')
+
+      // Next refresh returns a bout with a winner (0 → 10)
+      act(() => { vi.advanceTimersByTime(NORMAL_INTERVAL_MS) })
+      rerender({ ...props, isLoading: true, bouts: initial })
+      act(() => { rerender({ ...props, isLoading: false, bouts: updated }) })
+
+      // Phase must still be active (counter was reset by the new result)
+      expect(result.current.autoRefreshPhase).toBe('active')
+
+      // Another 2 no-result refreshes should still not trigger backoff
+      for (let i = 0; i < CONSECUTIVE_THRESHOLD - 1; i++) {
+        act(() => { vi.advanceTimersByTime(NORMAL_INTERVAL_MS) })
+        rerender({ ...props, isLoading: true, bouts: updated })
+        act(() => { rerender({ ...props, isLoading: false, bouts: updated }) })
+      }
       expect(result.current.autoRefreshPhase).toBe('active')
     })
 

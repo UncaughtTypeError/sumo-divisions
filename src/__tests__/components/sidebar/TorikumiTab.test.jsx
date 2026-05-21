@@ -122,6 +122,83 @@ describe('TorikumiTab', () => {
     expect(screen.getByTestId('error-message')).toBeInTheDocument()
   })
 
+  // ── Refresh button ────────────────────────────────────────────────────────
+
+  const pendingBout = { matchNo: 1, eastId: 1, westId: 2, winnerId: 0,
+    eastShikona: 'A', westShikona: 'B', eastRank: 'Y1e', westRank: 'O1w', kimarite: null }
+  const completedBout = { ...pendingBout, winnerId: 10, kimarite: 'yorikiri' }
+
+  it('shows refresh button when on the latest day with pending bouts (winnerId: 0)', () => {
+    render(
+      <TorikumiTab {...defaultProps} torikumiData={{ bouts: [pendingBout] }} day={4} maxDay={4} />,
+    )
+    expect(screen.getByLabelText('Refresh torikumi results')).toBeInTheDocument()
+  })
+
+  it('hides refresh button when all bouts have a winner (no pending)', () => {
+    render(
+      <TorikumiTab {...defaultProps} torikumiData={{ bouts: [completedBout] }} day={4} maxDay={4} />,
+    )
+    expect(screen.queryByLabelText('Refresh torikumi results')).not.toBeInTheDocument()
+  })
+
+  it('hides refresh button when viewing a past day', () => {
+    render(
+      <TorikumiTab {...defaultProps} torikumiData={{ bouts: [pendingBout] }} day={3} maxDay={4} />,
+    )
+    expect(screen.queryByLabelText('Refresh torikumi results')).not.toBeInTheDocument()
+  })
+
+  it('hides refresh button when bouts is empty', () => {
+    render(
+      <TorikumiTab {...defaultProps} torikumiData={{ bouts: [] }} day={4} maxDay={4} />,
+    )
+    expect(screen.queryByLabelText('Refresh torikumi results')).not.toBeInTheDocument()
+  })
+
+  it('disables refresh button while isFetching', () => {
+    vi.useFakeTimers()
+    render(
+      <TorikumiTab
+        {...defaultProps}
+        torikumiData={{ bouts: [pendingBout] }}
+        day={4} maxDay={4} isFetching={true}
+      />,
+    )
+    expect(screen.getByLabelText('Refresh torikumi results')).toBeDisabled()
+  })
+
+  it('calls refetch when refresh button is clicked', () => {
+    const refetch = vi.fn()
+    vi.useFakeTimers() // prevent cooldown timer leak
+    render(
+      <TorikumiTab
+        {...defaultProps}
+        torikumiData={{ bouts: [pendingBout] }}
+        day={4} maxDay={4}
+        refetch={refetch}
+      />,
+    )
+    fireEvent.click(screen.getByLabelText('Refresh torikumi results'))
+    expect(refetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('disables refresh button for 60 s after clicking (cooldown)', () => {
+    vi.useFakeTimers()
+    render(
+      <TorikumiTab
+        {...defaultProps}
+        torikumiData={{ bouts: [pendingBout] }}
+        day={4} maxDay={4}
+      />,
+    )
+    const btn = screen.getByLabelText('Refresh torikumi results')
+    fireEvent.click(btn)
+    expect(btn).toBeDisabled()
+    act(() => { vi.advanceTimersByTime(60_000) })
+    expect(btn).not.toBeDisabled()
+  })
+
   // ── Empty state ───────────────────────────────────────────────────────────
 
   it('shows empty state message when no bouts match', () => {
