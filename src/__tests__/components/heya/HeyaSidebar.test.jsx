@@ -23,7 +23,10 @@ vi.mock('../../../components/sidebar/WrestlerGrid', () => ({
   default: ({ wrestlers, side }) => (
     <div data-testid={`wrestler-grid-${side.toLowerCase()}`}>
       {wrestlers.map((w) => (
-        <div key={w.rikishiID}>{w.shikonaEn}</div>
+        <div key={w.rikishiID}>
+          {w.shikonaEn}
+          {w.isKyujo && <span>Kyujo</span>}
+        </div>
       ))}
     </div>
   ),
@@ -291,19 +294,20 @@ describe('HeyaSidebar', () => {
       expect(select.options[3].text).toBe('Day 3')
     })
 
-    it('hides a wrestler with result:"absent" on the selected day', () => {
+    it('shows wrestler with Kyujo badge for result:"absent" on the selected day', () => {
       renderWithQueryClient(<HeyaSidebar />)
       expect(screen.getByText('Terunofuji')).toBeInTheDocument()
       expect(screen.getByText('Nishikigi')).toBeInTheDocument()
 
-      // Nishikigi has result:'absent' on day 2 → not competing → excluded
+      // Nishikigi has result:'absent' on day 2 → shown with Kyujo badge
       fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '2' } })
 
       expect(screen.getByText('Terunofuji')).toBeInTheDocument()
-      expect(screen.queryByText('Nishikigi')).not.toBeInTheDocument()
+      expect(screen.getByText('Nishikigi')).toBeInTheDocument()
+      expect(screen.getByText('Kyujo')).toBeInTheDocument()
     })
 
-    it('hides a wrestler with result:"fusen loss" on the selected day', () => {
+    it('shows a wrestler with result:"fusen loss" on the selected day', () => {
       useAllDivisionsBanzuke.mockReturnValue({
         allWrestlers: [
           wrestlerWithThreeBouts,
@@ -323,8 +327,8 @@ describe('HeyaSidebar', () => {
 
       fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '2' } })
 
-      // fusen loss = wrestler forfeited (was absent) → excluded
-      expect(screen.queryByText('Nishikigi')).not.toBeInTheDocument()
+      // fusen loss = wrestler has a record entry for this day → still shown
+      expect(screen.getByText('Nishikigi')).toBeInTheDocument()
     })
 
     it('shows a wrestler with result:"fusen win" on the selected day', () => {
