@@ -5,7 +5,7 @@ import { useRikishiList } from '../../hooks/useRikishi';
 import useBashoResults from '../../hooks/useBashoResults';
 import { getCurrentBashoId } from '../../utils/bashoId';
 import { RANK_ORDER, RANK_INFO, RANK_TO_API_DIVISION, RANK_COLORS } from '../../utils/constants';
-import { getWrestlerAwards, computeRecordOnDay } from '../../utils/awards';
+import { getWrestlerAwards, computeRecordOnDay, isAbsentKyujo } from '../../utils/awards';
 import { getPreviousBashoId, computeWrestlerRankIndicators } from '../../utils/rankMovement';
 import WrestlerGrid from '../sidebar/WrestlerGrid';
 import BashoSelector from '../sidebar/BashoSelector';
@@ -152,7 +152,8 @@ function HeyaSidebar() {
           const dayResult = w.record?.[selectedDay - 1]?.result;
           if (!dayResult || dayResult === '') return null;
           const dayRecord = computeRecordOnDay(w.record, selectedDay);
-          return { ...w, ...dayRecord, isKyujo: dayResult === 'absent' };
+          const apiDiv = RANK_TO_API_DIVISION[w.rank?.split(' ')[0]];
+          return { ...w, ...dayRecord, isKyujo: dayResult === 'absent' && isAbsentKyujo(w.record, selectedDay, apiDiv) };
         }
         return { ...w, isKyujo: false };
       })

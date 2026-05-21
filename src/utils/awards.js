@@ -127,6 +127,30 @@ export function computeRecordOnDay(record, day) {
 }
 
 /**
+ * Determine whether an 'absent' result on a specific day represents a genuine
+ * kyujo withdrawal rather than a scheduled non-fight day.
+ *
+ * Sekitori (Makuuchi / Juryo) fight every day, so any absence is always kyujo.
+ * Lower-division wrestlers only fight 7 bouts, so 'absent' on off-days is normal.
+ * We treat a lower-division absence as genuine kyujo only when there are no
+ * subsequent wins, losses, or fusen-wins in the record — i.e. the wrestler
+ * did not compete again after that day.
+ *
+ * @param {Array}   record   - Wrestler's full record array from banzuke data
+ * @param {number}  day      - The 1-based day being inspected
+ * @param {string}  division - API division name (e.g. "Makuuchi", "Makushita")
+ * @returns {boolean}
+ */
+export function isAbsentKyujo(record, day, division) {
+  if (!Array.isArray(record)) return false;
+  if (SEKITORI_DIVISIONS.includes(division)) return true;
+  // Lower division: genuine kyujo only if the wrestler has no subsequent bouts
+  return !record.slice(day).some(
+    (r) => r.result === 'win' || r.result === 'loss' || r.result === 'fusen win',
+  );
+}
+
+/**
  * Get the record status (kachi-koshi or make-koshi) for a wrestler
  * @param {number} wins - Number of wins
  * @param {number} losses - Number of losses

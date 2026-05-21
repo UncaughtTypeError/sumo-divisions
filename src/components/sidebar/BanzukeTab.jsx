@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { computeRecordOnDay } from '../../utils/awards';
+import { computeRecordOnDay, isAbsentKyujo } from '../../utils/awards';
 import WrestlerGrid from './WrestlerGrid';
 import BashoWinners from './BashoWinners';
 import Loading from '../common/Loading';
@@ -35,7 +35,7 @@ function BanzukeTab({
           const dayResult = w.record?.[selectedDay - 1]?.result;
           if (!dayResult || dayResult === '') return null;
           const dayRecord = computeRecordOnDay(w.record, selectedDay);
-          return { ...w, ...dayRecord, isKyujo: dayResult === 'absent' };
+          return { ...w, ...dayRecord, isKyujo: dayResult === 'absent' && isAbsentKyujo(w.record, selectedDay, currentApiDivision) };
         }
         return { ...w, isKyujo: false };
       })
