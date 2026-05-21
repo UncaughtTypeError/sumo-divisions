@@ -7,6 +7,7 @@ import {
   SEKITORI_DIVISIONS,
   getWrestlerAwards,
   getRecordStatus,
+  isAbsentKyujo,
   isYokozuna,
   isMaegashira,
   buildRankLookup,
@@ -532,6 +533,70 @@ describe('awards utilities', () => {
       it('should return false for Ozeki wrestler', () => {
         const match = { result: 'win', opponentID: 1 }
         expect(isKinboshiMatch('Ozeki 1 East', match, rankLookup)).toBe(false)
+      })
+    })
+  })
+
+  describe('isAbsentKyujo', () => {
+    const r = (result) => ({ result })
+
+    describe('sekitori divisions', () => {
+      it('returns true for Makuuchi — every absent is genuine kyujo', () => {
+        const record = [r('win'), r('absent'), r('win')]
+        expect(isAbsentKyujo(record, 2, 'Makuuchi')).toBe(true)
+      })
+
+      it('returns true for Juryo', () => {
+        const record = [r('win'), r('absent'), r('win')]
+        expect(isAbsentKyujo(record, 2, 'Juryo')).toBe(true)
+      })
+    })
+
+    describe('lower divisions — scheduled non-fight day', () => {
+      it('returns false when a win follows the absent day', () => {
+        // Day 2 absent, day 3 win → non-fight day
+        const record = [r('win'), r('absent'), r('win')]
+        expect(isAbsentKyujo(record, 2, 'Makushita')).toBe(false)
+      })
+
+      it('returns false when a loss follows the absent day', () => {
+        const record = [r('win'), r('absent'), r('loss')]
+        expect(isAbsentKyujo(record, 2, 'Sandanme')).toBe(false)
+      })
+
+      it('returns false when a fusen win follows the absent day', () => {
+        const record = [r('win'), r('absent'), r('fusen win')]
+        expect(isAbsentKyujo(record, 2, 'Jonidan')).toBe(false)
+      })
+    })
+
+    describe('lower divisions — genuine kyujo', () => {
+      it('returns true when no bouts follow the absent day', () => {
+        // Withdrew after day 1 — days 2 onwards all absent
+        const record = [r('win'), r('absent'), r('absent'), r('absent')]
+        expect(isAbsentKyujo(record, 2, 'Makushita')).toBe(true)
+      })
+
+      it('returns true when only future empty entries follow', () => {
+        const record = [r('win'), r('absent'), r(''), r('')]
+        expect(isAbsentKyujo(record, 2, 'Makushita')).toBe(true)
+      })
+
+      it('returns true when kyujo from the very start (no bouts at all)', () => {
+        const record = [r('absent'), r('absent'), r('absent')]
+        expect(isAbsentKyujo(record, 1, 'Jonokuchi')).toBe(true)
+      })
+    })
+
+    describe('edge cases', () => {
+      it('returns false for non-array record', () => {
+        expect(isAbsentKyujo(null, 1, 'Makushita')).toBe(false)
+      })
+
+      it('returns false when fusen loss follows — wrestler was absent that bout but may return', () => {
+        // fusen loss is not counted as evidence of subsequent presence
+        const record = [r('win'), r('absent'), r('fusen loss')]
+        expect(isAbsentKyujo(record, 2, 'Makushita')).toBe(true)
       })
     })
   })

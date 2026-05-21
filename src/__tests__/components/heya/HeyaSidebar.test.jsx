@@ -395,6 +395,56 @@ describe('HeyaSidebar', () => {
       expect(screen.getByText('Nishikigi')).toBeInTheDocument()
     })
 
+    it('does NOT show Kyujo badge for a scheduled non-fight day in a lower division', () => {
+      // Day 2 absent but day 3 has a subsequent win → scheduled non-fight day, not kyujo
+      setupStore({ selectedHeyaRikishiIds: [1, 2] })
+      useAllDivisionsBanzuke.mockReturnValue({
+        allWrestlers: [
+          wrestlerWithThreeBouts,
+          {
+            ...wrestlerWithAbsence,
+            rank: 'Makushita 1 East',
+            record: [
+              { result: 'win',    opponentShikonaEn: 'Abi',     opponentID: 6, kimarite: 'oshidashi' },
+              { result: 'absent', opponentShikonaEn: '',         opponentID: null, kimarite: '' },
+              { result: 'win',    opponentShikonaEn: 'Tobizaru', opponentID: 7, kimarite: 'yorikiri' },
+            ],
+          },
+        ],
+        isLoading: false,
+        isError: false,
+      })
+      renderWithQueryClient(<HeyaSidebar />)
+      fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '2' } })
+      expect(screen.getByText('Nishikigi')).toBeInTheDocument()
+      expect(screen.queryByText('Kyujo')).not.toBeInTheDocument()
+    })
+
+    it('shows Kyujo badge for genuine kyujo in a lower division (no subsequent bouts)', () => {
+      // Day 2 absent, day 3 also absent → wrestler withdrew, no subsequent fights
+      setupStore({ selectedHeyaRikishiIds: [1, 2] })
+      useAllDivisionsBanzuke.mockReturnValue({
+        allWrestlers: [
+          wrestlerWithThreeBouts,
+          {
+            ...wrestlerWithAbsence,
+            rank: 'Makushita 1 East',
+            record: [
+              { result: 'win',    opponentShikonaEn: 'Abi',     opponentID: 6, kimarite: 'oshidashi' },
+              { result: 'absent', opponentShikonaEn: '',         opponentID: null, kimarite: '' },
+              { result: 'absent', opponentShikonaEn: '',         opponentID: null, kimarite: '' },
+            ],
+          },
+        ],
+        isLoading: false,
+        isError: false,
+      })
+      renderWithQueryClient(<HeyaSidebar />)
+      fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '2' } })
+      expect(screen.getByText('Nishikigi')).toBeInTheDocument()
+      expect(screen.getByText('Kyujo')).toBeInTheDocument()
+    })
+
     it('does not render day dropdown when heya has no wrestlers with records', () => {
       useAllDivisionsBanzuke.mockReturnValue({
         allWrestlers: [{ ...wrestlerWithThreeBouts, record: [] }, { ...wrestlerWithAbsence, record: [] }],

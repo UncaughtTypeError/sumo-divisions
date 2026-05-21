@@ -255,6 +255,34 @@ describe('BanzukeTab', () => {
     expect(screen.getByText('Hoshoryu')).toBeInTheDocument()
   })
 
+  it('does NOT show Kyujo badge for a scheduled non-fight day in a lower division', () => {
+    // Day 2 absent but day 3 has a subsequent loss → scheduled non-fight day, not kyujo
+    const group = baseGroup('Makushita',
+      [wrestlerWithRecord(1, 'Terunofuji', makeRecord('win', 'absent', 'loss'))],
+      [],
+    )
+    render(
+      <BanzukeTab {...defaultProps} currentApiDivision="Makushita" maxDay={3} rankGroups={[group]} />,
+    )
+    fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '2' } })
+    expect(screen.getByText('Terunofuji')).toBeInTheDocument()
+    expect(screen.queryByText('Kyujo')).not.toBeInTheDocument()
+  })
+
+  it('shows Kyujo badge for genuine kyujo in a lower division (no subsequent bouts)', () => {
+    // Day 2 absent, days 3-4 also absent → wrestler withdrew, no subsequent fights
+    const group = baseGroup('Makushita',
+      [wrestlerWithRecord(1, 'Terunofuji', makeRecord('win', 'absent', 'absent', 'absent'))],
+      [],
+    )
+    render(
+      <BanzukeTab {...defaultProps} currentApiDivision="Makushita" maxDay={4} rankGroups={[group]} />,
+    )
+    fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '2' } })
+    expect(screen.getByText('Terunofuji')).toBeInTheDocument()
+    expect(screen.getByText('Kyujo')).toBeInTheDocument()
+  })
+
   it('day dropdown excludes future days (result is empty string)', () => {
     // Only 2 played days; 3rd has empty result
     const group = baseGroup('Yokozuna',
