@@ -70,8 +70,16 @@ function WrestlerSidebar() {
   const [sessionId, setSessionId] = useState(0);
   const bumpSession = useCallback(() => setSessionId((n) => n + 1), []);
 
-  // Torikumi day stays here because useTorikumi is called at this level
-  const [torikumiDay, setTorikumiDay] = useState(0);
+  // Torikumi day stays here because useTorikumi is called at this level.
+  // torikumiDayIsManual tracks whether the user has explicitly picked a day,
+  // so the probe result can update the default without overriding their choice.
+  const [torikumiDay,          setTorikumiDay]          = useState(0);
+  const [torikumiDayIsManual,  setTorikumiDayIsManual]  = useState(false);
+
+  const handleTorikumiDayChange = useCallback((day) => {
+    setTorikumiDay(day);
+    setTorikumiDayIsManual(true);
+  }, []);
 
   const currentApiDivision    = activeView.apiDivision;
   const currentColor          = activeView.color;
@@ -133,27 +141,44 @@ function WrestlerSidebar() {
     );
   }, [allWrestlers]);
 
-  // Torikumi can show one day beyond the last completed day (scheduled bouts)
-  const divisionMaxDays = ['Makuuchi', 'Juryo'].includes(currentApiDivision) ? 15 : 7;
-  const torikumiMaxDay  = Math.min(maxDay + 1, divisionMaxDays);
+  // Only probe the next candidate day when the torikumi tab is active
+  const divisionMaxDays   = ['Makuuchi', 'Juryo'].includes(currentApiDivision) ? 15 : 7;
+  const candidateNextDay  = maxDay > 0 ? Math.min(maxDay + 1, divisionMaxDays) : 0;
+  const { data: nextDayProbe } = useTorikumi(
+    currentBashoId,
+    currentApiDivision,
+    candidateNextDay,
+    {
+      // Probe only fires when there IS a potential next day and the tab is visible
+      enabled:   isSidebarOpen && activeTab === 'torikumi' && maxDay > 0 && candidateNextDay > maxDay,
+      staleTime: 1000 * 60 * 30, // 30 min — schedule availability rarely changes
+    },
+  );
+  // Include the next day only when the probe confirms bouts exist there
+  const nextDayHasBouts = !!(nextDayProbe && !nextDayProbe.isEmpty);
+  const torikumiMaxDay   = nextDayHasBouts ? candidateNextDay : (maxDay > 0 ? maxDay : 0);
 
-  // Default torikumi day to maxDay once data arrives
+  // Auto-set the selected day to the effective latest day (unless user has manually chosen)
   useEffect(() => {
-    if (maxDay > 0 && torikumiDay === 0) setTorikumiDay(maxDay);
-  }, [maxDay, torikumiDay]);
+    if (torikumiMaxDay > 0 && !torikumiDayIsManual) {
+      setTorikumiDay(torikumiMaxDay);
+    }
+  }, [torikumiMaxDay, torikumiDayIsManual]);
 
-  // Reset torikumi day when division or basho changes
+  // Reset torikumi day and manual flag when division or basho changes
   useEffect(() => {
     setTorikumiDay(0);
+    setTorikumiDayIsManual(false);
   }, [currentApiDivision, currentBashoId]);
 
   // ── Torikumi fetch ────────────────────────────────────────────────────────
-  const effectiveTorikumiDay = torikumiDay || maxDay;
+  const effectiveTorikumiDay = torikumiDay || torikumiMaxDay;
   const {
-    data:      torikumiData,
-    isLoading: isTorikumiLoading,
-    error:     torikumiError,
-    refetch:   refetchTorikumi,
+    data:       torikumiData,
+    isLoading:  isTorikumiLoading,
+    isFetching: isTorikumiFetching,
+    error:      torikumiError,
+    refetch:    refetchTorikumi,
   } = useTorikumi(
     currentBashoId,
     currentApiDivision,
@@ -222,6 +247,7 @@ function WrestlerSidebar() {
       setActiveView(findMatchingView(selectedApiDivision, selectedRank, isDivisionView));
       setActiveTab('banzuke');
       setTorikumiDay(0);
+      setTorikumiDayIsManual(false);
       bumpSession();
     }
   }, [isSidebarOpen, selectedApiDivision, selectedRank, isDivisionView, bumpSession]);
@@ -253,7 +279,7 @@ function WrestlerSidebar() {
                 value={activeView.value}
                 onChange={(e) => {
                   const view = SIDEBAR_VIEWS.find((v) => v.value === e.target.value);
-                  if (view) { setActiveView(view); setTorikumiDay(0); bumpSession(); }
+                  if (view) { setActiveView(view); setTorikumiDay(0); setTorikumiDayIsManual(false); bumpSession(); }
                 }}
                 aria-label="Select division or rank"
               >
@@ -267,7 +293,7 @@ function WrestlerSidebar() {
 
             <BashoSelector
               selectedBashoId={currentBashoId}
-              onBashoChange={(id) => { setCurrentBashoId(id); setTorikumiDay(0); bumpSession(); }}
+              onBashoChange={(id) => { setCurrentBashoId(id); setTorikumiDay(0); setTorikumiDayIsManual(false); bumpSession(); }}
               color={currentColor}
               bashoResults={bashoResults}
             />
@@ -321,12 +347,13 @@ function WrestlerSidebar() {
               key={sessionId}
               torikumiData={torikumiData}
               isLoading={isTorikumiLoading}
+              isFetching={isTorikumiFetching}
               error={torikumiError}
               refetch={refetchTorikumi}
               torikumiMaxDay={torikumiMaxDay}
               maxDay={maxDay}
               day={effectiveTorikumiDay}
-              onDayChange={setTorikumiDay}
+              onDayChange={handleTorikumiDayChange}
               currentApiDivision={currentApiDivision}
               currentColor={currentColor}
               currentIsDivisionView={currentIsDivisionView}

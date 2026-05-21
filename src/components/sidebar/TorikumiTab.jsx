@@ -1,13 +1,16 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import TorikumiList from './TorikumiList';
 import Loading from '../common/Loading';
 import ErrorMessage from '../common/ErrorMessage';
 import { useTorikumiAutoRefresh } from '../../hooks/useTorikumiAutoRefresh';
 import styles from './WrestlerSidebar.module.css';
 
+const MIN_REFRESH_DISPLAY_MS = 1500;
+
 function TorikumiTab({
   torikumiData,
   isLoading,
+  isFetching,
   error,
   refetch,
   torikumiMaxDay,
@@ -23,6 +26,31 @@ function TorikumiTab({
 }) {
   const [filter, setFilter] = useState('');
   const [sort,   setSort]   = useState('asc');
+
+  // ── Min-display refresh loader ──────────────────────────────────────────────
+  // isFetching covers both initial loads and refetches.
+  // During a refetch (data already present) we enforce a minimum display time
+  // so the indicator is always visible long enough for the user to notice.
+  const [showRefreshLoader, setShowRefreshLoader] = useState(false);
+  const loaderStartRef = useRef(null);
+  const loaderTimerRef = useRef(null);
+
+  const isRefetch = isFetching && !!torikumiData;
+
+  useEffect(() => {
+    if (isRefetch) {
+      setShowRefreshLoader(true);
+      loaderStartRef.current = Date.now();
+      clearTimeout(loaderTimerRef.current);
+    } else if (showRefreshLoader) {
+      const elapsed  = Date.now() - (loaderStartRef.current ?? 0);
+      const remaining = Math.max(0, MIN_REFRESH_DISPLAY_MS - elapsed);
+      loaderTimerRef.current = setTimeout(() => setShowRefreshLoader(false), remaining);
+    }
+    return () => clearTimeout(loaderTimerRef.current);
+  }, [isRefetch]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => () => clearTimeout(loaderTimerRef.current), []);
 
   const allBouts = torikumiData?.bouts ?? [];
 
@@ -47,6 +75,7 @@ function TorikumiTab({
     return sort === 'desc' ? [...result].reverse() : result;
   }, [allBouts, filter, sort, currentIsDivisionView, currentRank]);
 
+  // Pass isFetching as isLoading so canRefresh is false during any in-flight request
   const {
     showRefreshButton,
     canRefresh,
@@ -55,10 +84,12 @@ function TorikumiTab({
     bouts:     allBouts,
     day,
     maxDay,
-    isLoading,
+    isLoading: isFetching,
     refetch,
     enabled:   true,
   });
+
+  const showLoader = isLoading || showRefreshLoader;
 
   return (
     <>
@@ -115,10 +146,15 @@ function TorikumiTab({
         )}
       </div>
 
-      {isLoading && <Loading message="Loading torikumi..." color={currentColor} />}
-      {error && <ErrorMessage error={error} />}
+      {showLoader && (
+        <Loading
+          message={isLoading ? 'Loading torikumi...' : 'Refreshing results...'}
+          color={currentColor}
+        />
+      )}
+      {error && !showLoader && <ErrorMessage error={error} />}
 
-      {!isLoading && !error && (
+      {!showLoader && !error && (
         filteredBouts.length === 0 ? (
           <div className={styles.noData}>
             <p>No bouts found for Day {day}.</p>
