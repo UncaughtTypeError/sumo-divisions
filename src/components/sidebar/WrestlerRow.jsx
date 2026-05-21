@@ -52,6 +52,7 @@ function WrestlerRow({ wrestler, onClick, color, division, rikishiMap }) {
     rankDelta = 0,
     isCareerHigh = false,
     debutType = null,
+    isKyujo = false,
   } = wrestler;
   const record = `${wins}-${losses}-${absences}`;
 
@@ -67,7 +68,7 @@ function WrestlerRow({ wrestler, onClick, color, division, rikishiMap }) {
 
   const isRankDataLoading = wrestler.rankDataLoading === true;
   const hasRankIndicator = (rankMovement === 'up' || rankMovement === 'down') || !!debutType || isCareerHigh;
-  const hasAnyBadges = recordStatus || awards.length > 0 || kinboshiCount > 0 || hasRankIndicator || isRankDataLoading;
+  const hasAnyBadges = recordStatus || awards.length > 0 || kinboshiCount > 0 || hasRankIndicator || isRankDataLoading || isKyujo;
 
   return (
     <>
@@ -154,6 +155,12 @@ function WrestlerRow({ wrestler, onClick, color, division, rikishiMap }) {
                 >
                   ★{kinboshiCount}
                 </span>
+              </Tooltip>
+            )}
+            {/* Kyujo (absent) badge — shown when day filter is active and wrestler withdrew */}
+            {isKyujo && (
+              <Tooltip content="Absent (Kyujo)">
+                <span className={styles.kyujo}>Kyujo</span>
               </Tooltip>
             )}
             {/* Rank movement arrow — independent of debut/career-high */}
