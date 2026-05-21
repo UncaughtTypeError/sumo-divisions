@@ -6,7 +6,7 @@
 
 .matchGridHeader {
   display: grid;
-  grid-template-columns: 100px 1fr 150px 52px;
+  grid-template-columns: 28px 100px 1fr 150px 52px;
   gap: 1rem;
   padding: 1rem;
   background: var(--color-text);
@@ -28,7 +28,7 @@
 
 .matchRow {
   display: grid;
-  grid-template-columns: 100px 1fr 150px 52px;
+  grid-template-columns: 28px 100px 1fr 150px 52px;
   gap: 1rem;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--color-border);
@@ -193,10 +193,16 @@
 }
 
 /* Responsive styles */
+.dayNumber {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
 @media (max-width: 768px) {
   .matchGridHeader,
   .matchRow {
-    grid-template-columns: 80px 1fr 120px 44px;
+    grid-template-columns: 22px 80px 1fr 120px 44px;
     gap: 0.5rem;
     padding: 0.5rem;
   }
@@ -213,7 +219,7 @@
 @media (max-width: 480px) {
   .matchGridHeader,
   .matchRow {
-    grid-template-columns: 70px 1fr 100px 36px;
+    grid-template-columns: 18px 70px 1fr 100px 36px;
     gap: 0.25rem;
     padding: 0.5rem 0.25rem;
   }

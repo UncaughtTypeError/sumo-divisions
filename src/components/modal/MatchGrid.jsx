@@ -212,6 +212,7 @@ function MatchGrid({ matches, color, wrestlerRank, rikishiId, rikishiName }) {
           className={styles.matchGridHeader}
           style={{ backgroundColor: `var(--color-${color})` }}
         >
+          <div className={styles.headerCell}>#</div>
           <div className={styles.headerCell}>Result</div>
           <div className={styles.headerCell}>Opponent</div>
           <div className={styles.headerCell}>Kimarite</div>
@@ -226,6 +227,9 @@ function MatchGrid({ matches, color, wrestlerRank, rikishiId, rikishiName }) {
         <div className={styles.matchList}>
           {matches.map((match, index) => (
             <div key={index} className={styles.matchRow}>
+              <div className={`${styles.cell} ${styles.dayNumber}`}>
+                {index + 1}
+              </div>
               <div className={`${styles.cell} ${getResultClass(match.result)}`}>
                 {getResultDisplay(match.result)}
                 {getResultCircle(match.result)}
