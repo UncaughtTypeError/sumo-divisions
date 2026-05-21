@@ -4,8 +4,8 @@ import { useAllDivisionsBanzuke } from '../../hooks/useAllDivisionsBanzuke';
 import { useRikishiList } from '../../hooks/useRikishi';
 import useBashoResults from '../../hooks/useBashoResults';
 import { getCurrentBashoId } from '../../utils/bashoId';
-import { RANK_ORDER, RANK_INFO, RANK_TO_API_DIVISION, RANK_COLORS, COMPETING_RESULTS } from '../../utils/constants';
-import { getWrestlerAwards } from '../../utils/awards';
+import { RANK_ORDER, RANK_INFO, RANK_TO_API_DIVISION, RANK_COLORS } from '../../utils/constants';
+import { getWrestlerAwards, computeRecordOnDay } from '../../utils/awards';
 import { getPreviousBashoId, computeWrestlerRankIndicators } from '../../utils/rankMovement';
 import WrestlerGrid from '../sidebar/WrestlerGrid';
 import BashoSelector from '../sidebar/BashoSelector';
@@ -145,24 +145,31 @@ function HeyaSidebar() {
     );
   }, [heyaWrestlers]);
 
-  const filterAndSort = (wrestlers) => {
-    let result = wrestlers;
+  const filterAndSort = useCallback((wrestlers) => {
+    let result = wrestlers
+      .map((w) => {
+        if (selectedDay > 0) {
+          const dayResult = w.record?.[selectedDay - 1]?.result;
+          if (!dayResult || dayResult === '') return null;
+          const dayRecord = computeRecordOnDay(w.record, selectedDay);
+          return { ...w, ...dayRecord, isKyujo: dayResult === 'absent' };
+        }
+        return { ...w, isKyujo: false };
+      })
+      .filter(Boolean);
+
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter((w) => w.shikonaEn.toLowerCase().includes(q));
     }
-    if (selectedDay > 0) {
-      result = result.filter((w) =>
-        COMPETING_RESULTS.has(w.record?.[selectedDay - 1]?.result)
-      );
-    }
+
     const sorted = [...result];
-    if (sortOrder === 'rank-asc') return sorted.sort((a, b) => a.rankValue - b.rankValue);
+    if (sortOrder === 'rank-asc')  return sorted.sort((a, b) => a.rankValue - b.rankValue);
     if (sortOrder === 'rank-desc') return sorted.sort((a, b) => b.rankValue - a.rankValue);
-    if (sortOrder === 'wins-asc') return sorted.sort((a, b) => a.wins - b.wins);
+    if (sortOrder === 'wins-asc')  return sorted.sort((a, b) => a.wins - b.wins);
     if (sortOrder === 'wins-desc') return sorted.sort((a, b) => b.wins - a.wins);
     return sorted;
-  };
+  }, [selectedDay, searchQuery, sortOrder]);
 
   useEffect(() => {
     if (isHeyaSidebarOpen) {
