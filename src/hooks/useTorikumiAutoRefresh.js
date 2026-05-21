@@ -39,7 +39,8 @@ export function useTorikumiAutoRefresh({
 }) {
   // Show the button only on the latest (or next-scheduled) day that still has pending bouts
   const isLatestDay     = maxDay > 0 && day >= maxDay;
-  const hasPendingBouts = bouts.length > 0 && bouts.some((b) => b.winnerId === null);
+  // Use falsy check — API returns winnerId: 0 (not null) for unplayed bouts
+  const hasPendingBouts = bouts.length > 0 && bouts.some((b) => !b.winnerId);
   const showRefreshButton = isLatestDay && hasPendingBouts;
 
   // ── UI state ───────────────────────────────────────────────────────────────
@@ -64,8 +65,8 @@ export function useTorikumiAutoRefresh({
   useEffect(() => { consecutiveNoResultsRef.current = consecutiveNoResults }, [consecutiveNoResults]);
   useEffect(() => { backoffAttemptsRef.current      = backoffAttempts      }, [backoffAttempts]);
 
-  // Keep a live count of completed bouts
-  const completedCount = bouts.filter((b) => b.winnerId !== null).length;
+  // Keep a live count of completed bouts (winnerId: 0 means pending)
+  const completedCount = bouts.filter((b) => !!b.winnerId).length;
   useEffect(() => { boutsDoneCountRef.current = completedCount }, [completedCount]);
 
   // ── Detect auto-refresh completion ─────────────────────────────────────────
