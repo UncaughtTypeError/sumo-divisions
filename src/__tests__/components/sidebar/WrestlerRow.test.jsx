@@ -2,7 +2,8 @@ import { describe, it, expect, vi } from 'vitest'
 import { screen, fireEvent } from '@testing-library/react'
 import { renderWithQueryClient } from '../../testUtils'
 import WrestlerRow from '../../../components/sidebar/WrestlerRow'
-import { AWARD_TYPES, RECORD_STATUS_TYPES } from '../../../utils/awards'
+import { AWARD_TYPES } from '../../../utils/awards'
+import { RECORD_STATUS_TYPES } from '../../../utils/records'
 
 vi.mock('../../../components/modal/RikishiDetailModal', () => ({
   default: ({ isOpen }) =>
