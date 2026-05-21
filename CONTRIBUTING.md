@@ -80,6 +80,11 @@ This application uses the **Sumo API** (https://www.sumo-api.com/) to fetch real
 | `GET /api/basho/:bashoId/banzuke/:division` | Wrestler rankings and records for one division. | `['banzuke', bashoId, division]` — shared between `useBanzuke` and `useAllDivisionsBanzuke` so data fetched in the Rankings view is immediately available in the Heya view |
 | `GET /api/basho/:bashoId` | Tournament results (yusho winners, special prizes) | `['bashoResults', bashoId]` |
 | `GET /api/rikishi/:id/matches/:opponentId` | Head-to-head match history between two wrestlers | `['rikishiMatches', id, opponentId]` |
+| `GET /api/basho/:bashoId/torikumi/:division/:day` | Scheduled and completed bouts for one day of a basho | `['torikumi', bashoId, division, day]` — 5 min stale; bypassed on manual/auto refresh |
+
+### Torikumi auto-refresh back-off strategy
+
+When the torikumi tab is open and the latest day has pending results, the app auto-refreshes every 3 minutes. If three consecutive refreshes return no new results, it switches to an incremental back-off (5–25 minute intervals, up to 5 attempts) before stopping for the session. The manual refresh button remains active throughout and restarts auto-refresh once the session has been fully stopped (clicking during back-off does not reset the counter).
 
 ### Why per-wrestler fetches instead of the bulk endpoint
 
