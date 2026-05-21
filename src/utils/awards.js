@@ -102,6 +102,31 @@ export function getWrestlerAwards(rikishiId, bashoResults, division) {
 }
 
 /**
+ * Compute a wrestler's cumulative win/loss/absence record up to and including
+ * the given tournament day, using the record array from the banzuke response.
+ *
+ * Each entry in the record array corresponds to one tournament day (index 0 = day 1).
+ * An empty result string ('') means that day has not yet been played and
+ * counting stops immediately.
+ *
+ * @param {Array}  record - Wrestler's record array from banzuke data
+ * @param {number} day    - Day number to compute up to (1-based; 0 returns full totals)
+ * @returns {{ wins: number, losses: number, absences: number }}
+ */
+export function computeRecordOnDay(record, day) {
+  if (!day || !Array.isArray(record)) return null;
+  let wins = 0, losses = 0, absences = 0;
+  for (let i = 0; i < day; i++) {
+    const r = record[i]?.result;
+    if (r === undefined || r === '') break; // future day — stop counting
+    if (r === 'win' || r === 'fusen win') wins++;
+    else if (r === 'loss' || r === 'fusen loss') losses++;
+    else if (r === 'absent') absences++;
+  }
+  return { wins, losses, absences };
+}
+
+/**
  * Get the record status (kachi-koshi or make-koshi) for a wrestler
  * @param {number} wins - Number of wins
  * @param {number} losses - Number of losses

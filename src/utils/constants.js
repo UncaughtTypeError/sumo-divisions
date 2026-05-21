@@ -341,6 +341,24 @@ export const RANK_COLORS = {
   [RANKS.JONOKUCHI]: 'jonokuchi',
 };
 
+/**
+ * All selectable views for the wrestler sidebar, ordered top to bottom.
+ * Each entry drives the header colour, banzuke fetch division, and rank filter.
+ */
+export const SIDEBAR_VIEWS = [
+  { value: 'makuuchi', label: 'Makuuchi', nameJp: '幕内', apiDivision: 'Makuuchi', color: 'makuuchi', isDivisionView: true,  rank: null },
+  { value: 'yokozuna',  label: 'Yokozuna',  nameJp: '横綱', apiDivision: 'Makuuchi', color: 'yokozuna',  isDivisionView: false, rank: 'Yokozuna'  },
+  { value: 'ozeki',     label: 'Ozeki',     nameJp: '大関', apiDivision: 'Makuuchi', color: 'sanyaku',  isDivisionView: false, rank: 'Ozeki'     },
+  { value: 'sekiwake',  label: 'Sekiwake',  nameJp: '関脇', apiDivision: 'Makuuchi', color: 'sanyaku',  isDivisionView: false, rank: 'Sekiwake'  },
+  { value: 'komusubi',  label: 'Komusubi',  nameJp: '小結', apiDivision: 'Makuuchi', color: 'sanyaku',  isDivisionView: false, rank: 'Komusubi'  },
+  { value: 'maegashira',label: 'Maegashira',nameJp: '前頭', apiDivision: 'Makuuchi', color: 'makuuchi', isDivisionView: false, rank: 'Maegashira' },
+  { value: 'juryo',     label: 'Juryo',     nameJp: '十両', apiDivision: 'Juryo',    color: 'juryo',    isDivisionView: false, rank: 'Juryo'     },
+  { value: 'makushita', label: 'Makushita', nameJp: '幕下', apiDivision: 'Makushita',color: 'makushita',isDivisionView: false, rank: 'Makushita' },
+  { value: 'sandanme',  label: 'Sandanme',  nameJp: '三段目',apiDivision: 'Sandanme', color: 'sandanme', isDivisionView: false, rank: 'Sandanme'  },
+  { value: 'jonidan',   label: 'Jonidan',   nameJp: '序二段',apiDivision: 'Jonidan',  color: 'jonidan',  isDivisionView: false, rank: 'Jonidan'   },
+  { value: 'jonokuchi', label: 'Jonokuchi', nameJp: '序ノ口',apiDivision: 'Jonokuchi',color: 'jonokuchi',isDivisionView: false, rank: 'Jonokuchi' },
+];
+
 // Maps a rank name to its API division string (used for award/record lookups)
 export const RANK_TO_API_DIVISION = {
   [RANKS.YOKOZUNA]: 'Makuuchi',
