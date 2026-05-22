@@ -11,6 +11,17 @@ vi.mock('../../../hooks/useAllDivisionsBanzuke', () => ({
   useAllDivisionsBanzuke: vi.fn(),
 }))
 
+vi.mock('../../../hooks/useHeyaData', () => ({
+  useHeyaData: vi.fn(() => ({
+    heyaList: [
+      { name: 'Isegahama', rikishi: [{ id: 1 }], total: 1 },
+      { name: 'Tatsunami', rikishi: [{ id: 3 }], total: 1 },
+    ],
+    isLoading: false,
+    error: null,
+  })),
+}))
+
 vi.mock('../../../hooks/useRikishi', () => ({
   useRikishiList: vi.fn(() => ({ rikishiMap: new Map(), rankHistoryMap: new Map(), isLoading: false })),
 }))
@@ -61,6 +72,7 @@ import useDivisionStore from '../../../store/divisionStore'
 import { useAllDivisionsBanzuke } from '../../../hooks/useAllDivisionsBanzuke'
 import { useRikishiList } from '../../../hooks/useRikishi'
 import useBashoResults from '../../../hooks/useBashoResults'
+import { useHeyaData } from '../../../hooks/useHeyaData'
 
 const mockCloseHeyaSidebar = vi.fn()
 const mockOpenModal = vi.fn()
@@ -130,9 +142,19 @@ describe('HeyaSidebar', () => {
       setupStore()
     })
 
-    it('renders heya name in header', () => {
+    it('renders heya selector with current heya selected', () => {
       renderWithQueryClient(<HeyaSidebar />)
-      expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Isegahama')
+      const select = screen.getByLabelText('Select heya')
+      expect(select).toBeInTheDocument()
+      expect(select.value).toBe('Isegahama')
+    })
+
+    it('lists all heyas in the selector', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      const select = screen.getByLabelText('Select heya')
+      const options = Array.from(select.options).map((o) => o.value)
+      expect(options).toContain('Isegahama')
+      expect(options).toContain('Tatsunami')
     })
 
     it('renders close button', () => {
@@ -223,10 +245,51 @@ describe('HeyaSidebar', () => {
     })
 
     it('renders no-data message when no banzuke wrestlers match the heya IDs', () => {
-      // Store passes ID 99 which doesn't exist in the banzuke
       setupStore({ selectedHeyaRikishiIds: [99] })
       renderWithQueryClient(<HeyaSidebar />)
       expect(screen.getByText(/No rikishi found in Isegahama/)).toBeInTheDocument()
+    })
+
+    it('switches to a different heya when the selector changes', () => {
+      useAllDivisionsBanzuke.mockReturnValue({
+        allWrestlers: [makuuchiWrestler, juryoWrestler],
+        isLoading: false,
+        isError: false,
+      })
+      renderWithQueryClient(<HeyaSidebar />)
+      expect(screen.getByText('Terunofuji')).toBeInTheDocument()
+
+      fireEvent.change(screen.getByLabelText('Select heya'), { target: { value: 'Tatsunami' } })
+
+      expect(screen.queryByText('Terunofuji')).not.toBeInTheDocument()
+      expect(screen.getByLabelText('Select heya')).toHaveValue('Tatsunami')
+    })
+
+    it('no-data message uses the newly selected heya name', () => {
+      useAllDivisionsBanzuke.mockReturnValue({
+        allWrestlers: [makuuchiWrestler],
+        isLoading: false,
+        isError: false,
+      })
+      renderWithQueryClient(<HeyaSidebar />)
+      fireEvent.change(screen.getByLabelText('Select heya'), { target: { value: 'Tatsunami' } })
+      // Tatsunami (id: 3) not in banzuke → no-data shows new name
+      expect(screen.getByText(/No rikishi found in Tatsunami/)).toBeInTheDocument()
+    })
+
+    it('resets search query when switching heyas', () => {
+      useAllDivisionsBanzuke.mockReturnValue({
+        allWrestlers: [makuuchiWrestler, juryoWrestler],
+        isLoading: false,
+        isError: false,
+      })
+      renderWithQueryClient(<HeyaSidebar />)
+      fireEvent.change(screen.getByPlaceholderText('Search rikishi...'), { target: { value: 'teru' } })
+      expect(screen.getByPlaceholderText('Search rikishi...')).toHaveValue('teru')
+
+      fireEvent.change(screen.getByLabelText('Select heya'), { target: { value: 'Tatsunami' } })
+
+      expect(screen.getByPlaceholderText('Search rikishi...')).toHaveValue('')
     })
   })
 
@@ -453,6 +516,20 @@ describe('HeyaSidebar', () => {
       })
       renderWithQueryClient(<HeyaSidebar />)
       expect(screen.queryByLabelText('Filter by day')).not.toBeInTheDocument()
+    })
+
+    it('resets the day filter to "Any day" when switching heyas', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      fireEvent.change(screen.getByLabelText('Filter by day'), { target: { value: '2' } })
+      expect(screen.getByLabelText('Filter by day')).toHaveValue('2')
+
+      fireEvent.change(screen.getByLabelText('Select heya'), { target: { value: 'Tatsunami' } })
+
+      // After switching, day filter resets — but Tatsunami has no banzuke wrestlers
+      // so the dropdown won't render; verify the selector changed back to Any day
+      // by switching back to Isegahama and checking the reset
+      fireEvent.change(screen.getByLabelText('Select heya'), { target: { value: 'Isegahama' } })
+      expect(screen.getByLabelText('Filter by day')).toHaveValue('0')
     })
   })
 })
