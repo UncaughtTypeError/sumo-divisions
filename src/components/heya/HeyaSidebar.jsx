@@ -3,6 +3,7 @@ import useDivisionStore from '../../store/divisionStore';
 import { useAllDivisionsBanzuke } from '../../hooks/useAllDivisionsBanzuke';
 import { useRikishiList } from '../../hooks/useRikishi';
 import useBashoResults from '../../hooks/useBashoResults';
+import { useHeyaData } from '../../hooks/useHeyaData';
 import { getCurrentBashoId } from '../../utils/bashoId';
 import { RANK_ORDER, RANK_INFO, RANK_TO_API_DIVISION, RANK_COLORS } from '../../utils/constants';
 import { getWrestlerAwards } from '../../utils/awards';
@@ -33,6 +34,12 @@ function HeyaSidebar() {
   const [sortOrder, setSortOrder] = useState('rank-asc');
   const [selectedDay, setSelectedDay] = useState(0);
 
+  // Local heya selection — initialised from store, updated when user switches in-sidebar
+  const [currentHeyaName, setCurrentHeyaName] = useState(selectedHeya);
+  const [currentHeyaIds, setCurrentHeyaIds]   = useState(selectedHeyaRikishiIds);
+
+  const { heyaList } = useHeyaData({ enabled: isHeyaSidebarOpen });
+
   const { allWrestlers: allBanzukeWrestlers, isLoading, isError } = useAllDivisionsBanzuke(
     currentBashoId,
     { enabled: isHeyaSidebarOpen }
@@ -45,8 +52,8 @@ function HeyaSidebar() {
   // Filter banzuke wrestlers using the heya's rikishi IDs passed from the card click.
   // This avoids a circular dependency (rikishiMap needed to know heya → heya needed to fetch IDs).
   const heyaIdSet = useMemo(
-    () => new Set(selectedHeyaRikishiIds),
-    [selectedHeyaRikishiIds],
+    () => new Set(currentHeyaIds),
+    [currentHeyaIds],
   );
 
   // Build rank lookup across ALL divisions so kinboshi calculation is accurate
@@ -178,11 +185,13 @@ function HeyaSidebar() {
       setIsVisible(true);
       setIsClosing(false);
       setCurrentBashoId(getCurrentBashoId());
+      setCurrentHeyaName(selectedHeya);
+      setCurrentHeyaIds(selectedHeyaRikishiIds);
       setSearchQuery('');
       setSortOrder('rank-asc');
       setSelectedDay(0);
     }
-  }, [isHeyaSidebarOpen]);
+  }, [isHeyaSidebarOpen, selectedHeya, selectedHeyaRikishiIds]);
 
   const handleClose = () => {
     setIsClosing(true);
@@ -202,8 +211,29 @@ function HeyaSidebar() {
       />
       <div className={`${styles.sidebar} ${isClosing ? styles.closing : ''}`}>
         <div className={styles.sidebarHeader} style={{ backgroundColor: 'var(--color-text)' }}>
-          <div>
-            <h2>{selectedHeya}</h2>
+          <div className={styles.headerMain}>
+            <div className={styles.divisionSelectorRow}>
+              <select
+                className={styles.divisionSelect}
+                value={currentHeyaName ?? ''}
+                onChange={(e) => {
+                  const heya = heyaList.find((h) => h.name === e.target.value);
+                  const ids  = heya?.rikishi.map((r) => r.id).filter(Boolean) ?? [];
+                  setCurrentHeyaName(e.target.value);
+                  setCurrentHeyaIds(ids);
+                  setSelectedDay(0);
+                  setSearchQuery('');
+                }}
+                aria-label="Select heya"
+              >
+                {heyaList.length === 0 && currentHeyaName && (
+                  <option value={currentHeyaName}>{currentHeyaName}</option>
+                )}
+                {heyaList.map((h) => (
+                  <option key={h.name} value={h.name}>{h.name}</option>
+                ))}
+              </select>
+            </div>
             <BashoSelector
               selectedBashoId={currentBashoId}
               onBashoChange={setCurrentBashoId}
@@ -275,7 +305,7 @@ function HeyaSidebar() {
 
               {rankGroups.length === 0 && (
                 <div className={styles.noData}>
-                  <p>No rikishi found in {selectedHeya} for this basho</p>
+                  <p>No rikishi found in {currentHeyaName} for this basho</p>
                 </div>
               )}
 
