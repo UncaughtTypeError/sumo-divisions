@@ -25,11 +25,45 @@
   background: white;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
-  max-width: 700px;
+  max-width: 680px;
   width: 100%;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
+}
+
+.modalPanelWide {
+  max-width: 920px;
+}
+
+/* ── Tabs ────────────────────────────────────────────────────────────────── */
+
+.tabBar {
+  display: flex;
+  border-bottom: 2px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.tab {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-accent);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.tab:hover {
+  color: var(--color-text);
+}
+
+.tabActive {
+  color: var(--color-text);
+  border-bottom-color: var(--color-text);
 }
 
 .modalHeader {
@@ -232,13 +266,8 @@
 .modalContent {
   flex: 1;
   padding: 1.5rem;
-}
-
-.sectionTitle {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 0 0 1rem 0;
-  color: var(--color-text);
+  overflow: auto;
+  min-width: 0;
 }
 
 .modalFooter {

@@ -1,5 +1,5 @@
 import { Dialog, Transition } from '@headlessui/react';
-import { Fragment, useState } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import useDivisionStore from '../../store/divisionStore';
 import {
   AWARD_INFO,
@@ -15,6 +15,7 @@ import { useRikishi } from '../../hooks/useRikishi';
 import { getFlagData } from '../common/flags';
 import Tooltip from '../common/Tooltip';
 import MatchGrid from './MatchGrid';
+import HoshitoriGrid from './HoshitoriGrid';
 import RikishiDetailModal from './RikishiDetailModal';
 import RankHistoryModal from './RankHistoryModal';
 import styles from './MatchHistoryModal.module.css';
@@ -57,6 +58,10 @@ function MatchHistoryModal() {
   const { data: rikishiDetails } = useRikishi(selectedWrestler?.rikishiID);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isRankHistoryOpen, setIsRankHistoryOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('list');
+
+  const rikishiId = selectedWrestler?.rikishiID ?? null;
+  useEffect(() => { setActiveTab('list'); }, [rikishiId]);
 
   if (!selectedWrestler) {
     return null;
@@ -133,7 +138,7 @@ function MatchHistoryModal() {
               leaveFrom={styles.panelLeaveFrom}
               leaveTo={styles.panelLeaveTo}
             >
-              <Dialog.Panel className={styles.modalPanel}>
+              <Dialog.Panel className={`${styles.modalPanel} ${activeTab === 'hoshitori' ? styles.modalPanelWide : ''}`}>
                 {/* Header */}
                 <div
                   className={styles.modalHeader}
@@ -317,16 +322,38 @@ function MatchHistoryModal() {
                   </button>
                 </div>
 
-                {/* Match History Content */}
+                {/* Tab bar */}
+                <div className={styles.tabBar}>
+                  <button
+                    className={`${styles.tab} ${activeTab === 'list' ? styles.tabActive : ''}`}
+                    onClick={() => setActiveTab('list')}
+                  >
+                    Match History
+                  </button>
+                  <button
+                    className={`${styles.tab} ${activeTab === 'hoshitori' ? styles.tabActive : ''}`}
+                    onClick={() => setActiveTab('hoshitori')}
+                  >
+                    Hoshitori
+                  </button>
+                </div>
+
+                {/* Tab content */}
                 <div className={styles.modalContent}>
-                  <h3 className={styles.sectionTitle}>Match History</h3>
-                  <MatchGrid
-                    matches={selectedWrestler.record}
-                    color={selectedColor}
-                    wrestlerRank={rank}
-                    rikishiId={selectedWrestler.rikishiID}
-                    rikishiName={selectedWrestler.shikonaEn}
-                  />
+                  {activeTab === 'list' ? (
+                    <MatchGrid
+                      matches={selectedWrestler.record}
+                      color={selectedColor}
+                      wrestlerRank={rank}
+                      rikishiId={selectedWrestler.rikishiID}
+                      rikishiName={selectedWrestler.shikonaEn}
+                    />
+                  ) : (
+                    <HoshitoriGrid
+                      matches={selectedWrestler.record}
+                      color={selectedColor}
+                    />
+                  )}
                 </div>
 
                 {/* Footer */}
