@@ -335,7 +335,52 @@ describe('YushoArasoi', () => {
           maxDay={14}
         />
       )
-      expect(screen.getByText('M60TD')).toBeInTheDocument()
+      expect(screen.getByText('Ms60TD')).toBeInTheDocument()
+    })
+
+    it('uses Jd prefix for Jonidan (distinguishes from Juryo J)', () => {
+      render(
+        <YushoArasoi
+          {...defaultProps}
+          wrestlers={[
+            makeWrestler(1, 3, 3, 0, 1, { rank: 'Jonidan 50 East' }),
+            makeWrestler(2, 2, 3, 0, 5),
+          ]}
+          division="Jonidan"
+          maxDay={14}
+        />
+      )
+      expect(screen.getByText('Jd50e')).toBeInTheDocument()
+    })
+
+    it('uses Jk prefix for Jonokuchi (distinguishes from Juryo J)', () => {
+      render(
+        <YushoArasoi
+          {...defaultProps}
+          wrestlers={[
+            makeWrestler(1, 3, 3, 0, 1, { rank: 'Jonokuchi 15 West' }),
+            makeWrestler(2, 2, 3, 0, 5),
+          ]}
+          division="Jonokuchi"
+          maxDay={14}
+        />
+      )
+      expect(screen.getByText('Jk15w')).toBeInTheDocument()
+    })
+
+    it('uses Sd prefix for Sandanme', () => {
+      render(
+        <YushoArasoi
+          {...defaultProps}
+          wrestlers={[
+            makeWrestler(1, 3, 3, 0, 1, { rank: 'Sandanme 30 East' }),
+            makeWrestler(2, 2, 3, 0, 5),
+          ]}
+          division="Sandanme"
+          maxDay={14}
+        />
+      )
+      expect(screen.getByText('Sd30e')).toBeInTheDocument()
     })
 
     it('renders no rank span when rank is null', () => {

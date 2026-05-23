@@ -13,6 +13,7 @@ import {
   RANK_ABBREVIATIONS,
   RANK_COLORS,
   RANK_TO_API_DIVISION,
+  abbreviateRank,
 } from '../../utils/constants'
 
 describe('constants', () => {
@@ -253,6 +254,35 @@ describe('constants', () => {
       expect(RANK_ABBREVIATIONS['Sandanme']).toBe('Sd')
       expect(RANK_ABBREVIATIONS['Jonidan']).toBe('Jd')
       expect(RANK_ABBREVIATIONS['Jonokuchi']).toBe('Jk')
+    })
+  })
+
+  describe('abbreviateRank', () => {
+    it('returns null for null input', () => {
+      expect(abbreviateRank(null)).toBeNull()
+    })
+
+    it('abbreviates sekitori ranks with single-letter prefix', () => {
+      expect(abbreviateRank('Yokozuna 1 East')).toBe('Y1e')
+      expect(abbreviateRank('Ozeki 1 West')).toBe('O1w')
+      expect(abbreviateRank('Maegashira 10 East')).toBe('M10e')
+      expect(abbreviateRank('Juryo 5 West')).toBe('J5w')
+    })
+
+    it('distinguishes lower divisions sharing the same first letter', () => {
+      expect(abbreviateRank('Makushita 30 East')).toBe('Ms30e')
+      expect(abbreviateRank('Sandanme 50 West')).toBe('Sd50w')
+      expect(abbreviateRank('Jonidan 80 East')).toBe('Jd80e')
+      expect(abbreviateRank('Jonokuchi 10 West')).toBe('Jk10w')
+    })
+
+    it('preserves non-East/West suffixes (e.g. Tsukedashi)', () => {
+      expect(abbreviateRank('Makushita 60 TD')).toBe('Ms60TD')
+    })
+
+    it('handles rank string with no number or side', () => {
+      expect(abbreviateRank('Yokozuna')).toBe('Y')
+      expect(abbreviateRank('Makushita')).toBe('Ms')
     })
   })
 

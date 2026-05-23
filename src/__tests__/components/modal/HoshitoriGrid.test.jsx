@@ -120,6 +120,27 @@ describe('HoshitoriGrid', () => {
       expect(screen.getByText('Terunofuji (J3w)')).toBeInTheDocument()
     })
 
+    it('uses Ms prefix for Makushita (distinguishes from Maegashira M)', () => {
+      useDivisionStore.getState().setAdjacentWrestlers([{ rikishiID: 100, shikonaEn: 'Terunofuji', rank: 'Makushita 10 East' }])
+      render(<HoshitoriGrid matches={makeMatches([match])} />)
+      fireEvent.mouseEnter(screen.getByRole('button', { name: /view terunofuji/i }).closest('span'))
+      expect(screen.getByText('Terunofuji (Ms10e)')).toBeInTheDocument()
+    })
+
+    it('uses Jd prefix for Jonidan (distinguishes from Juryo J)', () => {
+      useDivisionStore.getState().setAdjacentWrestlers([{ rikishiID: 100, shikonaEn: 'Terunofuji', rank: 'Jonidan 50 West' }])
+      render(<HoshitoriGrid matches={makeMatches([match])} />)
+      fireEvent.mouseEnter(screen.getByRole('button', { name: /view terunofuji/i }).closest('span'))
+      expect(screen.getByText('Terunofuji (Jd50w)')).toBeInTheDocument()
+    })
+
+    it('uses Jk prefix for Jonokuchi (distinguishes from Juryo J)', () => {
+      useDivisionStore.getState().setAdjacentWrestlers([{ rikishiID: 100, shikonaEn: 'Terunofuji', rank: 'Jonokuchi 15 East' }])
+      render(<HoshitoriGrid matches={makeMatches([match])} />)
+      fireEvent.mouseEnter(screen.getByRole('button', { name: /view terunofuji/i }).closest('span'))
+      expect(screen.getByText('Terunofuji (Jk15e)')).toBeInTheDocument()
+    })
+
     it('shows name only in tooltip when opponent has no rank', () => {
       useDivisionStore.getState().setAllWrestlers([{ rikishiID: 100, shikonaEn: 'Terunofuji', rank: null }])
       const { container } = render(<HoshitoriGrid matches={makeMatches([match])} />)

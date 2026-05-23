@@ -278,6 +278,38 @@ describe('MatchGrid', () => {
       expect(screen.getByText('J5w')).toBeInTheDocument()
     })
 
+    it('uses Ms prefix for Makushita (distinguishes from Maegashira M)', () => {
+      useDivisionStore.getState().setAdjacentWrestlers([
+        { rikishiID: 200, shikonaEn: 'JuryoGuy', rank: 'Makushita 10 East' },
+      ])
+      render(<MatchGrid matches={linkedMatches} />)
+      expect(screen.getByText('Ms10e')).toBeInTheDocument()
+    })
+
+    it('uses Jd prefix for Jonidan (distinguishes from Juryo J)', () => {
+      useDivisionStore.getState().setAdjacentWrestlers([
+        { rikishiID: 200, shikonaEn: 'JuryoGuy', rank: 'Jonidan 50 West' },
+      ])
+      render(<MatchGrid matches={linkedMatches} />)
+      expect(screen.getByText('Jd50w')).toBeInTheDocument()
+    })
+
+    it('uses Jk prefix for Jonokuchi (distinguishes from Juryo J)', () => {
+      useDivisionStore.getState().setAdjacentWrestlers([
+        { rikishiID: 200, shikonaEn: 'JuryoGuy', rank: 'Jonokuchi 15 East' },
+      ])
+      render(<MatchGrid matches={linkedMatches} />)
+      expect(screen.getByText('Jk15e')).toBeInTheDocument()
+    })
+
+    it('uses Sd prefix for Sandanme', () => {
+      useDivisionStore.getState().setAdjacentWrestlers([
+        { rikishiID: 200, shikonaEn: 'JuryoGuy', rank: 'Sandanme 30 West' },
+      ])
+      render(<MatchGrid matches={linkedMatches} />)
+      expect(screen.getByText('Sd30w')).toBeInTheDocument()
+    })
+
     it('opens modal when linked opponent button is clicked', () => {
       useDivisionStore.getState().setAllWrestlers([primaryWrestler])
       render(<MatchGrid matches={linkedMatches} />)
