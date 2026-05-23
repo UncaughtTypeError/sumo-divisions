@@ -21,7 +21,7 @@ function MatchGrid({ matches, color, wrestlerRank, rikishiId, rikishiName }) {
   const [selectedKimarite, setSelectedKimarite] = useState(null);
   const [selectedKimariteInfo, setSelectedKimariteInfo] = useState(null);
   const [selectedOpponent, setSelectedOpponent] = useState(null);
-  const { rankLookup, openModal, allWrestlers } = useDivisionStore();
+  const { rankLookup, openModal, allWrestlers, adjacentWrestlers } = useDivisionStore();
 
   if (!matches || matches.length === 0) {
     return (
@@ -181,22 +181,18 @@ function MatchGrid({ matches, color, wrestlerRank, rikishiId, rikishiName }) {
     );
   };
 
-  const handleOpponentClick = (opponentID) => {
-    const opponent = allWrestlers.find((w) => w.rikishiID === opponentID);
-    if (opponent) {
-      openModal(opponent);
-    }
-  };
+  const findOpponent = (id) =>
+    allWrestlers.find((w) => w.rikishiID === id) ??
+    adjacentWrestlers.find((w) => w.rikishiID === id);
 
-  const renderOpponentName = (match) => {
+  const renderOpponentName = (match, opponent) => {
     const name = match.opponentShikonaEn || 'Unknown';
-    const isLinked = allWrestlers.some((w) => w.rikishiID === match.opponentID);
-    if (!isLinked) return name;
+    if (!opponent) return name;
     return (
       <button
         type="button"
         className={styles.opponentLink}
-        onClick={() => handleOpponentClick(match.opponentID)}
+        onClick={() => openModal(opponent)}
         aria-label={`View ${name}'s match history`}
       >
         {name}
@@ -225,7 +221,9 @@ function MatchGrid({ matches, color, wrestlerRank, rikishiId, rikishiName }) {
 
         {/* Matches */}
         <div className={styles.matchList}>
-          {matches.map((match, index) => (
+          {matches.map((match, index) => {
+            const opponent = findOpponent(match.opponentID);
+            return (
             <div key={index} className={styles.matchRow}>
               <div className={`${styles.cell} ${styles.dayNumber}`}>
                 {index + 1}
@@ -235,10 +233,10 @@ function MatchGrid({ matches, color, wrestlerRank, rikishiId, rikishiName }) {
                 {getResultCircle(match.result)}
               </div>
               <div className={styles.cell}>
-                {renderOpponentName(match)}
-                {rankLookup.get(match.opponentID) && (
+                {renderOpponentName(match, opponent)}
+                {opponent?.rank && (
                   <span className={styles.opponentRank}>
-                    {abbreviateRank(rankLookup.get(match.opponentID))}
+                    {abbreviateRank(opponent.rank)}
                   </span>
                 )}
                 {renderKinboshiStar(match)}
@@ -261,7 +259,8 @@ function MatchGrid({ matches, color, wrestlerRank, rikishiId, rikishiName }) {
                 ) : '—'}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
