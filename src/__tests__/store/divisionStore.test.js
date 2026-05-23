@@ -35,6 +35,10 @@ describe('divisionStore', () => {
     it('should have null selectedWrestler', () => {
       expect(useDivisionStore.getState().selectedWrestler).toBeNull()
     })
+
+    it('should have empty adjacentWrestlers', () => {
+      expect(useDivisionStore.getState().adjacentWrestlers).toEqual([])
+    })
   })
 
   describe('selectRank', () => {
@@ -210,6 +214,20 @@ describe('divisionStore', () => {
     })
   })
 
+  describe('setAdjacentWrestlers', () => {
+    it('should set adjacentWrestlers', () => {
+      const wrestlers = [{ rikishiID: 10, shikonaEn: 'JuryoGuy' }]
+      useDivisionStore.getState().setAdjacentWrestlers(wrestlers)
+      expect(useDivisionStore.getState().adjacentWrestlers).toEqual(wrestlers)
+    })
+
+    it('should clear adjacentWrestlers when closeSidebar is called', () => {
+      useDivisionStore.getState().setAdjacentWrestlers([{ rikishiID: 10, shikonaEn: 'JuryoGuy' }])
+      useDivisionStore.getState().closeSidebar()
+      expect(useDivisionStore.getState().adjacentWrestlers).toEqual([])
+    })
+  })
+
   describe('reset', () => {
     beforeEach(() => {
       // Set up some state
@@ -234,6 +252,7 @@ describe('divisionStore', () => {
       expect(state.modalColor).toBeNull()
       expect(state.modalApiDivision).toBeNull()
       expect(state.allWrestlers).toEqual([])
+      expect(state.adjacentWrestlers).toEqual([])
     })
 
     it('should reset heya state to initial values', () => {

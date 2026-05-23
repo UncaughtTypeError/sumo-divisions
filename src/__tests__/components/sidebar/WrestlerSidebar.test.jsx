@@ -57,11 +57,12 @@ import useBashoResults from '../../../hooks/useBashoResults'
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('WrestlerSidebar', () => {
-  const mockCloseSidebar  = vi.fn()
-  const mockOpenModal     = vi.fn()
-  const mockSetRankLookup = vi.fn()
-  const mockSetAllWrestlers = vi.fn()
-  const mockRefetch       = vi.fn()
+  const mockCloseSidebar         = vi.fn()
+  const mockOpenModal            = vi.fn()
+  const mockSetRankLookup        = vi.fn()
+  const mockSetAllWrestlers      = vi.fn()
+  const mockSetAdjacentWrestlers = vi.fn()
+  const mockRefetch              = vi.fn()
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -76,6 +77,7 @@ describe('WrestlerSidebar', () => {
         selectedDivision: null, selectedApiDivision: null, selectedColor: null,
         closeSidebar: mockCloseSidebar, openModal: mockOpenModal,
         setRankLookup: mockSetRankLookup, setAllWrestlers: mockSetAllWrestlers,
+        setAdjacentWrestlers: mockSetAdjacentWrestlers,
       })
       useBanzuke.mockReturnValue({ data: null, isLoading: false, error: null, refetch: mockRefetch })
       useBashoResults.mockReturnValue({ data: null })
@@ -96,6 +98,7 @@ describe('WrestlerSidebar', () => {
         selectedDivision: 'Makuuchi', selectedApiDivision: 'Makuuchi', selectedColor: 'yokozuna',
         closeSidebar: mockCloseSidebar, openModal: mockOpenModal,
         setRankLookup: mockSetRankLookup, setAllWrestlers: mockSetAllWrestlers,
+        setAdjacentWrestlers: mockSetAdjacentWrestlers,
       })
       useBanzuke.mockReturnValue({ data: mockBanzukeData, isLoading: false, error: null, refetch: mockRefetch })
       useBashoResults.mockReturnValue({ data: mockBashoResults })
@@ -171,6 +174,11 @@ describe('WrestlerSidebar', () => {
       renderWithQueryClient(<WrestlerSidebar />)
       expect(screen.getByTestId('error-message')).toBeInTheDocument()
     })
+
+    it('calls setAdjacentWrestlers when adjacent banzuke data loads', async () => {
+      renderWithQueryClient(<WrestlerSidebar />)
+      await waitFor(() => expect(mockSetAdjacentWrestlers).toHaveBeenCalled())
+    })
   })
 
   // ── Open sidebar — Makuuchi division view ─────────────────────────────────
@@ -182,6 +190,7 @@ describe('WrestlerSidebar', () => {
         selectedDivision: 'Makuuchi', selectedApiDivision: 'Makuuchi', selectedColor: 'makuuchi',
         closeSidebar: mockCloseSidebar, openModal: mockOpenModal,
         setRankLookup: mockSetRankLookup, setAllWrestlers: mockSetAllWrestlers,
+        setAdjacentWrestlers: mockSetAdjacentWrestlers,
       })
       useBanzuke.mockReturnValue({ data: mockBanzukeData, isLoading: false, error: null, refetch: mockRefetch })
       useBashoResults.mockReturnValue({ data: mockBashoResults })

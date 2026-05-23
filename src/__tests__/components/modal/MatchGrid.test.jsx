@@ -1,6 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import MatchGrid from '../../../components/modal/MatchGrid'
+import useDivisionStore from '../../../store/divisionStore'
 
 vi.mock('../../../components/modal/HeadToHeadModal', () => ({
   default: ({ isOpen }) =>
@@ -233,6 +234,56 @@ describe('MatchGrid', () => {
       expect(screen.queryByTestId('h2h-modal')).not.toBeInTheDocument()
       fireEvent.click(screen.getAllByRole('button', { name: /head-to-head/i })[0])
       expect(screen.getByTestId('h2h-modal')).toBeInTheDocument()
+    })
+  })
+
+  describe('opponent linking and rank badge', () => {
+    const linkedMatches = [
+      { result: 'win',  opponentShikonaEn: 'Terunofuji', opponentID: 100, kimarite: 'yorikiri' },
+      { result: 'loss', opponentShikonaEn: 'JuryoGuy',   opponentID: 200, kimarite: 'oshidashi' },
+    ]
+    const primaryWrestler  = { rikishiID: 100, shikonaEn: 'Terunofuji', rank: 'Yokozuna 1 East' }
+    const adjacentWrestler = { rikishiID: 200, shikonaEn: 'JuryoGuy',   rank: 'Juryo 5 West' }
+
+    afterEach(() => {
+      useDivisionStore.getState().reset()
+    })
+
+    it('renders opponent as plain text when not in any wrestler list', () => {
+      render(<MatchGrid matches={linkedMatches} />)
+      expect(screen.queryByRole('button', { name: /view terunofuji/i })).not.toBeInTheDocument()
+    })
+
+    it('renders opponent as a clickable button when found in allWrestlers', () => {
+      useDivisionStore.getState().setAllWrestlers([primaryWrestler])
+      render(<MatchGrid matches={linkedMatches} />)
+      expect(screen.getByRole('button', { name: /view terunofuji/i })).toBeInTheDocument()
+    })
+
+    it('renders cross-division opponent as a clickable button when found in adjacentWrestlers', () => {
+      useDivisionStore.getState().setAdjacentWrestlers([adjacentWrestler])
+      render(<MatchGrid matches={linkedMatches} />)
+      expect(screen.getByRole('button', { name: /view juryo ?guy/i })).toBeInTheDocument()
+    })
+
+    it('shows abbreviated rank badge for opponent in allWrestlers', () => {
+      useDivisionStore.getState().setAllWrestlers([primaryWrestler])
+      render(<MatchGrid matches={linkedMatches} />)
+      expect(screen.getByText('Y1e')).toBeInTheDocument()
+    })
+
+    it('shows abbreviated rank badge for opponent in adjacentWrestlers', () => {
+      useDivisionStore.getState().setAdjacentWrestlers([adjacentWrestler])
+      render(<MatchGrid matches={linkedMatches} />)
+      expect(screen.getByText('J5w')).toBeInTheDocument()
+    })
+
+    it('opens modal when linked opponent button is clicked', () => {
+      useDivisionStore.getState().setAllWrestlers([primaryWrestler])
+      render(<MatchGrid matches={linkedMatches} />)
+      fireEvent.click(screen.getByRole('button', { name: /view terunofuji/i }))
+      expect(useDivisionStore.getState().isModalOpen).toBe(true)
+      expect(useDivisionStore.getState().selectedWrestler).toEqual(primaryWrestler)
     })
   })
 })
