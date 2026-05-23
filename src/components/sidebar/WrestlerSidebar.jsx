@@ -34,6 +34,11 @@ const ADJACENT_LOWER = {
   Jonidan:   'Jonokuchi',
 };
 
+// Reverse of ADJACENT_LOWER — maps each division to the one directly above it
+const ADJACENT_UPPER = Object.fromEntries(
+  Object.entries(ADJACENT_LOWER).map(([upper, lower]) => [lower, upper]),
+);
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function findMatchingView(apiDivision, rank, isDivisionView) {
@@ -93,10 +98,14 @@ function WrestlerSidebar() {
     enabled: isSidebarOpen && !!currentApiDivision,
   });
 
-  // Also fetch the adjacent lower division so cross-division bouts can show records
-  const adjacentDivision = ADJACENT_LOWER[currentApiDivision] ?? null;
-  const { data: adjacentData } = useBanzuke(currentBashoId, adjacentDivision, {
-    enabled: isSidebarOpen && !!adjacentDivision,
+  // Fetch both adjacent divisions so cross-division bouts link and abbreviate in both directions
+  const lowerDivision = ADJACENT_LOWER[currentApiDivision] ?? null;
+  const upperDivision = ADJACENT_UPPER[currentApiDivision] ?? null;
+  const { data: lowerData } = useBanzuke(currentBashoId, lowerDivision, {
+    enabled: isSidebarOpen && !!lowerDivision,
+  });
+  const { data: upperData } = useBanzuke(currentBashoId, upperDivision, {
+    enabled: isSidebarOpen && !!upperDivision,
   });
 
   const { data: bashoResults } = useBashoResults(currentBashoId, {
@@ -110,9 +119,10 @@ function WrestlerSidebar() {
   }, [data]);
 
   const adjacentWrestlers = useMemo(() => {
-    if (!adjacentData) return [];
-    return [...(adjacentData.east || []), ...(adjacentData.west || [])];
-  }, [adjacentData]);
+    const lower = lowerData ? [...(lowerData.east || []), ...(lowerData.west || [])] : [];
+    const upper = upperData ? [...(upperData.east || []), ...(upperData.west || [])] : [];
+    return [...lower, ...upper];
+  }, [lowerData, upperData]);
 
   const rikishiIds = useMemo(
     () => allWrestlers.map((w) => w.rikishiID).filter(Boolean),
