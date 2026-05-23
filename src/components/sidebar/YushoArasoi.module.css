@@ -1,0 +1,288 @@
+.container {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Section header (collapse toggle) ──────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 0 0.5rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.header:hover .headerJp,
+.header:hover .headerEn {
+  opacity: 0.7;
+}
+
+.headerCollapsed {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.headerJp {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.headerEn {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-accent);
+  flex: 1;
+}
+
+.chevron {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  transition: transform var(--transition-fast);
+  display: inline-block;
+  transform: rotate(-90deg);
+}
+
+.chevronOpen {
+  transform: rotate(0deg);
+}
+
+/* ── Provisional clinch box ─────────────────────────────────────────────────── */
+
+.clinched {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1.5px dashed var(--color-gold-dark);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+}
+
+.clinchedHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.trophyIcon {
+  font-size: 1rem;
+}
+
+.clinchedLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-gold-text);
+}
+
+.clinchedWrestler {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.clinchedNameBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-gold-text-dark);
+  cursor: pointer;
+  text-align: left;
+  transition: opacity var(--transition-fast);
+}
+
+.clinchedNameBtn:hover {
+  opacity: 0.7;
+  text-decoration: underline;
+}
+
+/* ── Accordion body ─────────────────────────────────────────────────────────── */
+
+.body {
+  display: grid;
+  transition: grid-template-rows 220ms ease;
+}
+
+.bodyOpen {
+  grid-template-rows: 1fr;
+}
+
+.bodyCollapsed {
+  grid-template-rows: 0fr;
+}
+
+.bodyInner {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ── Leader group ───────────────────────────────────────────────────────────── */
+
+.leaderGroup {
+  background: var(--color-background-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.65rem;
+}
+
+.leaderList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+
+.leaderWrestler {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+/* ── Playoff badge ──────────────────────────────────────────────────────────── */
+
+.playoffBadge {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.45rem;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-accent);
+}
+
+.playoffIcon {
+  font-size: 0.75rem;
+}
+
+/* ── Challenger grid ────────────────────────────────────────────────────────── */
+
+.challengerGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+
+.challengerGroup {
+  background: var(--color-background-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Lone last cell (1 or 3 challengers) spans full width */
+.challengerGroup:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.compactWrestler {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+/* ── Shared wrestler button ─────────────────────────────────────────────────── */
+
+.nameBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: left;
+  transition: opacity var(--transition-fast);
+  line-height: 1.3;
+}
+
+.nameBtn:hover {
+  opacity: 0.65;
+  text-decoration: underline;
+}
+
+.rankAbbr {
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+/* ── Win label ──────────────────────────────────────────────────────────────── */
+
+.winLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-accent);
+}
+
+/* ── Record symbols ─────────────────────────────────────────────────────────── */
+
+.recordSymbols {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1px;
+  line-height: 1;
+}
+
+.shiroboshi,
+.kuroboshi,
+.fusenshoSquare,
+.fusenpaiSquare {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  flex-shrink: 0;
+}
+
+.shiroboshi,
+.kuroboshi {
+  border-radius: 50%;
+}
+
+.shiroboshi,
+.fusenshoSquare {
+  background: white;
+  border: 1.5px solid var(--color-text);
+}
+
+.kuroboshi,
+.fusenpaiSquare {
+  background: var(--color-text);
+  border: 1.5px solid var(--color-text);
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+
+@media (max-width: 480px) {
+  .challengerGrid {
+    grid-template-columns: 1fr;
+  }
+}

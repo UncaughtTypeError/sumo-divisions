@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { computeRecordOnDay, isAbsentKyujo } from '../../utils/records';
 import WrestlerGrid from './WrestlerGrid';
 import BashoWinners from './BashoWinners';
+import YushoArasoi from './YushoArasoi';
 import Loading from '../common/Loading';
 import ErrorMessage from '../common/ErrorMessage';
 import NoDataMessage from '../common/NoDataMessage';
@@ -66,6 +67,14 @@ function BanzukeTab({
         selectedRank={currentRank}
         selectedApiDivision={currentApiDivision}
         allWrestlers={allWrestlers}
+        onWrestlerClick={openModal}
+      />
+
+      <YushoArasoi
+        wrestlers={allWrestlers}
+        maxDay={maxDay}
+        division={currentApiDivision}
+        bashoResults={bashoResults}
         onWrestlerClick={openModal}
       />
 
