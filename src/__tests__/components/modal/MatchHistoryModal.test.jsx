@@ -134,6 +134,21 @@ describe('MatchHistoryModal', () => {
     })
   })
 
+  describe('header color', () => {
+    it('applies modalColor as header background', () => {
+      useDivisionStore.mockReturnValue({
+        isModalOpen: true,
+        selectedWrestler: mockWrestler,
+        modalColor: 'juryo',
+        closeModal: mockCloseModal,
+        clearSelectedWrestler: mockClearSelectedWrestler,
+      })
+      render(<MatchHistoryModal />)
+      const header = screen.getByText('Terunofuji').closest('[style*="var(--color-"]')
+      expect(header.getAttribute('style')).toContain('var(--color-juryo)')
+    })
+  })
+
   describe('with awards', () => {
     beforeEach(() => {
       const wrestlerWithAwards = {
@@ -209,7 +224,7 @@ describe('MatchHistoryModal', () => {
       useDivisionStore.mockReturnValue({
         isModalOpen: true,
         selectedWrestler: winningWrestler,
-        selectedApiDivision: 'Makuuchi',
+        modalApiDivision: 'Makuuchi',
         closeModal: mockCloseModal,
         clearSelectedWrestler: mockClearSelectedWrestler,
       })
@@ -229,7 +244,7 @@ describe('MatchHistoryModal', () => {
       useDivisionStore.mockReturnValue({
         isModalOpen: true,
         selectedWrestler: losingWrestler,
-        selectedApiDivision: 'Makuuchi',
+        modalApiDivision: 'Makuuchi',
         closeModal: mockCloseModal,
         clearSelectedWrestler: mockClearSelectedWrestler,
       })
@@ -249,7 +264,7 @@ describe('MatchHistoryModal', () => {
       useDivisionStore.mockReturnValue({
         isModalOpen: true,
         selectedWrestler: undeterminedWrestler,
-        selectedApiDivision: 'Makuuchi',
+        modalApiDivision: 'Makuuchi',
         closeModal: mockCloseModal,
         clearSelectedWrestler: mockClearSelectedWrestler,
       })
@@ -269,7 +284,7 @@ describe('MatchHistoryModal', () => {
       useDivisionStore.mockReturnValue({
         isModalOpen: true,
         selectedWrestler: wrestlerWithKKAndAward,
-        selectedApiDivision: 'Makuuchi',
+        modalApiDivision: 'Makuuchi',
         closeModal: mockCloseModal,
         clearSelectedWrestler: mockClearSelectedWrestler,
       })
@@ -289,8 +304,8 @@ describe('MatchHistoryModal', () => {
         selectedWrestler: { ...mockWrestler, ...wrestlerOverrides },
         closeModal: mockCloseModal,
         clearSelectedWrestler: mockClearSelectedWrestler,
-        selectedColor: 'yokozuna',
-        selectedApiDivision: 'Makuuchi',
+        modalColor: 'yokozuna',
+        modalApiDivision: 'Makuuchi',
         rankLookup: new Map(),
       })
 
@@ -351,7 +366,7 @@ describe('MatchHistoryModal', () => {
       useDivisionStore.mockReturnValue({
         isModalOpen: true,
         selectedWrestler: mockWrestler,
-        selectedColor: 'makuuchi',
+        modalColor: 'makuuchi',
         closeModal: mockCloseModal,
         clearSelectedWrestler: mockClearSelectedWrestler,
       })
@@ -390,7 +405,7 @@ describe('MatchHistoryModal', () => {
       useDivisionStore.mockReturnValue({
         isModalOpen: true,
         selectedWrestler: mockWrestler,
-        selectedColor: 'makuuchi',
+        modalColor: 'makuuchi',
         closeModal: mockCloseModal,
         clearSelectedWrestler: mockClearSelectedWrestler,
       })

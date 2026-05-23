@@ -140,6 +140,28 @@ describe('divisionStore', () => {
       useDivisionStore.getState().openModal(mockWrestler)
       expect(useDivisionStore.getState().selectedWrestler).toEqual(mockWrestler)
     })
+
+    it('should set modalColor and modalApiDivision from rank when not supplied', () => {
+      const ranked = { rikishiID: 2, shikonaEn: 'Hoshoryu', rank: 'Juryo 1 East' }
+      useDivisionStore.getState().openModal(ranked)
+      expect(useDivisionStore.getState().modalColor).toBe('juryo')
+      expect(useDivisionStore.getState().modalApiDivision).toBe('Juryo')
+    })
+
+    it('should use explicit color and division when supplied', () => {
+      const ranked = { rikishiID: 3, shikonaEn: 'Kirishima', rank: 'Ozeki 1 West' }
+      useDivisionStore.getState().openModal(ranked, 'juryo', 'Juryo')
+      expect(useDivisionStore.getState().modalColor).toBe('juryo')
+      expect(useDivisionStore.getState().modalApiDivision).toBe('Juryo')
+    })
+
+    it('should not change selectedApiDivision or selectedColor', () => {
+      useDivisionStore.getState().selectDivision('Makuuchi', 'Makuuchi', 'makuuchi')
+      const ranked = { rikishiID: 4, shikonaEn: 'Juryo Guy', rank: 'Juryo 1 East' }
+      useDivisionStore.getState().openModal(ranked)
+      expect(useDivisionStore.getState().selectedApiDivision).toBe('Makuuchi')
+      expect(useDivisionStore.getState().selectedColor).toBe('makuuchi')
+    })
   })
 
   describe('closeModal', () => {
@@ -209,6 +231,8 @@ describe('divisionStore', () => {
       expect(state.isDivisionView).toBe(false)
       expect(state.isModalOpen).toBe(false)
       expect(state.selectedWrestler).toBeNull()
+      expect(state.modalColor).toBeNull()
+      expect(state.modalApiDivision).toBeNull()
       expect(state.allWrestlers).toEqual([])
     })
 
