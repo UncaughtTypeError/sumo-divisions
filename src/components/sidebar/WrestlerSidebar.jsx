@@ -55,6 +55,7 @@ function WrestlerSidebar() {
     openModal,
     setRankLookup,
     setAllWrestlers,
+    setAdjacentWrestlers,
   } = useDivisionStore();
 
   // ── Animation ─────────────────────────────────────────────────────────────
@@ -129,6 +130,10 @@ function WrestlerSidebar() {
   useEffect(() => {
     setAllWrestlers(allWrestlers);
   }, [allWrestlers, setAllWrestlers]);
+
+  useEffect(() => {
+    setAdjacentWrestlers(adjacentWrestlers);
+  }, [adjacentWrestlers, setAdjacentWrestlers]);
 
   // ── Max competed day ──────────────────────────────────────────────────────
   const maxDay = useMemo(() => {

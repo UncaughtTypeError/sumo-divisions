@@ -31,6 +31,8 @@ const useDivisionStore = create((set) => ({
 
   // All wrestlers in current banzuke (for opponent lookups from MatchGrid)
   allWrestlers: [],
+  // Wrestlers in the adjacent lower division (for cross-division opponent lookups)
+  adjacentWrestlers: [],
 
   // Actions
   selectRank: (rank, division, apiDivision, color) =>
@@ -77,6 +79,11 @@ const useDivisionStore = create((set) => ({
       allWrestlers: wrestlers,
     }),
 
+  setAdjacentWrestlers: (wrestlers) =>
+    set({
+      adjacentWrestlers: wrestlers,
+    }),
+
   closeSidebar: () =>
     set({
       isSidebarOpen: false,
@@ -86,6 +93,7 @@ const useDivisionStore = create((set) => ({
       selectedApiDivision: null,
       selectedColor: null,
       allWrestlers: [],
+      adjacentWrestlers: [],
     }),
 
   openModal: (wrestler, color = null, division = null) =>
@@ -126,6 +134,7 @@ const useDivisionStore = create((set) => ({
       modalApiDivision: null,
       rankLookup: new Map(),
       allWrestlers: [],
+      adjacentWrestlers: [],
     }),
 }))
 
