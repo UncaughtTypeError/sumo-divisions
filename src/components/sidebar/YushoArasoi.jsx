@@ -1,19 +1,7 @@
 import { useState } from 'react';
 import { computeYushoContenders, isYushoDecided } from '../../utils/arasoi';
+import { abbreviateRank } from '../../utils/constants';
 import styles from './YushoArasoi.module.css';
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function abbreviateRank(rank) {
-  if (!rank) return null;
-  const match = rank.match(/^(\w)\w*\s*(\d*)\s*(\S+)?$/i);
-  if (!match) return rank;
-  const [, first, num, suffix] = match;
-  if (!suffix) return `${first}${num}`;
-  if (suffix.toLowerCase() === 'east') return `${first}${num}e`;
-  if (suffix.toLowerCase() === 'west') return `${first}${num}w`;
-  return `${first}${num}${suffix}`;
-}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 

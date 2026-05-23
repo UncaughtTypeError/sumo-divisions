@@ -4,18 +4,9 @@ import KimariteModal from './KimariteModal';
 import HeadToHeadModal from './HeadToHeadModal';
 import { getKimariteInfo } from '../../utils/kimarite';
 import { isKinboshiMatch, isYokozuna } from '../../utils/records';
+import { abbreviateRank } from '../../utils/constants';
 import useDivisionStore from '../../store/divisionStore';
 import styles from './MatchGrid.module.css';
-
-// Abbreviate rank to first letter + number + cardinal point (e.g., "Maegashira 17 East" -> "M17e")
-function abbreviateRank(rank) {
-  if (!rank) return null;
-  const match = rank.match(/^(\w)\w*\s*(\d*)\s*(East|West)?$/i);
-  if (!match) return rank;
-  const [, firstLetter, number, side] = match;
-  const sideAbbrev = side ? side[0].toLowerCase() : '';
-  return `${firstLetter}${number}${sideAbbrev}`;
-}
 
 function MatchGrid({ matches, color, wrestlerRank, rikishiId, rikishiName }) {
   const [selectedKimarite, setSelectedKimarite] = useState(null);

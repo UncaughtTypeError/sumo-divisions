@@ -2,17 +2,9 @@ import { useState } from 'react';
 import Tooltip from '../common/Tooltip';
 import KimariteModal from './KimariteModal';
 import { getKimariteInfo } from '../../utils/kimarite';
+import { abbreviateRank } from '../../utils/constants';
 import useDivisionStore from '../../store/divisionStore';
 import styles from './HoshitoriGrid.module.css';
-
-function abbreviateRank(rank) {
-  if (!rank) return null;
-  const match = rank.match(/^(\w)\w*\s*(\d*)\s*(East|West)?$/i);
-  if (!match) return rank;
-  const [, firstLetter, number, side] = match;
-  const sideAbbrev = side ? side[0].toLowerCase() : '';
-  return `${firstLetter}${number}${sideAbbrev}`;
-}
 
 const DAYS = Array.from({ length: 15 }, (_, i) => i + 1);
 

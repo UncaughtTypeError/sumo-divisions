@@ -327,6 +327,27 @@ export const RANK_ABBREVIATIONS = {
   [RANKS.JONOKUCHI]: 'Jk',
 };
 
+/**
+ * Abbreviate a full rank string (e.g. "Makushita 60 TD") using RANK_ABBREVIATIONS
+ * so that divisions sharing the same first letter are distinguishable
+ * (Maegashira=M, Makushita=Ms, Juryo=J, Jonidan=Jd, Jonokuchi=Jk, etc.).
+ *
+ * @param {string|null} rank  e.g. "Maegashira 3 East" | "Makushita 60 TD"
+ * @returns {string|null}     e.g. "M3e" | "Ms60TD"
+ */
+export function abbreviateRank(rank) {
+  if (!rank) return null;
+  const match = rank.match(/^(\w+)(?:\s+(\d+)(?:\s+(\S+))?)?$/i);
+  if (!match) return rank;
+  const [, rankName, num, suffix] = match;
+  const abbr = RANK_ABBREVIATIONS[rankName] ?? rankName[0];
+  const numStr = num ?? '';
+  if (!suffix) return `${abbr}${numStr}`;
+  if (suffix.toLowerCase() === 'east') return `${abbr}${numStr}e`;
+  if (suffix.toLowerCase() === 'west') return `${abbr}${numStr}w`;
+  return `${abbr}${numStr}${suffix}`;
+}
+
 // CSS variable color name per rank (matches --color-* variables)
 export const RANK_COLORS = {
   [RANKS.YOKOZUNA]: 'yokozuna',
