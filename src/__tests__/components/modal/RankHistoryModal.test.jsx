@@ -158,8 +158,9 @@ describe('RankHistoryModal', () => {
     })
 
     it('up arrow badge has tooltip with rank delta text', () => {
-      render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={historyWithMovement} />)
-      // Tooltip content is rendered as a hidden <span> by the Tooltip component
+      const { container } = render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={historyWithMovement} />)
+      const upArrows = screen.getAllByText(/▲ \d+\.\d+/)
+      fireEvent.mouseEnter(upArrows[0].closest('[class*="tooltipWrapper"]'))
       expect(screen.getAllByText(/Up \d+\.\d+ ranks/).length).toBeGreaterThanOrEqual(1)
     })
 
@@ -172,17 +173,19 @@ describe('RankHistoryModal', () => {
         ],
       }
       render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishi} />)
+      fireEvent.mouseEnter(screen.getByText(/▼ \d+\.\d+/).closest('[class*="tooltipWrapper"]'))
       expect(screen.getByText(/Down \d+\.\d+ ranks/)).toBeInTheDocument()
     })
 
     it('sanyaku-debut badge has "First appearance at this rank" tooltip', () => {
       render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={historyWithMovement} />)
+      document.body.querySelectorAll('[class*="tooltipWrapper"]').forEach(w => fireEvent.mouseEnter(w))
       expect(screen.getAllByText('First appearance at this rank').length).toBeGreaterThanOrEqual(1)
     })
 
     it('division-debut badge has "Division debut" tooltip', () => {
       render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={historyWithMovement} />)
-      // The oldest entry gets division-debut
+      document.body.querySelectorAll('[class*="tooltipWrapper"]').forEach(w => fireEvent.mouseEnter(w))
       expect(screen.getAllByText('Division debut').length).toBeGreaterThanOrEqual(1)
     })
 
@@ -194,7 +197,8 @@ describe('RankHistoryModal', () => {
           { id: '202603-1', bashoId: '202603', rank: 'Maegashira 5 East', rankValue: 505 },
         ],
       }
-      render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishi} />)
+      const { container } = render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishi} />)
+      fireEvent.mouseEnter(screen.getByText('High').closest('[class*="tooltipWrapper"]'))
       expect(screen.getAllByText('New career highest rank').length).toBeGreaterThanOrEqual(1)
     })
 
@@ -237,6 +241,7 @@ describe('RankHistoryModal', () => {
       render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishi} />)
       // Oldest (and only) entry = first career basho → division-debut → Debut badge
       expect(screen.getByText('Debut')).toBeInTheDocument()
+      fireEvent.mouseEnter(screen.getByText('Debut').closest('[class*="tooltipWrapper"]'))
       expect(screen.getByText('Division debut')).toBeInTheDocument()
     })
 

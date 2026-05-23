@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import HeyaRankBadge from '../../../components/heya/HeyaRankBadge'
 
 describe('HeyaRankBadge', () => {
@@ -49,8 +49,8 @@ describe('HeyaRankBadge', () => {
   })
 
   it('renders the full rank name as tooltip content', () => {
-    render(<HeyaRankBadge rank="Maegashira" count={5} />)
-    // Tooltip renders the nameEn from RANK_INFO
+    const { container } = render(<HeyaRankBadge rank="Maegashira" count={5} />)
+    fireEvent.mouseEnter(container.firstChild)
     expect(screen.getByText('Maegashira')).toBeInTheDocument()
   })
 })

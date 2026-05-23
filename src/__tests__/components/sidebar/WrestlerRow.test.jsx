@@ -57,7 +57,7 @@ describe('WrestlerRow', () => {
     renderWithQueryClient(<WrestlerRow wrestler={wrestlerWithYusho} onClick={() => {}} />)
     // The span contains both trophy emoji and abbreviation
     expect(screen.getByText(/🏆/)).toBeInTheDocument()
-    // Verify "Yusho" appears in the tooltip
+    fireEvent.mouseEnter(screen.getByText(/🏆/).closest('[class*="tooltipWrapper"]'))
     expect(screen.getByText('Yusho')).toBeInTheDocument()
   })
 
@@ -114,7 +114,7 @@ describe('WrestlerRow', () => {
       }
       renderWithQueryClient(<WrestlerRow wrestler={winningWrestler} onClick={() => {}} division="Makuuchi" />)
       expect(screen.getByText('KK')).toBeInTheDocument()
-      // Tooltip content
+      fireEvent.mouseEnter(screen.getByText('KK').closest('[class*="tooltipWrapper"]'))
       expect(screen.getByText('Kachi-koshi')).toBeInTheDocument()
     })
 
@@ -126,7 +126,7 @@ describe('WrestlerRow', () => {
       }
       renderWithQueryClient(<WrestlerRow wrestler={losingWrestler} onClick={() => {}} division="Makuuchi" />)
       expect(screen.getByText('MK')).toBeInTheDocument()
-      // Tooltip content
+      fireEvent.mouseEnter(screen.getByText('MK').closest('[class*="tooltipWrapper"]'))
       expect(screen.getByText('Make-koshi')).toBeInTheDocument()
     })
 
@@ -181,7 +181,7 @@ describe('WrestlerRow', () => {
       const w = { ...mockWrestler, rankMovement: 'up', rankDelta: 2.5 }
       renderWithQueryClient(<WrestlerRow wrestler={w} onClick={() => {}} />)
       expect(screen.getByText('▲ 2.5')).toBeInTheDocument()
-      // Tooltip content is rendered as a hidden <span> in the DOM
+      fireEvent.mouseEnter(screen.getByText('▲ 2.5').closest('[class*="tooltipWrapper"]'))
       expect(screen.getByText('Up 2.5 ranks')).toBeInTheDocument()
     })
 
@@ -189,6 +189,7 @@ describe('WrestlerRow', () => {
       const w = { ...mockWrestler, rankMovement: 'down', rankDelta: 1.5 }
       renderWithQueryClient(<WrestlerRow wrestler={w} onClick={() => {}} />)
       expect(screen.getByText('▼ 1.5')).toBeInTheDocument()
+      fireEvent.mouseEnter(screen.getByText('▼ 1.5').closest('[class*="tooltipWrapper"]'))
       expect(screen.getByText('Down 1.5 ranks')).toBeInTheDocument()
     })
 
@@ -209,6 +210,7 @@ describe('WrestlerRow', () => {
       const w = { ...mockWrestler, debutType: 'sanyaku-debut', rank: 'Yokozuna 1 East' }
       renderWithQueryClient(<WrestlerRow wrestler={w} onClick={() => {}} />)
       expect(screen.getByText('Debut')).toBeInTheDocument()
+      fireEvent.mouseEnter(screen.getByText('Debut').closest('[class*="tooltipWrapper"]'))
       expect(screen.getByText('First appearance at Yokozuna')).toBeInTheDocument()
     })
 
@@ -216,6 +218,7 @@ describe('WrestlerRow', () => {
       const w = { ...mockWrestler, debutType: 'division-debut' }
       renderWithQueryClient(<WrestlerRow wrestler={w} onClick={() => {}} />)
       expect(screen.getByText('Debut')).toBeInTheDocument()
+      fireEvent.mouseEnter(screen.getByText('Debut').closest('[class*="tooltipWrapper"]'))
       expect(screen.getByText('Division debut')).toBeInTheDocument()
     })
 
@@ -223,6 +226,7 @@ describe('WrestlerRow', () => {
       const w = { ...mockWrestler, isCareerHigh: true }
       renderWithQueryClient(<WrestlerRow wrestler={w} onClick={() => {}} />)
       expect(screen.getByText('High')).toBeInTheDocument()
+      fireEvent.mouseEnter(screen.getByText('High').closest('[class*="tooltipWrapper"]'))
       expect(screen.getByText('New career highest rank')).toBeInTheDocument()
     })
 
@@ -236,18 +240,21 @@ describe('WrestlerRow', () => {
     it('sanyaku-debut tooltip reflects the actual rank base for Ozeki', () => {
       const w = { ...mockWrestler, debutType: 'sanyaku-debut', rank: 'Ozeki 1 East' }
       renderWithQueryClient(<WrestlerRow wrestler={w} onClick={() => {}} />)
+      fireEvent.mouseEnter(screen.getByText('Debut').closest('[class*="tooltipWrapper"]'))
       expect(screen.getByText('First appearance at Ozeki')).toBeInTheDocument()
     })
 
     it('sanyaku-debut tooltip reflects the actual rank base for Sekiwake', () => {
       const w = { ...mockWrestler, debutType: 'sanyaku-debut', rank: 'Sekiwake 1 West' }
       renderWithQueryClient(<WrestlerRow wrestler={w} onClick={() => {}} />)
+      fireEvent.mouseEnter(screen.getByText('Debut').closest('[class*="tooltipWrapper"]'))
       expect(screen.getByText('First appearance at Sekiwake')).toBeInTheDocument()
     })
 
     it('sanyaku-debut tooltip reflects the actual rank base for Komusubi', () => {
       const w = { ...mockWrestler, debutType: 'sanyaku-debut', rank: 'Komusubi 1 East' }
       renderWithQueryClient(<WrestlerRow wrestler={w} onClick={() => {}} />)
+      fireEvent.mouseEnter(screen.getByText('Debut').closest('[class*="tooltipWrapper"]'))
       expect(screen.getByText('First appearance at Komusubi')).toBeInTheDocument()
     })
 
