@@ -17,7 +17,7 @@ An interactive React application for visualizing sumo wrestling divisions, ranki
 - **Filter by Day**: Dropdown to show only wrestlers who competed on a specific tournament day, excluding absences and forfeits
 - **Wrestler Metadata**: Each wrestler card includes heya (stable), country of origin, and rank context
 - **Rank Movement Indicators**: Each wrestler card shows how their rank changed since the previous basho — promotion (▲) or demotion (▼) with the number of rank positions moved, a debut badge for first appearances at a sanyaku rank or division, and a career-high badge the first time a wrestler reaches their personal best rank
-- **Match History**: Detailed view of each wrestler's matches including opponents and winning techniques (kimarite)
+- **Match History**: Detailed view of each wrestler's basho record in two tabs — a **Match History** list with day number, result, opponent, kimarite, and head-to-head access per bout, and a **Hoshitori** grid showing the full 15-day record using traditional win/loss symbols (shiroboshi/kuroboshi), with opponent names and kimarite arranged by day
 - **Head-to-Head Records**: Historical match record between any two wrestlers, including win/loss totals, win percentage, and sortable match details
 
 ### Rikishi detail
@@ -60,7 +60,7 @@ An interactive React application for visualizing sumo wrestling divisions, ranki
 4. **Wrestler Sidebar**: A sidebar slides in with two tabs — **Banzuke** (default) and **Torikumi**
 5. **Banzuke tab**: Browse wrestlers divided by East and West; rank movement indicators (▲/▼), debut badges, and career-high badges load automatically; filter by name, sort by rank or wins, and use the day dropdown to view records as of a specific tournament day — absent wrestlers are shown with a Kyujo badge
 6. **Torikumi tab**: View scheduled and completed bouts for any tournament day; use the day selector to navigate, filter by wrestler name, or reverse bout order; click a kimarite to read its description; click a wrestler name to open their match history; a refresh button appears on the current day while results are still coming in
-7. **View Match History**: Click any wrestler (from either tab) to see their complete match record for the selected basho; rank movement indicators also appear in the match history pop-up header
+7. **View Match History**: Click any wrestler (from either tab) to open their match history modal; switch between the **Match History** tab (day-by-day list of opponents, kimarite, and head-to-head buttons) and the **Hoshitori** tab (traditional 15-day grid using shiroboshi/kuroboshi symbols, with opponent names and kimarite per column); rank movement indicators also appear in the modal header
 8. **View Rikishi Detail**: Click the **i** icon on any wrestler card to see personal details including career highest rank and retirement date (for retired wrestlers); click the bar-chart icon to open the full rank history across all bashos
 9. **Browse History**: Use the basho selector in the sidebar header to switch between tournaments, with records going back to 1958
 10. **Navigate**: Close the sidebar or modal to return to the pyramid
