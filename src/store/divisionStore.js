@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { RANK_COLORS, RANK_TO_API_DIVISION } from '../utils/constants'
 
 /**
  * Zustand store for managing app state
@@ -19,9 +20,11 @@ const useDivisionStore = create((set) => ({
   isHeyaSidebarOpen: false,
   selectedHeyaRikishiIds: [], // IDs of wrestlers in the selected heya (from heya card click)
 
-  // Modal state
+  // Modal state — modalColor/modalApiDivision are independent of sidebar navigation state
   isModalOpen: false,
   selectedWrestler: null,
+  modalColor: null,
+  modalApiDivision: null,
 
   // Rank lookup for kinboshi calculation (Map of rikishiID to rank)
   rankLookup: new Map(),
@@ -85,15 +88,16 @@ const useDivisionStore = create((set) => ({
       allWrestlers: [],
     }),
 
-  // color and division are optional — callers that know the context (e.g.
-  // HeyaSidebar) supply them so the modal header renders with the right colour.
   openModal: (wrestler, color = null, division = null) =>
-    set((state) => ({
-      isModalOpen: true,
-      selectedWrestler: wrestler,
-      selectedColor: color !== null ? color : state.selectedColor,
-      selectedApiDivision: division !== null ? division : state.selectedApiDivision,
-    })),
+    set((state) => {
+      const rankBase = wrestler?.rank?.split(' ')[0];
+      return {
+        isModalOpen: true,
+        selectedWrestler: wrestler,
+        modalColor: color ?? RANK_COLORS[rankBase] ?? state.modalColor,
+        modalApiDivision: division ?? RANK_TO_API_DIVISION[rankBase] ?? state.modalApiDivision,
+      };
+    }),
 
   closeModal: () =>
     set({
@@ -118,6 +122,8 @@ const useDivisionStore = create((set) => ({
       selectedHeyaRikishiIds: [],
       isModalOpen: false,
       selectedWrestler: null,
+      modalColor: null,
+      modalApiDivision: null,
       rankLookup: new Map(),
       allWrestlers: [],
     }),

@@ -44,12 +44,14 @@ function MatchHistoryModal() {
   const {
     isModalOpen,
     selectedWrestler,
-    selectedColor,
-    selectedApiDivision,
+    modalColor,
+    modalApiDivision,
     closeModal,
     clearSelectedWrestler,
     rankLookup,
   } = useDivisionStore();
+  const selectedColor = modalColor;
+  const selectedApiDivision = modalApiDivision;
 
   // Fetch the single wrestler's details — cache hit if the sidebar already loaded it
   const { data: rikishiDetails } = useRikishi(selectedWrestler?.rikishiID);
