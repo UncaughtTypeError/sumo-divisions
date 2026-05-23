@@ -179,6 +179,39 @@ describe('WrestlerSidebar', () => {
       renderWithQueryClient(<WrestlerSidebar />)
       await waitFor(() => expect(mockSetAdjacentWrestlers).toHaveBeenCalled())
     })
+
+  })
+
+  // ── Adjacent division bidirectional loading ───────────────────────────────
+
+  describe('bidirectional adjacent division loading (Juryo)', () => {
+    it('includes wrestlers from both adjacent divisions for a middle division', async () => {
+      const upperWrestler = { rikishiID: 10, shikonaEn: 'UpperGuy', rank: 'Maegashira 1 East' }
+      const lowerWrestler = { rikishiID: 20, shikonaEn: 'LowerGuy', rank: 'Makushita 1 East' }
+
+      useDivisionStore.mockReturnValue({
+        isSidebarOpen: true, isDivisionView: false, selectedRank: 'Juryo',
+        selectedDivision: 'Juryo', selectedApiDivision: 'Juryo', selectedColor: 'juryo',
+        closeSidebar: mockCloseSidebar, openModal: mockOpenModal,
+        setRankLookup: mockSetRankLookup, setAllWrestlers: mockSetAllWrestlers,
+        setAdjacentWrestlers: mockSetAdjacentWrestlers,
+      })
+      useBanzuke.mockImplementation((_bashoId, division) => {
+        if (division === 'Makuuchi')  return { data: { east: [upperWrestler], west: [] }, isLoading: false, error: null, refetch: mockRefetch }
+        if (division === 'Makushita') return { data: { east: [lowerWrestler], west: [] }, isLoading: false, error: null, refetch: mockRefetch }
+        return { data: mockBanzukeData, isLoading: false, error: null, refetch: mockRefetch }
+      })
+      useBashoResults.mockReturnValue({ data: null })
+
+      renderWithQueryClient(<WrestlerSidebar />)
+
+      await waitFor(() => {
+        const calls = mockSetAdjacentWrestlers.mock.calls
+        const lastCall = calls[calls.length - 1][0]
+        expect(lastCall.some((w) => w.rikishiID === 10)).toBe(true) // upper (Makuuchi)
+        expect(lastCall.some((w) => w.rikishiID === 20)).toBe(true) // lower (Makushita)
+      })
+    })
   })
 
   // ── Open sidebar — Makuuchi division view ─────────────────────────────────
