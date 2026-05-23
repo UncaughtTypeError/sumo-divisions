@@ -217,15 +217,25 @@
 }
 
 @media (max-width: 480px) {
+  .matchGridContainer {
+    overflow-x: auto;
+  }
+
+  .matchList {
+    max-height: none;
+    overflow: visible;
+  }
+
   .matchGridHeader,
   .matchRow {
-    grid-template-columns: 18px 70px 1fr 100px 36px;
-    gap: 0.25rem;
-    padding: 0.5rem 0.25rem;
+    min-width: 400px;
+    grid-template-columns: 22px 80px 1fr 120px 44px;
+    gap: 0.5rem;
+    padding: 0.5rem;
   }
 
   .cell {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
   }
 
   .headerCell {
