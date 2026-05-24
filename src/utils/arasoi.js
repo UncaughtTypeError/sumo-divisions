@@ -55,7 +55,8 @@ export function getRemainingBouts(wrestler, currentDay, division) {
 
   if (SEKITORI_DIVISIONS.includes(division)) {
     if (wrestler.absences > 0) return 0;
-    return Math.max(0, total - currentDay);
+    const boutsFought = wrestler.wins + wrestler.losses;
+    return Math.max(0, total - boutsFought);
   }
 
   // Lower divisions: genuine kyujo is reflected in `absences` (rest days are not).
