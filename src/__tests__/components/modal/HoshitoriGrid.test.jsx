@@ -60,11 +60,11 @@ describe('HoshitoriGrid', () => {
       expect(screen.getByText('休')).toBeInTheDocument()
     })
 
-    it('renders nothing for days with no match', () => {
+    it('renders a placeholder dash for days with no match', () => {
       render(<HoshitoriGrid matches={[]} />)
-      const { container } = render(<HoshitoriGrid matches={[]} />)
-      expect(container.querySelector('[class*="shiroboshi"]')).not.toBeInTheDocument()
-      expect(container.querySelector('[class*="kuroboshi"]')).not.toBeInTheDocument()
+      // 3 rows (result, opponent, kimarite) × 15 days = 45 placeholders
+      const dashes = screen.getAllByText('–')
+      expect(dashes).toHaveLength(45)
     })
   })
 
