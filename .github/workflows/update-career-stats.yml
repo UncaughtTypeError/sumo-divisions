@@ -1,0 +1,44 @@
+name: Update Career Stats
+
+# Runs on the 28th of each basho month (Jan/Mar/May/Jul/Sep/Nov) — all bashos
+# have concluded by then. Can also be triggered manually for a full rebuild.
+on:
+  schedule:
+    - cron: '0 6 28 1,3,5,7,9,11 *'
+  workflow_dispatch:
+    inputs:
+      full_rebuild:
+        description: 'Full rebuild from 1958 (slow — ~80 min)'
+        type: boolean
+        default: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generate career stats
+        run: |
+          if [ "${{ github.event.inputs.full_rebuild }}" = "true" ]; then
+            echo "Running full rebuild from 1958…"
+            node scripts/generateCareerStats.js
+          else
+            echo "Running incremental update…"
+            node scripts/generateCareerStats.js --incremental
+          fi
+
+      - name: Commit updated stats (if changed)
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/career-stats.json
+          git diff --staged --quiet && echo "No changes to commit." || \
+            git commit -m "chore: update career-stats.json" && git push
