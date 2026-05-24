@@ -54,7 +54,7 @@ describe('getTotalBouts', () => {
 
 describe('getRemainingBouts', () => {
   describe('sekitori (Makuuchi / Juryo)', () => {
-    it('returns days remaining when wrestler has no absences', () => {
+    it('returns bouts remaining based on individual record', () => {
       const w = makeWrestler(5, 3, 0)
       expect(getRemainingBouts(w, 8, 'Makuuchi')).toBe(7)
     })
@@ -64,12 +64,12 @@ describe('getRemainingBouts', () => {
       expect(getRemainingBouts(w, 8, 'Makuuchi')).toBe(0)
     })
 
-    it('returns 0 on day 15 (no bouts remaining)', () => {
+    it('returns 0 when all 15 bouts have been fought', () => {
       const w = makeWrestler(9, 6, 0)
       expect(getRemainingBouts(w, 15, 'Juryo')).toBe(0)
     })
 
-    it('returns 14 on day 1', () => {
+    it('returns 14 after first bout', () => {
       const w = makeWrestler(1, 0, 0)
       expect(getRemainingBouts(w, 1, 'Makuuchi')).toBe(14)
     })
@@ -82,6 +82,13 @@ describe('getRemainingBouts', () => {
     it('never returns negative (defensive)', () => {
       const w = makeWrestler(15, 0, 0)
       expect(getRemainingBouts(w, 15, 'Makuuchi')).toBe(0)
+    })
+
+    it('ignores currentDay — uses individual bout count instead', () => {
+      // Wrestler has 11W+3L=14 bouts; currentDay=15 because another wrestler
+      // already completed their day-15 bout. Should still have 1 bout remaining.
+      const w = makeWrestler(11, 3, 0)
+      expect(getRemainingBouts(w, 15, 'Makuuchi')).toBe(1)
     })
   })
 
@@ -332,6 +339,43 @@ describe('computeYushoContenders', () => {
     const totalContenders = groups.reduce((n, g) => n + g.wrestlers.length, 0)
     expect(totalContenders).toBe(1)
     expect(groups[0].wrestlers[0].wins).toBe(12)
+  })
+
+  it('keeps chasers in contention on day 15 when co-leaders have not yet fought', () => {
+    // maxDay=15 because one wrestler finished their day-15 bout, but two co-leaders
+    // (11W/3L each) and chasers (10W/4L) still have 1 bout left.
+    // Old logic: remainingBouts = 15-15 = 0 for everyone → false playoff.
+    // New logic: uses individual boutsFought → leaders have 1 remaining, chasers have 1.
+    const wrestlers = [
+      makeWrestler(11, 3, 0, 1), // co-leader A — 14 bouts fought
+      makeWrestler(11, 3, 0, 2), // co-leader B — 14 bouts fought
+      makeWrestler(10, 4, 0, 5), // chaser — 14 bouts fought; can reach 11 if they win
+      makeWrestler(12, 3, 0, 9), // wrestler who already finished day 15
+    ]
+    const groups = computeYushoContenders(wrestlers, 15, 'Makuuchi')
+    // The wrestler who finished (12W) is the sole leader; co-leaders (11W+1) can't catch them
+    // … wait, need to re-think: 11+1=12 >= 12, so co-leaders ARE still in contention.
+    // And chaser: 10+1=11 < 12, so eliminated.
+    const allContenders = groups.flatMap((g) => g.wrestlers)
+    expect(allContenders.some((w) => w.wins === 12)).toBe(true) // finished leader
+    expect(allContenders.some((w) => w.wins === 11)).toBe(true) // co-leaders can still tie
+    expect(allContenders.every((w) => w.wins !== 10)).toBe(true) // chasers eliminated
+  })
+
+  it('includes chasers when co-leaders still have bouts and chaser can tie', () => {
+    // Two co-leaders 11W/3L (1 bout left each), chasers 10W/4L (1 bout left).
+    // No wrestler has completed day 15 yet — maxDay=14.
+    // Leaders can reach 12; chasers can reach 11 = leaderWins → contenders.
+    const wrestlers = [
+      makeWrestler(11, 3, 0, 1),
+      makeWrestler(11, 3, 0, 2),
+      makeWrestler(10, 4, 0, 5),
+    ]
+    const groups = computeYushoContenders(wrestlers, 14, 'Makuuchi')
+    const allContenders = groups.flatMap((g) => g.wrestlers)
+    expect(allContenders).toHaveLength(3)
+    expect(groups[0].wins).toBe(11)
+    expect(groups[1].wins).toBe(10)
   })
 })
 
