@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
-    "test:coverage:report": "vitest run --coverage"
+    "test:coverage:report": "vitest run --coverage",
+    "generate:career-stats": "node scripts/generateCareerStats.js",
+    "generate:career-stats:incremental": "node scripts/generateCareerStats.js --incremental"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
