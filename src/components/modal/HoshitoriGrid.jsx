@@ -88,7 +88,9 @@ function HoshitoriGrid({ matches = [], color }) {
             const match = matches[day - 1];
             return (
               <div key={day} className={styles.cell}>
-                {match?.result ? <ResultShape result={match.result} /> : null}
+                {match?.result
+                  ? <ResultShape result={match.result} />
+                  : <span className={styles.placeholder}>–</span>}
               </div>
             );
           })}
@@ -124,7 +126,7 @@ function HoshitoriGrid({ matches = [], color }) {
                       <span className={styles.opponentText}>{name}</span>
                     </Tooltip>
                   )
-                ) : null}
+                ) : <span className={styles.placeholder}>–</span>}
               </div>
             );
           })}
@@ -135,7 +137,7 @@ function HoshitoriGrid({ matches = [], color }) {
           {DAYS.map((day) => {
             const match = matches[day - 1];
             const k = match?.kimarite;
-            if (!k) return <div key={day} className={styles.cell} />;
+            if (!k) return <div key={day} className={styles.cell}><span className={styles.placeholder}>–</span></div>;
             const info = getKimariteInfo(k);
             return (
               <div key={day} className={styles.cell}>

@@ -95,6 +95,11 @@
   color: var(--color-text-muted);
 }
 
+.placeholder {
+  font-size: 0.75rem;
+  color: var(--color-border);
+}
+
 /* ── Opponent names ──────────────────────────────────────────────────────── */
 
 .opponentBtn,
