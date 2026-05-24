@@ -22,7 +22,7 @@ An interactive React application for visualizing sumo wrestling divisions, ranki
 
 ### Rikishi detail
 
-- **Rikishi Info Pop-up**: Country, stable, height, weight, age, debut date, career highest rank, and retirement date for retired wrestlers
+- **Rikishi Detail Modal**: A tabbed pop-up with three sections — **Details** (country, stable, height, weight, age, debut date, career highest rank, and retirement date for retired wrestlers), **Career** (career win/loss/absence totals with win rate, total bouts and bashos, yusho wins by division, and special prize counts), and **History** (career span with years active, first appearance date per division, and basho count per division)
 - **Full Rank History**: A separate pop-up showing every basho's rank entry with movement indicators (▲/▼), debut badges, and career-high badges per row, plus a summary of total bashos, climbs, and drops
 
 ### Wrestler sidebar — Banzuke & Torikumi tabs
@@ -62,7 +62,7 @@ An interactive React application for visualizing sumo wrestling divisions, ranki
 5. **Banzuke tab**: Browse wrestlers divided by East and West; the **Yusho Arasoi** section at the top tracks the live title race — leader group first, then up to four challenger groups in a 2×2 grid, collapsible via the header toggle; rank movement indicators (▲/▼), debut badges, and career-high badges load automatically; filter by name, sort by rank or wins, and use the day dropdown to view records as of a specific tournament day — absent wrestlers are shown with a Kyujo badge
 6. **Torikumi tab**: View scheduled and completed bouts for any tournament day; use the day selector to navigate, filter by wrestler name, or reverse bout order; click a kimarite to read its description; click a wrestler name to open their match history; a refresh button appears on the current day while results are still coming in
 7. **View Match History**: Click any wrestler (from either tab) to open their match history modal; switch between the **Match History** tab (day-by-day list of opponents, kimarite, and head-to-head buttons) and the **Hoshitori** tab (traditional 15-day grid using shiroboshi/kuroboshi symbols, with opponent names and kimarite per column); rank movement indicators also appear in the modal header
-8. **View Rikishi Detail**: Click the **i** icon on any wrestler card to see personal details including career highest rank and retirement date (for retired wrestlers); click the bar-chart icon to open the full rank history across all bashos
+8. **View Rikishi Detail**: Click the **i** icon on any wrestler card to open the Rikishi Detail modal — the **Details** tab shows personal information (country, stable, measurements, age, debut, career high, retirement date); the **Career** tab shows win/loss/absence totals, win rate, yusho counts by division, and special prize totals; the **History** tab shows career span with years active, first debut dates per division, and basho counts per division; click the bar-chart icon to open the full rank history across all bashos
 9. **Browse History**: Use the basho selector in the sidebar header to switch between tournaments, with records going back to 1958
 10. **Navigate**: Close the sidebar or modal to return to the pyramid
 

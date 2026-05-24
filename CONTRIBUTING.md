@@ -31,6 +31,7 @@ chore: upgrade vitest to v4
 | `test` | Adding or correcting tests |
 | `docs` | Documentation only |
 | `chore` | Tooling, dependencies, config |
+| `ci` | CI/CD workflow changes |
 
 ## Technology Stack
 
@@ -292,6 +293,7 @@ sumo-divisions/
 │   │   ├── useRikishi.js              # Roster hook + useRikishiList (per-wrestler fetch) + head-to-head
 │   │   ├── useHeyaData.js             # Derives stable list from useAllRikishi
 │   │   ├── useAllDivisionsBanzuke.js  # Parallel fetch across all 6 divisions (shared cache)
+│   │   ├── useCareerStats.js          # Reads pre-generated career-stats.json; cached 24 h
 │   │   └── useLocalStorage.js         # useState wrapper that reads/writes localStorage
 │   ├── utils/
 │   │   ├── bashoId.js         # BashoId calculation
@@ -308,10 +310,14 @@ sumo-divisions/
 │   ├── App.jsx                # Root component — view state + QueryClientProvider
 │   └── main.jsx               # Entry point
 ├── scripts/
-│   └── scanBrokenBasho.js     # Utility to identify empty/broken historical basho endpoints
+│   ├── generateCareerStats.js  # Builds public/career-stats.json from API history (1958–present)
+│   └── scanBrokenBasho.js      # Utility to identify empty/broken historical basho endpoints
 ├── .github/
+│   ├── workflows/
+│   │   └── update-career-stats.yml  # Scheduled + manual workflow to regenerate career stats
 │   └── PULL_REQUEST_TEMPLATE.md
-├── public/                    # Static assets (favicon, images)
+├── public/
+│   └── career-stats.json      # Pre-generated career statistics (committed, rebuilt via workflow)
 ├── index.html                 # HTML template
 ├── package.json
 ├── vite.config.js
@@ -322,6 +328,22 @@ sumo-divisions/
 </details>
 
 ## Key Implementation Details
+
+### Career Statistics Data
+
+Career stats (lifetime wins/losses/absences, yusho by division, special prizes, basho counts per division) are not available from the Sumo API in aggregate form. Instead, `scripts/generateCareerStats.js` scans every historical basho from 1958 to the present — fetching the banzuke for all six divisions per tournament — and writes the aggregated result to `public/career-stats.json`. This file is committed and served as a static asset.
+
+`useCareerStats(rikishiId)` fetches the file once via React Query (24-hour stale time) and does an in-memory lookup by wrestler ID. The hook returns `null` gracefully if the file is absent or the wrestler has no entry, so the Career and History tabs degrade cleanly before the first build.
+
+The GitHub Actions workflow (`.github/workflows/update-career-stats.yml`) runs on the 28th of each basho month to add the latest tournament incrementally. A manual `workflow_dispatch` trigger with `full_rebuild: true` performs a complete rebuild from 1958 (~80 minutes). To regenerate locally:
+
+```bash
+# Incremental — add only bashos not yet in public/career-stats.json
+npm run generate:career-stats:incremental
+
+# Full rebuild from 1958
+npm run generate:career-stats
+```
 
 ### Caching Strategy
 
