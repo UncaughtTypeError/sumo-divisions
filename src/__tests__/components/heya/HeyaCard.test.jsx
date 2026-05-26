@@ -31,7 +31,7 @@ describe('HeyaCard', () => {
 
   it('renders heya name', () => {
     render(<HeyaCard heya={mockHeya} />)
-    expect(screen.getByText('Isegahama')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Isegahama' })).toBeInTheDocument()
   })
 
   it('renders total rikishi count', () => {

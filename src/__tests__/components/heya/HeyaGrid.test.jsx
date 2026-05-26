@@ -41,7 +41,7 @@ describe('HeyaGrid', () => {
         onSort={mockOnSort}
       />
     )
-    expect(screen.getByText('Isegahama')).toBeInTheDocument()
+    expect(screen.getAllByText('Isegahama').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('Tatsunami')).toBeInTheDocument()
   })
 
@@ -108,7 +108,7 @@ describe('HeyaGrid', () => {
         onSort={mockOnSort}
       />
     )
-    fireEvent.click(screen.getByText('Isegahama'))
+    fireEvent.click(screen.getByRole('row', { name: /Isegahama/ }))
     expect(mockSelectHeya).toHaveBeenCalledWith('Isegahama', [10, 11])
   })
 
@@ -135,7 +135,7 @@ describe('HeyaGrid', () => {
         onSort={mockOnSort}
       />
     )
-    fireEvent.click(screen.getByText('Isegahama'))
+    fireEvent.click(screen.getByRole('row', { name: /Isegahama/ }))
     // Clicking a grid row must pass IDs just like HeyaCard — empty IDs would
     // leave selectedHeyaRikishiIds as [] and show no wrestlers in the sidebar.
     const [, ids] = mockSelectHeya.mock.calls[0]
