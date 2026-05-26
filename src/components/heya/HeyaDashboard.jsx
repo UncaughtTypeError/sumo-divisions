@@ -3,6 +3,7 @@ import { useHeyaData } from '../../hooks/useHeyaData';
 import { useAllDivisionsBanzuke } from '../../hooks/useAllDivisionsBanzuke';
 import { getCurrentBashoId } from '../../utils/bashoId';
 import { RANK_ORDER } from '../../utils/constants';
+import { getIchimon } from '../../utils/ichimon';
 import useLocalStorage from '../../hooks/useLocalStorage';
 import HeyaGrid from './HeyaGrid';
 import HeyaCardGrid from './HeyaCardGrid';
@@ -50,6 +51,12 @@ function HeyaDashboard() {
       sorted.sort(
         (a, b) => dir * (a.total - b.total) || a.name.localeCompare(b.name)
       );
+    } else if (sortKey === 'ichimon') {
+      sorted.sort((a, b) => {
+        const aI = getIchimon(a.name)?.name ?? '';
+        const bI = getIchimon(b.name)?.name ?? '';
+        return dir * aI.localeCompare(bI) || a.name.localeCompare(b.name);
+      });
     } else {
       sorted.sort((a, b) => {
         const aCount = a.byRank[sortKey]?.length ?? 0;
@@ -133,6 +140,8 @@ function HeyaDashboard() {
             >
               <option value="name-asc">Name ↑</option>
               <option value="name-desc">Name ↓</option>
+              <option value="ichimon-asc">Ichimon ↑</option>
+              <option value="ichimon-desc">Ichimon ↓</option>
               {RANK_ORDER.map((rank) => (
                 <optgroup key={rank} label={rank}>
                   <option value={`${rank}-asc`}>{rank} ↑</option>

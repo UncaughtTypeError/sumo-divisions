@@ -24,6 +24,14 @@
   gap: 0.5rem;
 }
 
+.nameGroup {
+  display: flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
 .name {
   margin: 0;
   font-size: 0.9375rem;

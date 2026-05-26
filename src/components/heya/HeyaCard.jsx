@@ -1,6 +1,7 @@
 import useDivisionStore from '../../store/divisionStore';
 import { SEKITORI_RANK_ORDER, APPRENTICE_RANK_ORDER } from '../../utils/constants';
 import HeyaRankBadge from './HeyaRankBadge';
+import IchimonBadge from './IchimonBadge';
 import styles from './HeyaCard.module.css';
 
 function HeyaCard({ heya }) {
@@ -19,7 +20,10 @@ function HeyaCard({ heya }) {
       aria-label={`${heya.name}, ${heya.total} rikishi`}
     >
       <div className={styles.header}>
-        <h3 className={styles.name}>{heya.name}</h3>
+        <div className={styles.nameGroup}>
+          <h3 className={styles.name}>{heya.name}</h3>
+          <IchimonBadge heyaName={heya.name} />
+        </div>
         <span className={styles.total} aria-label="Total rikishi">{heya.total}</span>
       </div>
 

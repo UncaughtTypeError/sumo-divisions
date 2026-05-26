@@ -10,7 +10,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 0.875rem;
-  min-width: 900px;
+  min-width: 1000px;
 }
 
 .th {
@@ -30,11 +30,13 @@
   transition: color var(--transition-fast), background var(--transition-fast);
 }
 
-.th:first-child {
+.th:first-child,
+.thLeft {
   text-align: left;
 }
 
-.th:first-child .thLabel {
+.th:first-child .thLabel,
+.thLeft .thLabel {
   justify-content: flex-start;
 }
 
@@ -80,6 +82,12 @@
   text-align: left;
   font-weight: 500;
   color: var(--color-text);
+  white-space: nowrap;
+}
+
+.tdIchimon {
+  padding: 0.3rem 0.5rem;
+  text-align: left;
   white-space: nowrap;
 }
 

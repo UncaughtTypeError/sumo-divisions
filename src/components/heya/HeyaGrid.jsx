@@ -2,15 +2,16 @@ import useDivisionStore from '../../store/divisionStore';
 import { RANK_ORDER, RANK_ABBREVIATIONS, RANK_INFO } from '../../utils/constants';
 import Tooltip from '../common/Tooltip';
 import HeyaRankBadge from './HeyaRankBadge';
+import IchimonBadge from './IchimonBadge';
 import styles from './HeyaGrid.module.css';
 
-function SortableHeader({ label, rankInfo, sortKey, currentSortKey, sortDir, onSort }) {
+function SortableHeader({ label, rankInfo, sortKey, currentSortKey, sortDir, onSort, align }) {
   const isActive = sortKey === currentSortKey;
   const arrow = isActive ? (sortDir === 'asc' ? ' ↑' : ' ↓') : '';
 
   const inner = (
     <th
-      className={`${styles.th} ${isActive ? styles.thActive : ''}`}
+      className={`${styles.th} ${isActive ? styles.thActive : ''} ${align === 'left' ? styles.thLeft : ''}`}
       onClick={() => onSort(sortKey)}
       aria-sort={isActive ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
     >
@@ -48,6 +49,7 @@ function HeyaGridRow({ heya }) {
       aria-label={`${heya.name}, ${heya.total} total`}
     >
       <td className={styles.tdName}>{heya.name}</td>
+      <td className={styles.tdIchimon}><IchimonBadge heyaName={heya.name} /></td>
       {RANK_ORDER.map((rank) => {
         const count = heya.byRank[rank]?.length ?? 0;
         return (
@@ -82,6 +84,15 @@ function HeyaGrid({ heyaList, sortKey, sortDir, onSort }) {
               currentSortKey={sortKey}
               sortDir={sortDir}
               onSort={onSort}
+            />
+            <SortableHeader
+              label="Ichimon"
+              rankInfo={null}
+              sortKey="ichimon"
+              currentSortKey={sortKey}
+              sortDir={sortDir}
+              onSort={onSort}
+              align="left"
             />
             {RANK_ORDER.map((rank) => (
               <SortableHeader

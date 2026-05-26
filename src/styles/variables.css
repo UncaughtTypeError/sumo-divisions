@@ -58,6 +58,18 @@
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
 
+  /* Ichimon badge colors */
+  --color-ichimon-dewanoumi-bg:    #fef3c7;
+  --color-ichimon-dewanoumi-text:  #92400e;
+  --color-ichimon-isegahama-bg:    #dcfce7;
+  --color-ichimon-isegahama-text:  #166534;
+  --color-ichimon-nishonoseki-bg:  #dbeafe;
+  --color-ichimon-nishonoseki-text: #1e40af;
+  --color-ichimon-takasago-bg:     #e0f2fe;
+  --color-ichimon-takasago-text:   #075985;
+  --color-ichimon-tokitsukaze-bg:  #f3e8ff;
+  --color-ichimon-tokitsukaze-text: #6b21a8;
+
   /* Transitions */
   --transition-fast: 150ms ease-in-out;
   --transition-normal: 300ms ease-in-out;

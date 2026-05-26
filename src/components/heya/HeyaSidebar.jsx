@@ -9,6 +9,7 @@ import { RANK_ORDER, RANK_INFO, RANK_TO_API_DIVISION, RANK_COLORS } from '../../
 import { getWrestlerAwards } from '../../utils/awards';
 import { computeRecordOnDay, isAbsentKyujo } from '../../utils/records';
 import { getPreviousBashoId, computeWrestlerRankIndicators } from '../../utils/rankMovement';
+import IchimonBadge from './IchimonBadge';
 import WrestlerGrid from '../sidebar/WrestlerGrid';
 import BashoSelector from '../sidebar/BashoSelector';
 import MatchHistoryModal from '../modal/MatchHistoryModal';
@@ -233,6 +234,7 @@ function HeyaSidebar() {
                   <option key={h.name} value={h.name}>{h.name}</option>
                 ))}
               </select>
+              <IchimonBadge heyaName={currentHeyaName} />
             </div>
             <BashoSelector
               selectedBashoId={currentBashoId}
