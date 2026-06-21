@@ -18,6 +18,8 @@ import MatchGrid from './MatchGrid';
 import HoshitoriGrid from './HoshitoriGrid';
 import RikishiDetailModal from './RikishiDetailModal';
 import RankHistoryModal from './RankHistoryModal';
+import RikishiOverview from './RikishiOverview';
+import RikishiRankHistory from './RikishiRankHistory';
 import styles from './MatchHistoryModal.module.css';
 
 function RankHistoryIcon() {
@@ -336,11 +338,27 @@ function MatchHistoryModal() {
                   >
                     Hoshitori
                   </button>
+                  {rikishiDetails && (
+                    <button
+                      className={`${styles.tab} ${activeTab === 'overview' ? styles.tabActive : ''}`}
+                      onClick={() => setActiveTab('overview')}
+                    >
+                      Overview
+                    </button>
+                  )}
+                  {rikishiDetails?.rankHistory?.length > 0 && (
+                    <button
+                      className={`${styles.tab} ${activeTab === 'rankhistory' ? styles.tabActive : ''}`}
+                      onClick={() => setActiveTab('rankhistory')}
+                    >
+                      Rank History
+                    </button>
+                  )}
                 </div>
 
                 {/* Tab content */}
-                <div className={styles.modalContent}>
-                  {activeTab === 'list' ? (
+                <div className={activeTab === 'rankhistory' ? styles.modalContentFlush : styles.modalContent}>
+                  {activeTab === 'list' && (
                     <MatchGrid
                       matches={selectedWrestler.record}
                       color={selectedColor}
@@ -348,11 +366,18 @@ function MatchHistoryModal() {
                       rikishiId={selectedWrestler.rikishiID}
                       rikishiName={selectedWrestler.shikonaEn}
                     />
-                  ) : (
+                  )}
+                  {activeTab === 'hoshitori' && (
                     <HoshitoriGrid
                       matches={selectedWrestler.record}
                       color={selectedColor}
                     />
+                  )}
+                  {activeTab === 'overview' && (
+                    <RikishiOverview rikishiDetails={rikishiDetails} />
+                  )}
+                  {activeTab === 'rankhistory' && (
+                    <RikishiRankHistory rikishiDetails={rikishiDetails} />
                   )}
                 </div>
 
