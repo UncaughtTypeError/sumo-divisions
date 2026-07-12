@@ -29,7 +29,7 @@ function HeadToHeadModal({ isOpen, onClose, rikishiId, opponentId, rikishiName, 
   const wins = data?.rikishiWins ?? 0;
   const losses = data?.opponentWins ?? 0;
   const total = data?.total ?? 0;
-  const winPct = total > 0 ? (wins >= losses ? (wins / total) * 100 : -(losses / total) * 100).toFixed(1) : null;
+  const winPct = total > 0 ? ((wins / total) * 100).toFixed(1) : null;
   const winPctPositive = wins > losses;
   const winPctNegative = wins < losses;
 
