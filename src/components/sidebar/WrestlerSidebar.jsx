@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import useDivisionStore from '../../store/divisionStore';
 import useBanzuke from '../../hooks/useBanzuke';
 import useBashoResults from '../../hooks/useBashoResults';
@@ -82,6 +82,9 @@ function WrestlerSidebar() {
   // so the probe result can update the default without overriding their choice.
   const [torikumiDay,          setTorikumiDay]          = useState(0);
   const [torikumiDayIsManual,  setTorikumiDayIsManual]  = useState(false);
+  // Persists each division's last-seen day within one sidebar session so
+  // switching away and back restores the same day rather than re-auto-selecting.
+  const torikumiDayPerDivisionRef = useRef({});
 
   const handleTorikumiDayChange = useCallback((day) => {
     setTorikumiDay(day);
@@ -157,16 +160,16 @@ function WrestlerSidebar() {
     );
   }, [allWrestlers]);
 
-  // Only probe the next candidate day when the torikumi tab is active
+  // Only probe the next candidate day when the torikumi tab is active.
+  // When maxDay = 0 (no results yet), probe day 1 so pre-bout matchups are discoverable.
   const divisionMaxDays   = ['Makuuchi', 'Juryo'].includes(currentApiDivision) ? 15 : 7;
-  const candidateNextDay  = maxDay > 0 ? Math.min(maxDay + 1, divisionMaxDays) : 0;
+  const candidateNextDay  = maxDay > 0 ? Math.min(maxDay + 1, divisionMaxDays) : 1;
   const { data: nextDayProbe } = useTorikumi(
     currentBashoId,
     currentApiDivision,
     candidateNextDay,
     {
-      // Probe only fires when there IS a potential next day and the tab is visible
-      enabled:   isSidebarOpen && activeTab === 'torikumi' && maxDay > 0 && candidateNextDay > maxDay,
+      enabled:   isSidebarOpen && activeTab === 'torikumi' && candidateNextDay > maxDay,
       staleTime: 1000 * 60 * 30, // 30 min — schedule availability rarely changes
     },
   );
@@ -174,18 +177,44 @@ function WrestlerSidebar() {
   const nextDayHasBouts = !!(nextDayProbe && !nextDayProbe.isEmpty);
   const torikumiMaxDay   = nextDayHasBouts ? candidateNextDay : (maxDay > 0 ? maxDay : 0);
 
-  // Auto-set the selected day to the effective latest day (unless user has manually chosen)
-  useEffect(() => {
-    if (torikumiMaxDay > 0 && !torikumiDayIsManual) {
-      setTorikumiDay(torikumiMaxDay);
-    }
-  }, [torikumiMaxDay, torikumiDayIsManual]);
+  // True when the current competition day is still in progress:
+  // at least one wrestler has a result on maxDay, but not all do yet.
+  const maxDayIsPartial = useMemo(() => {
+    if (maxDay === 0 || !allWrestlers.length) return false;
+    const withResult = allWrestlers.filter((w) => {
+      const entry = (w.record ?? [])[maxDay - 1];
+      return entry && entry.result !== '';
+    }).length;
+    return withResult > 0 && withResult < allWrestlers.length;
+  }, [allWrestlers, maxDay]);
 
-  // Reset torikumi day and manual flag when division or basho changes
+  // When a day is in progress, open on that day rather than tomorrow's matchups.
+  const torikumiDefaultDay = maxDayIsPartial ? maxDay : torikumiMaxDay;
+
+  // ── Open / close lifecycle ─────────────────────────────────────────────────
+  // IMPORTANT: this effect must be defined BEFORE the auto-select effect below.
+  // React runs effects in definition order; placing the reset (setTorikumiDay(0))
+  // first ensures the auto-select fires last and wins in the same flush.
   useEffect(() => {
-    setTorikumiDay(0);
-    setTorikumiDayIsManual(false);
-  }, [currentApiDivision, currentBashoId]);
+    if (isSidebarOpen) {
+      torikumiDayPerDivisionRef.current = {};
+      setIsVisible(true);
+      setIsClosing(false);
+      setCurrentBashoId(getCurrentBashoId());
+      setActiveView(findMatchingView(selectedApiDivision, selectedRank, isDivisionView));
+      setActiveTab('banzuke');
+      setTorikumiDay(0);
+      setTorikumiDayIsManual(false);
+      bumpSession();
+    }
+  }, [isSidebarOpen, selectedApiDivision, selectedRank, isDivisionView, bumpSession]);
+
+  // Auto-set the selected day to the default (unless user has manually chosen)
+  useEffect(() => {
+    if (torikumiDefaultDay > 0 && !torikumiDayIsManual) {
+      setTorikumiDay(torikumiDefaultDay);
+    }
+  }, [torikumiDefaultDay, torikumiDayIsManual]);
 
   // ── Torikumi fetch ────────────────────────────────────────────────────────
   const effectiveTorikumiDay = torikumiDay || torikumiMaxDay;
@@ -254,20 +283,6 @@ function WrestlerSidebar() {
     rankHistoryMap, currentBashoId, previousBashoId, isRankDataLoading,
   ]);
 
-  // ── Open / close lifecycle ─────────────────────────────────────────────────
-  useEffect(() => {
-    if (isSidebarOpen) {
-      setIsVisible(true);
-      setIsClosing(false);
-      setCurrentBashoId(getCurrentBashoId());
-      setActiveView(findMatchingView(selectedApiDivision, selectedRank, isDivisionView));
-      setActiveTab('banzuke');
-      setTorikumiDay(0);
-      setTorikumiDayIsManual(false);
-      bumpSession();
-    }
-  }, [isSidebarOpen, selectedApiDivision, selectedRank, isDivisionView, bumpSession]);
-
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => { setIsVisible(false); closeSidebar(); }, 150);
@@ -295,7 +310,14 @@ function WrestlerSidebar() {
                 value={activeView.value}
                 onChange={(e) => {
                   const view = SIDEBAR_VIEWS.find((v) => v.value === e.target.value);
-                  if (view) { setActiveView(view); setTorikumiDay(0); setTorikumiDayIsManual(false); bumpSession(); }
+                  if (view) {
+                    torikumiDayPerDivisionRef.current[currentApiDivision] = torikumiDay;
+                    const saved = torikumiDayPerDivisionRef.current[view.apiDivision] ?? 0;
+                    setActiveView(view);
+                    setTorikumiDay(saved);
+                    setTorikumiDayIsManual(saved > 0);
+                    bumpSession();
+                  }
                 }}
                 aria-label="Select division or rank"
               >
@@ -309,7 +331,7 @@ function WrestlerSidebar() {
 
             <BashoSelector
               selectedBashoId={currentBashoId}
-              onBashoChange={(id) => { setCurrentBashoId(id); setTorikumiDay(0); setTorikumiDayIsManual(false); bumpSession(); }}
+              onBashoChange={(id) => { torikumiDayPerDivisionRef.current = {}; setCurrentBashoId(id); setTorikumiDay(0); setTorikumiDayIsManual(false); bumpSession(); }}
               color={currentColor}
               bashoResults={bashoResults}
             />
