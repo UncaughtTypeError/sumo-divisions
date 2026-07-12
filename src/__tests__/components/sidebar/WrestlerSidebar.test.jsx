@@ -28,7 +28,12 @@ vi.mock('../../../components/sidebar/BanzukeTab', () => ({
 }))
 
 vi.mock('../../../components/sidebar/TorikumiTab', () => ({
-  default: () => <div data-testid="torikumi-tab">TorikumiTabContent</div>,
+  default: ({ day, torikumiMaxDay, onDayChange }) => (
+    <div data-testid="torikumi-tab" data-day={String(day)} data-max-day={String(torikumiMaxDay)}>
+      <button data-testid="manual-day-select" onClick={() => onDayChange && onDayChange(2)}>Day 2</button>
+      TorikumiTabContent
+    </div>
+  ),
 }))
 
 vi.mock('../../../components/sidebar/BashoSelector', () => ({
@@ -53,6 +58,7 @@ vi.mock('../../../components/modal/MatchHistoryModal', () => ({
 import useDivisionStore from '../../../store/divisionStore'
 import useBanzuke from '../../../hooks/useBanzuke'
 import useBashoResults from '../../../hooks/useBashoResults'
+import useTorikumi from '../../../hooks/useTorikumi'
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -211,6 +217,153 @@ describe('WrestlerSidebar', () => {
         expect(lastCall.some((w) => w.rikishiID === 10)).toBe(true) // upper (Makuuchi)
         expect(lastCall.some((w) => w.rikishiID === 20)).toBe(true) // lower (Makushita)
       })
+    })
+  })
+
+  // ── Torikumi default day selection ───────────────────────────────────────
+
+  describe('Torikumi default day selection', () => {
+    const makeRecord = (n) => Array.from({ length: n }, (_, i) => ({
+      result: 'win', opponentShikonaEn: `Opp${i}`, kimarite: 'yorikiri',
+    }))
+    const fakeBouts = {
+      bouts: [{ matchNo: 1, eastId: 1, westId: 2, eastShikona: 'A', westShikona: 'B',
+                eastRank: 'Y1e', westRank: 'O1w', winnerId: null, kimarite: null }],
+      isEmpty: false,
+    }
+    const emptyBouts = { data: null, isLoading: false, isFetching: false, error: null, refetch: vi.fn() }
+    const boutResult = { data: fakeBouts, isLoading: false, isFetching: false, error: null, refetch: vi.fn() }
+
+    const storeBase = {
+      isSidebarOpen: true, isDivisionView: false, selectedRank: 'Yokozuna',
+      selectedDivision: 'Makuuchi', selectedApiDivision: 'Makuuchi', selectedColor: 'yokozuna',
+      closeSidebar: vi.fn(), openModal: vi.fn(),
+      setRankLookup: vi.fn(), setAllWrestlers: vi.fn(), setAdjacentWrestlers: vi.fn(),
+    }
+
+    beforeEach(() => {
+      useBashoResults.mockReturnValue({ data: null })
+    })
+
+    it('defaults to day 1 when no results exist yet (pre-tournament)', async () => {
+      const preTournamentBanzuke = {
+        ...mockBanzukeData,
+        east: [{ rikishiID: 1, record: [], rank: 'Yokozuna 1 East', rankValue: 1, wins: 0, losses: 0, absences: 0, awards: [] }],
+        west: [{ rikishiID: 2, record: [], rank: 'Ozeki 1 West',    rankValue: 2, wins: 0, losses: 0, absences: 0, awards: [] }],
+      }
+      useDivisionStore.mockReturnValue(storeBase)
+      useBanzuke.mockReturnValue({ data: preTournamentBanzuke, isLoading: false, error: null, refetch: vi.fn() })
+      useTorikumi.mockImplementation((_b, _d, day) => day === 1 ? boutResult : emptyBouts)
+
+      renderWithQueryClient(<WrestlerSidebar />)
+      fireEvent.click(screen.getByRole('button', { name: 'Torikumi' }))
+      await waitFor(() => expect(screen.getByTestId('torikumi-tab')).toHaveAttribute('data-day', '1'))
+    })
+
+    it('defaults to the in-progress day when results are partial', async () => {
+      // mockBanzukeData: wrestler 1 has 3 results, others have empty records → maxDay=3, partial
+      useDivisionStore.mockReturnValue(storeBase)
+      useBanzuke.mockReturnValue({ data: mockBanzukeData, isLoading: false, error: null, refetch: vi.fn() })
+      useTorikumi.mockImplementation((_b, _d, day) => day === 4 ? boutResult : emptyBouts)
+
+      renderWithQueryClient(<WrestlerSidebar />)
+      fireEvent.click(screen.getByRole('button', { name: 'Torikumi' }))
+      await waitFor(() => expect(screen.getByTestId('torikumi-tab')).toHaveAttribute('data-day', '3'))
+    })
+
+    it('advances to the next day when current day is fully complete', async () => {
+      const allDay3Complete = {
+        ...mockBanzukeData,
+        east: [{ rikishiID: 1, record: makeRecord(3), rank: 'Yokozuna 1 East', rankValue: 1, wins: 3, losses: 0, absences: 0, awards: [] }],
+        west: [{ rikishiID: 2, record: makeRecord(3), rank: 'Ozeki 1 West',    rankValue: 2, wins: 3, losses: 0, absences: 0, awards: [] }],
+      }
+      useDivisionStore.mockReturnValue(storeBase)
+      useBanzuke.mockReturnValue({ data: allDay3Complete, isLoading: false, error: null, refetch: vi.fn() })
+      useTorikumi.mockImplementation((_b, _d, day) => day === 4 ? boutResult : emptyBouts)
+
+      renderWithQueryClient(<WrestlerSidebar />)
+      fireEvent.click(screen.getByRole('button', { name: 'Torikumi' }))
+      await waitFor(() => expect(screen.getByTestId('torikumi-tab')).toHaveAttribute('data-day', '4'))
+    })
+
+    it('restores the previous day when switching back to a division', async () => {
+      // Makuuchi (yokozuna view): partial day 3 → auto-selects day 3
+      // Juryo: no results, no probe data → day 0
+      // Switch back to yokozuna: saved day 3 is restored
+      useDivisionStore.mockReturnValue(storeBase)
+      useBanzuke.mockImplementation((_bashoId, division) => {
+        if (division === 'Makuuchi') return { data: mockBanzukeData, isLoading: false, error: null, refetch: vi.fn() }
+        return { data: { ...mockBanzukeData, division, east: [], west: [] }, isLoading: false, error: null, refetch: vi.fn() }
+      })
+      useTorikumi.mockImplementation((_b, division, day) =>
+        division === 'Makuuchi' && day === 4 ? boutResult : emptyBouts,
+      )
+
+      renderWithQueryClient(<WrestlerSidebar />)
+      fireEvent.click(screen.getByRole('button', { name: 'Torikumi' }))
+      await waitFor(() => expect(screen.getByTestId('torikumi-tab')).toHaveAttribute('data-day', '3'))
+
+      // Switch to Juryo
+      fireEvent.change(screen.getByLabelText('Select division or rank'), { target: { value: 'juryo' } })
+      // Switch back to yokozuna (same apiDivision: Makuuchi)
+      fireEvent.change(screen.getByLabelText('Select division or rank'), { target: { value: 'yokozuna' } })
+
+      await waitFor(() => expect(screen.getByTestId('torikumi-tab')).toHaveAttribute('data-day', '3'))
+    })
+
+    it('stays on last completed day when no look-ahead bouts exist', async () => {
+      const allDay3Complete = {
+        ...mockBanzukeData,
+        east: [{ rikishiID: 1, record: makeRecord(3), rank: 'Yokozuna 1 East', rankValue: 1, wins: 3, losses: 0, absences: 0, awards: [] }],
+        west: [{ rikishiID: 2, record: makeRecord(3), rank: 'Ozeki 1 West',    rankValue: 2, wins: 3, losses: 0, absences: 0, awards: [] }],
+      }
+      useDivisionStore.mockReturnValue(storeBase)
+      useBanzuke.mockReturnValue({ data: allDay3Complete, isLoading: false, error: null, refetch: vi.fn() })
+      // Probe day 4 returns nothing — no look-ahead scheduled yet
+      useTorikumi.mockReturnValue(emptyBouts)
+
+      renderWithQueryClient(<WrestlerSidebar />)
+      fireEvent.click(screen.getByRole('button', { name: 'Torikumi' }))
+      await waitFor(() => expect(screen.getByTestId('torikumi-tab')).toHaveAttribute('data-day', '3'))
+    })
+
+    it('does not auto-select when no bouts exist pre-tournament', async () => {
+      const preTournamentBanzuke = {
+        ...mockBanzukeData,
+        east: [{ rikishiID: 1, record: [], rank: 'Yokozuna 1 East', rankValue: 1, wins: 0, losses: 0, absences: 0, awards: [] }],
+        west: [{ rikishiID: 2, record: [], rank: 'Ozeki 1 West',    rankValue: 2, wins: 0, losses: 0, absences: 0, awards: [] }],
+      }
+      useDivisionStore.mockReturnValue(storeBase)
+      useBanzuke.mockReturnValue({ data: preTournamentBanzuke, isLoading: false, error: null, refetch: vi.fn() })
+      // Day 1 probe also returns nothing — torikumi not yet published
+      useTorikumi.mockReturnValue(emptyBouts)
+
+      renderWithQueryClient(<WrestlerSidebar />)
+      fireEvent.click(screen.getByRole('button', { name: 'Torikumi' }))
+      // torikumiDefaultDay stays 0 → no auto-select fires → day remains 0
+      await waitFor(() => expect(screen.getByTestId('torikumi-tab')).toBeInTheDocument())
+      expect(screen.getByTestId('torikumi-tab')).toHaveAttribute('data-day', '0')
+    })
+
+    it('does not override manually selected day when auto-default would change it', async () => {
+      const allDay3Complete = {
+        ...mockBanzukeData,
+        east: [{ rikishiID: 1, record: makeRecord(3), rank: 'Yokozuna 1 East', rankValue: 1, wins: 3, losses: 0, absences: 0, awards: [] }],
+        west: [{ rikishiID: 2, record: makeRecord(3), rank: 'Ozeki 1 West',    rankValue: 2, wins: 3, losses: 0, absences: 0, awards: [] }],
+      }
+      useDivisionStore.mockReturnValue(storeBase)
+      useBanzuke.mockReturnValue({ data: allDay3Complete, isLoading: false, error: null, refetch: vi.fn() })
+      useTorikumi.mockImplementation((_b, _d, day) => day === 4 ? boutResult : emptyBouts)
+
+      renderWithQueryClient(<WrestlerSidebar />)
+      fireEvent.click(screen.getByRole('button', { name: 'Torikumi' }))
+      await waitFor(() => expect(screen.getByTestId('torikumi-tab')).toHaveAttribute('data-day', '4'))
+
+      // User manually picks day 2 via the day selector
+      fireEvent.click(screen.getByTestId('manual-day-select'))
+
+      // Auto-select effect is suppressed — day stays at user's manual choice
+      await waitFor(() => expect(screen.getByTestId('torikumi-tab')).toHaveAttribute('data-day', '2'))
     })
   })
 
