@@ -4,6 +4,7 @@ import {
   getRemainingBouts,
   computeYushoContenders,
   isYushoDecided,
+  MIN_LEADER_WINS,
 } from '../../utils/arasoi'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -160,11 +161,34 @@ describe('computeYushoContenders', () => {
     expect(computeYushoContenders(wrestlers, 0, 'Makuuchi')).toEqual([])
   })
 
-  it('returns all wrestlers when tournament just started (day 1)', () => {
+  it('returns empty array when leader has fewer than MIN_LEADER_WINS wins', () => {
     const wrestlers = [makeWrestler(1, 0), makeWrestler(0, 1), makeWrestler(1, 0)]
-    const groups = computeYushoContenders(wrestlers, 1, 'Makuuchi')
-    const totalContenders = groups.reduce((n, g) => n + g.wrestlers.length, 0)
-    expect(totalContenders).toBe(3)
+    expect(computeYushoContenders(wrestlers, 1, 'Makuuchi')).toEqual([])
+  })
+
+  it('returns empty array when leader is exactly one below the threshold', () => {
+    const wrestlers = [makeWrestler(MIN_LEADER_WINS - 1, 2), makeWrestler(MIN_LEADER_WINS - 2, 3)]
+    expect(computeYushoContenders(wrestlers, MIN_LEADER_WINS - 1, 'Makuuchi')).toEqual([])
+  })
+
+  it('returns contenders when leader reaches exactly MIN_LEADER_WINS wins', () => {
+    const wrestlers = [makeWrestler(MIN_LEADER_WINS, 0), makeWrestler(MIN_LEADER_WINS - 1, 1)]
+    const groups = computeYushoContenders(wrestlers, MIN_LEADER_WINS, 'Makuuchi')
+    expect(groups.length).toBeGreaterThan(0)
+  })
+
+  it('returns contenders when leader is one win above the minimum threshold', () => {
+    const wrestlers = [makeWrestler(MIN_LEADER_WINS + 1, 0), makeWrestler(MIN_LEADER_WINS, 1)]
+    const groups = computeYushoContenders(wrestlers, MIN_LEADER_WINS + 1, 'Makuuchi')
+    expect(groups.length).toBeGreaterThan(0)
+    expect(groups[0].wins).toBe(MIN_LEADER_WINS + 1)
+  })
+
+  it('returns contenders well above the minimum threshold', () => {
+    const wrestlers = [makeWrestler(10, 2, 0, 1), makeWrestler(8, 4, 0, 5)]
+    const groups = computeYushoContenders(wrestlers, 12, 'Makuuchi')
+    expect(groups.length).toBeGreaterThan(0)
+    expect(groups[0].wins).toBe(10)
   })
 
   it('eliminates wrestlers who cannot reach the leader', () => {
