@@ -16,6 +16,14 @@
 
 import { SEKITORI_DIVISIONS } from './records';
 
+// ─── Appearance threshold ─────────────────────────────────────────────────────
+
+/**
+ * The arasoi is suppressed until the tournament leader reaches this many wins.
+ * Below this threshold the field is too open to be meaningful.
+ */
+export const MIN_LEADER_WINS = 4;
+
 // ─── Division constants ───────────────────────────────────────────────────────
 
 /**
@@ -100,6 +108,8 @@ export function computeYushoContenders(wrestlers, currentDay, division) {
   }));
 
   const leaderWins = Math.max(0, ...withRemaining.map((w) => w.wins));
+
+  if (leaderWins < MIN_LEADER_WINS) return [];
 
   const contenders = withRemaining.filter(
     (w) => w.wins + w.remainingBouts >= leaderWins,
