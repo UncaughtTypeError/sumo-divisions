@@ -112,7 +112,7 @@ export function computeYushoContenders(wrestlers, currentDay, division) {
   if (leaderWins < MIN_LEADER_WINS) return [];
 
   const contenders = withRemaining.filter(
-    (w) => w.wins + w.remainingBouts >= leaderWins,
+    (w) => w.wins + w.remainingBouts >= leaderWins && w.wins >= MIN_LEADER_WINS,
   );
 
   if (!contenders.length) return [];
