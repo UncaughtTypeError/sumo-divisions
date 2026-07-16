@@ -5,6 +5,8 @@ import {
   computeYushoContenders,
   isYushoDecided,
   MIN_LEADER_WINS,
+  MIN_LEADER_WINS_LOWER,
+  getMinLeaderWins,
 } from '../../utils/arasoi';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -49,6 +51,28 @@ describe('getTotalBouts', () => {
 
   it('returns 7 for Jonokuchi', () => {
     expect(getTotalBouts('Jonokuchi')).toBe(7);
+  });
+});
+
+// ─── getMinLeaderWins ─────────────────────────────────────────────────────────
+
+describe('getMinLeaderWins', () => {
+  it('returns MIN_LEADER_WINS for Makuuchi', () => {
+    expect(getMinLeaderWins('Makuuchi')).toBe(MIN_LEADER_WINS);
+  });
+
+  it('returns MIN_LEADER_WINS for Juryo', () => {
+    expect(getMinLeaderWins('Juryo')).toBe(MIN_LEADER_WINS);
+  });
+
+  it('returns MIN_LEADER_WINS_LOWER for Makushita', () => {
+    expect(getMinLeaderWins('Makushita')).toBe(MIN_LEADER_WINS_LOWER);
+  });
+
+  it('returns MIN_LEADER_WINS_LOWER for Sandanme, Jonidan, Jonokuchi', () => {
+    expect(getMinLeaderWins('Sandanme')).toBe(MIN_LEADER_WINS_LOWER);
+    expect(getMinLeaderWins('Jonidan')).toBe(MIN_LEADER_WINS_LOWER);
+    expect(getMinLeaderWins('Jonokuchi')).toBe(MIN_LEADER_WINS_LOWER);
   });
 });
 
@@ -317,6 +341,46 @@ describe('computeYushoContenders', () => {
     const groups = computeYushoContenders(wrestlers, 10, 'Makuuchi');
     const totalContenders = groups.reduce((n, g) => n + g.wrestlers.length, 0);
     expect(totalContenders).toBe(2);
+  });
+
+  it('returns empty array when lower-division leader has fewer than MIN_LEADER_WINS_LOWER wins', () => {
+    const wrestlers = [makeWrestler(2, 0), makeWrestler(1, 1)];
+    expect(computeYushoContenders(wrestlers, 5, 'Makushita')).toEqual([]);
+  });
+
+  it('returns empty array when lower-division leader is exactly one below the threshold', () => {
+    const wrestlers = [
+      makeWrestler(MIN_LEADER_WINS_LOWER - 1, 1),
+      makeWrestler(MIN_LEADER_WINS_LOWER - 2, 2),
+    ];
+    expect(
+      computeYushoContenders(wrestlers, MIN_LEADER_WINS_LOWER - 1, 'Makushita'),
+    ).toEqual([]);
+  });
+
+  it('returns contenders when lower-division leader reaches exactly MIN_LEADER_WINS_LOWER wins', () => {
+    const wrestlers = [
+      makeWrestler(MIN_LEADER_WINS_LOWER, 0),
+      makeWrestler(MIN_LEADER_WINS_LOWER - 1, 1),
+    ];
+    const groups = computeYushoContenders(
+      wrestlers,
+      MIN_LEADER_WINS_LOWER,
+      'Makushita',
+    );
+    expect(groups.length).toBeGreaterThan(0);
+  });
+
+  it('excludes lower-division wrestlers below MIN_LEADER_WINS_LOWER even if they can catch up', () => {
+    // Leader 4W. Challenger 2W with 4 remaining: 2+4=6 >= 4, but 2 < MIN_LEADER_WINS_LOWER=3.
+    const wrestlers = [
+      makeWrestler(4, 0, 0, 1),
+      makeWrestler(2, 1, 0, 5),
+    ];
+    const groups = computeYushoContenders(wrestlers, 8, 'Makushita');
+    const totalContenders = groups.reduce((n, g) => n + g.wrestlers.length, 0);
+    expect(totalContenders).toBe(1);
+    expect(groups[0].wrestlers[0].wins).toBe(4);
   });
 
   it('handles lower-division wrestlers correctly', () => {
