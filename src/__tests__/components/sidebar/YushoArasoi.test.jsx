@@ -133,18 +133,18 @@ describe('YushoArasoi', () => {
     })
 
     it('renders at most 4 challenger groups', () => {
-      // Day 7, remaining=8. Leader 7W. Four visible challenger groups (5W–2W); 1W group hidden.
+      // Day 7, remaining=8. Leader 9W. Five contender groups (8W–4W); 4W group hidden by slice(0,4).
       const wrestlers = [
-        makeWrestler(1, 7, 0, 0, 1), // leader
-        makeWrestler(2, 5, 2, 0, 2), // challenger 1 — 5+8=13≥7 ✓
-        makeWrestler(3, 4, 3, 0, 3), // challenger 2
-        makeWrestler(4, 3, 4, 0, 4), // challenger 3
-        makeWrestler(5, 2, 5, 0, 5), // challenger 4 (last visible)
-        makeWrestler(6, 1, 6, 0, 6), // challenger 5 — 1+8=9≥7 ✓ but slice(0,4) hides it
+        makeWrestler(1, 9, 0, 0, 1), // leader
+        makeWrestler(2, 8, 0, 0, 2), // challenger 1 — 8+8=16≥9 ✓
+        makeWrestler(3, 7, 1, 0, 3), // challenger 2
+        makeWrestler(4, 6, 2, 0, 4), // challenger 3
+        makeWrestler(5, 5, 3, 0, 5), // challenger 4 (last visible)
+        makeWrestler(6, 4, 4, 0, 6), // challenger 5 — 4+8=12≥9 ✓ but slice(0,4) hides it
       ]
       render(<YushoArasoi {...defaultProps} wrestlers={wrestlers} maxDay={7} />)
-      expect(screen.queryByText('1 Wins')).not.toBeInTheDocument()
-      expect(screen.getByText('2 Wins')).toBeInTheDocument()
+      expect(screen.queryByText('4 Wins')).not.toBeInTheDocument()
+      expect(screen.getByText('5 Wins')).toBeInTheDocument()
     })
 
     it('does not show the playoff badge when leaders have remaining bouts', () => {
@@ -323,13 +323,13 @@ describe('YushoArasoi', () => {
     })
 
     it('preserves non-East/West suffix (e.g. Tsukedashi "TD")', () => {
-      // Makushita, day 14: leader 3W 3L (1 remaining), challenger 2W 3L (2 remaining → 4≥3 ✓).
+      // Makushita, day 14: leader 5W 1L (1 remaining), challenger 4W 2L (1 remaining, ≥MIN_LEADER_WINS) → active race.
       render(
         <YushoArasoi
           {...defaultProps}
           wrestlers={[
-            makeWrestler(1, 3, 3, 0, 1, { rank: 'Makushita 60 TD' }),
-            makeWrestler(2, 2, 3, 0, 5),
+            makeWrestler(1, 5, 1, 0, 1, { rank: 'Makushita 60 TD' }),
+            makeWrestler(2, 4, 2, 0, 5),
           ]}
           division="Makushita"
           maxDay={14}
@@ -343,8 +343,8 @@ describe('YushoArasoi', () => {
         <YushoArasoi
           {...defaultProps}
           wrestlers={[
-            makeWrestler(1, 3, 3, 0, 1, { rank: 'Jonidan 50 East' }),
-            makeWrestler(2, 2, 3, 0, 5),
+            makeWrestler(1, 5, 1, 0, 1, { rank: 'Jonidan 50 East' }),
+            makeWrestler(2, 4, 2, 0, 5),
           ]}
           division="Jonidan"
           maxDay={14}
@@ -358,8 +358,8 @@ describe('YushoArasoi', () => {
         <YushoArasoi
           {...defaultProps}
           wrestlers={[
-            makeWrestler(1, 3, 3, 0, 1, { rank: 'Jonokuchi 15 West' }),
-            makeWrestler(2, 2, 3, 0, 5),
+            makeWrestler(1, 5, 1, 0, 1, { rank: 'Jonokuchi 15 West' }),
+            makeWrestler(2, 4, 2, 0, 5),
           ]}
           division="Jonokuchi"
           maxDay={14}
@@ -373,8 +373,8 @@ describe('YushoArasoi', () => {
         <YushoArasoi
           {...defaultProps}
           wrestlers={[
-            makeWrestler(1, 3, 3, 0, 1, { rank: 'Sandanme 30 East' }),
-            makeWrestler(2, 2, 3, 0, 5),
+            makeWrestler(1, 5, 1, 0, 1, { rank: 'Sandanme 30 East' }),
+            makeWrestler(2, 4, 2, 0, 5),
           ]}
           division="Sandanme"
           maxDay={14}
