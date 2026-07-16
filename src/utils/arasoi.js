@@ -21,8 +21,15 @@ import { SEKITORI_DIVISIONS } from './records';
 /**
  * The arasoi is suppressed until the tournament leader reaches this many wins.
  * Below this threshold the field is too open to be meaningful.
+ * Lower divisions have only 7 bouts so a relaxed threshold applies.
  */
 export const MIN_LEADER_WINS = 4;
+export const MIN_LEADER_WINS_LOWER = 3;
+
+/** Returns the appropriate minimum-wins threshold for the given division. */
+export function getMinLeaderWins(division) {
+  return SEKITORI_DIVISIONS.includes(division) ? MIN_LEADER_WINS : MIN_LEADER_WINS_LOWER;
+}
 
 // ─── Division constants ───────────────────────────────────────────────────────
 
@@ -108,11 +115,12 @@ export function computeYushoContenders(wrestlers, currentDay, division) {
   }));
 
   const leaderWins = Math.max(0, ...withRemaining.map((w) => w.wins));
+  const minWins = getMinLeaderWins(division);
 
-  if (leaderWins < MIN_LEADER_WINS) return [];
+  if (leaderWins < minWins) return [];
 
   const contenders = withRemaining.filter(
-    (w) => w.wins + w.remainingBouts >= leaderWins && w.wins >= MIN_LEADER_WINS,
+    (w) => w.wins + w.remainingBouts >= leaderWins && w.wins >= minWins,
   );
 
   if (!contenders.length) return [];
