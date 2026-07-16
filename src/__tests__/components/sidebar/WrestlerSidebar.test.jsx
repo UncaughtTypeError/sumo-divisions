@@ -53,6 +53,24 @@ vi.mock('../../../components/modal/MatchHistoryModal', () => ({
   default: () => <div data-testid="match-history-modal">MatchHistoryModal</div>,
 }))
 
+vi.mock('../../../components/modal/TorikumiModal', () => ({
+  default: ({ isOpen, onClose, activeView, onDivisionChange }) => isOpen ? (
+    <div data-testid="torikumi-modal">
+      <select
+        data-testid="modal-division-select"
+        value={activeView?.value ?? ''}
+        onChange={(e) => onDivisionChange(e.target.value)}
+      >
+        <option value="makuuchi">Makuuchi</option>
+        <option value="yokozuna">Yokozuna</option>
+        <option value="juryo">Juryo</option>
+        <option value="makushita">Makushita</option>
+      </select>
+      <button data-testid="modal-close" onClick={onClose}>Close modal</button>
+    </div>
+  ) : null,
+}))
+
 // ── Imports used across tests ─────────────────────────────────────────────────
 
 import useDivisionStore from '../../../store/divisionStore'
@@ -364,6 +382,79 @@ describe('WrestlerSidebar', () => {
 
       // Auto-select effect is suppressed — day stays at user's manual choice
       await waitFor(() => expect(screen.getByTestId('torikumi-tab')).toHaveAttribute('data-day', '2'))
+    })
+  })
+
+  // ── Torikumi pop-out modal ───────────────────────────────────────────────
+
+  describe('Torikumi pop-out modal', () => {
+    beforeEach(() => {
+      useDivisionStore.mockReturnValue({
+        isSidebarOpen: true, isDivisionView: false, selectedRank: 'Yokozuna',
+        selectedDivision: 'Makuuchi', selectedApiDivision: 'Makuuchi', selectedColor: 'yokozuna',
+        closeSidebar: mockCloseSidebar, openModal: mockOpenModal,
+        setRankLookup: mockSetRankLookup, setAllWrestlers: mockSetAllWrestlers,
+        setAdjacentWrestlers: mockSetAdjacentWrestlers,
+      })
+      useBanzuke.mockReturnValue({ data: mockBanzukeData, isLoading: false, error: null, refetch: mockRefetch })
+      useBashoResults.mockReturnValue({ data: mockBashoResults })
+    })
+
+    it('renders the pop-out icon button', () => {
+      renderWithQueryClient(<WrestlerSidebar />)
+      expect(screen.getByLabelText('Open Torikumi in modal')).toBeInTheDocument()
+    })
+
+    it('modal is not visible on initial render', () => {
+      renderWithQueryClient(<WrestlerSidebar />)
+      expect(screen.queryByTestId('torikumi-modal')).not.toBeInTheDocument()
+    })
+
+    it('opens the modal when the pop-out icon is clicked from Banzuke tab', () => {
+      renderWithQueryClient(<WrestlerSidebar />)
+      fireEvent.click(screen.getByLabelText('Open Torikumi in modal'))
+      expect(screen.getByTestId('torikumi-modal')).toBeInTheDocument()
+    })
+
+    it('stays on Banzuke tab when modal is opened from Banzuke tab', () => {
+      renderWithQueryClient(<WrestlerSidebar />)
+      fireEvent.click(screen.getByLabelText('Open Torikumi in modal'))
+      expect(screen.getByTestId('banzuke-tab')).toBeInTheDocument()
+      expect(screen.queryByTestId('torikumi-tab')).not.toBeInTheDocument()
+    })
+
+    it('switches to Banzuke tab and opens modal when pop-out is clicked from Torikumi tab', () => {
+      renderWithQueryClient(<WrestlerSidebar />)
+      fireEvent.click(screen.getByRole('button', { name: 'Torikumi' }))
+      expect(screen.getByTestId('torikumi-tab')).toBeInTheDocument()
+
+      fireEvent.click(screen.getByLabelText('Open Torikumi in modal'))
+
+      expect(screen.getByTestId('torikumi-modal')).toBeInTheDocument()
+      expect(screen.getByTestId('banzuke-tab')).toBeInTheDocument()
+      expect(screen.queryByTestId('torikumi-tab')).not.toBeInTheDocument()
+    })
+
+    it('closes the modal when onClose is triggered', () => {
+      renderWithQueryClient(<WrestlerSidebar />)
+      fireEvent.click(screen.getByLabelText('Open Torikumi in modal'))
+      expect(screen.getByTestId('torikumi-modal')).toBeInTheDocument()
+
+      fireEvent.click(screen.getByTestId('modal-close'))
+      expect(screen.queryByTestId('torikumi-modal')).not.toBeInTheDocument()
+    })
+
+    it('passes the current division view to the modal', () => {
+      renderWithQueryClient(<WrestlerSidebar />)
+      fireEvent.click(screen.getByLabelText('Open Torikumi in modal'))
+      expect(screen.getByTestId('modal-division-select')).toHaveValue('yokozuna')
+    })
+
+    it('changing division in the modal updates the sidebar select too', () => {
+      renderWithQueryClient(<WrestlerSidebar />)
+      fireEvent.click(screen.getByLabelText('Open Torikumi in modal'))
+      fireEvent.change(screen.getByTestId('modal-division-select'), { target: { value: 'juryo' } })
+      expect(screen.getByLabelText('Select division or rank')).toHaveValue('juryo')
     })
   })
 
