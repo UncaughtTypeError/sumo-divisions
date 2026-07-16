@@ -1,0 +1,124 @@
+.dialog {
+  position: fixed;
+  z-index: 60;
+  inset: 0;
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modalContainer {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modalPanel {
+  position: relative;
+  background: var(--color-surface, white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: 680px;
+  width: 100%;
+  height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem 0.75rem 1.25rem;
+  flex-shrink: 0;
+}
+
+.headerLeft {
+  flex: 1;
+  min-width: 0;
+}
+
+.divisionSelect {
+  background-color: rgba(255, 255, 255, 0.15);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 0.25rem 2rem 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  appearance: none;
+  max-width: 100%;
+}
+
+.divisionSelect option {
+  background: var(--color-text);
+  color: white;
+  font-size: 0.9rem;
+}
+
+.divisionSelect:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.closeButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.modalContent {
+  overflow-y: auto;
+  flex: 1;
+  padding: 1.25rem;
+}
+
+/* Backdrop transitions */
+.backdropEnter    { transition: opacity 150ms ease-out; }
+.backdropEnterFrom { opacity: 0; }
+.backdropEnterTo   { opacity: 1; }
+.backdropLeave    { transition: opacity 100ms ease-in; }
+.backdropLeaveFrom { opacity: 1; }
+.backdropLeaveTo   { opacity: 0; }
+
+/* Panel transitions */
+.panelEnter    { transition: opacity 150ms ease-out, transform 150ms ease-out; }
+.panelEnterFrom { opacity: 0; transform: scale(0.95) translateY(10px); }
+.panelEnterTo   { opacity: 1; transform: scale(1) translateY(0); }
+.panelLeave    { transition: opacity 100ms ease-in, transform 100ms ease-in; }
+.panelLeaveFrom { opacity: 1; transform: scale(1) translateY(0); }
+.panelLeaveTo   { opacity: 0; transform: scale(0.95) translateY(10px); }
+
+@media (max-width: 720px) {
+  .modalPanel {
+    max-width: 100%;
+    height: 90vh;
+  }
+}

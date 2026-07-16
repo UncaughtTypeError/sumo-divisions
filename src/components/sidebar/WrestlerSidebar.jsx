@@ -12,7 +12,9 @@ import { getPreviousBashoId, computeWrestlerRankIndicators } from '../../utils/r
 import BanzukeTab from './BanzukeTab';
 import TorikumiTab from './TorikumiTab';
 import BashoSelector from './BashoSelector';
+import Tooltip from '../common/Tooltip';
 import MatchHistoryModal from '../modal/MatchHistoryModal';
+import TorikumiModal from '../modal/TorikumiModal';
 import styles from './WrestlerSidebar.module.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -82,6 +84,7 @@ function WrestlerSidebar() {
   // so the probe result can update the default without overriding their choice.
   const [torikumiDay,          setTorikumiDay]          = useState(0);
   const [torikumiDayIsManual,  setTorikumiDayIsManual]  = useState(false);
+  const [torikumiModalOpen,    setTorikumiModalOpen]    = useState(false);
   // Persists each division's last-seen day within one sidebar session so
   // switching away and back restores the same day rather than re-auto-selecting.
   const torikumiDayPerDivisionRef = useRef({});
@@ -90,6 +93,23 @@ function WrestlerSidebar() {
     setTorikumiDay(day);
     setTorikumiDayIsManual(true);
   }, []);
+
+  const handleOpenTorikumiModal = useCallback(() => {
+    if (activeTab === 'torikumi') setActiveTab('banzuke');
+    setTorikumiModalOpen(true);
+  }, [activeTab]);
+
+  const handleDivisionChange = useCallback((value) => {
+    const view = SIDEBAR_VIEWS.find((v) => v.value === value);
+    if (view) {
+      torikumiDayPerDivisionRef.current[activeView.apiDivision] = torikumiDay;
+      const saved = torikumiDayPerDivisionRef.current[view.apiDivision] ?? 0;
+      setActiveView(view);
+      setTorikumiDay(saved);
+      setTorikumiDayIsManual(saved > 0);
+      bumpSession();
+    }
+  }, [activeView, torikumiDay, bumpSession]);
 
   const currentApiDivision    = activeView.apiDivision;
   const currentColor          = activeView.color;
@@ -169,7 +189,7 @@ function WrestlerSidebar() {
     currentApiDivision,
     candidateNextDay,
     {
-      enabled:   isSidebarOpen && activeTab === 'torikumi' && candidateNextDay > maxDay,
+      enabled:   isSidebarOpen && (activeTab === 'torikumi' || torikumiModalOpen) && candidateNextDay > maxDay,
       staleTime: 1000 * 60 * 30, // 30 min — schedule availability rarely changes
     },
   );
@@ -228,7 +248,7 @@ function WrestlerSidebar() {
     currentBashoId,
     currentApiDivision,
     effectiveTorikumiDay,
-    { enabled: isSidebarOpen && activeTab === 'torikumi' && effectiveTorikumiDay > 0 },
+    { enabled: isSidebarOpen && (activeTab === 'torikumi' || torikumiModalOpen) && effectiveTorikumiDay > 0 },
   );
 
   // ── Wrestler lookup (falls back to adjacent division) ─────────────────────
@@ -308,17 +328,7 @@ function WrestlerSidebar() {
               <select
                 className={styles.divisionSelect}
                 value={activeView.value}
-                onChange={(e) => {
-                  const view = SIDEBAR_VIEWS.find((v) => v.value === e.target.value);
-                  if (view) {
-                    torikumiDayPerDivisionRef.current[currentApiDivision] = torikumiDay;
-                    const saved = torikumiDayPerDivisionRef.current[view.apiDivision] ?? 0;
-                    setActiveView(view);
-                    setTorikumiDay(saved);
-                    setTorikumiDayIsManual(saved > 0);
-                    bumpSession();
-                  }
-                }}
+                onChange={(e) => handleDivisionChange(e.target.value)}
                 aria-label="Select division or rank"
               >
                 {SIDEBAR_VIEWS.map((v) => (
@@ -350,12 +360,27 @@ function WrestlerSidebar() {
           >
             Banzuke
           </button>
-          <button
-            className={`${styles.tab} ${activeTab === 'torikumi' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('torikumi')}
-          >
-            Torikumi
-          </button>
+          <div className={styles.tabWithAction}>
+            <button
+              className={`${styles.tab} ${activeTab === 'torikumi' ? styles.tabActive : ''}`}
+              onClick={() => setActiveTab('torikumi')}
+            >
+              Torikumi
+            </button>
+            <Tooltip content="Open Torikumi in pop-out" position="top">
+              <button
+                type="button"
+                className={styles.tabPopout}
+                onClick={(e) => { e.stopPropagation(); handleOpenTorikumiModal(); }}
+                aria-label="Open Torikumi in modal"
+              >
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true">
+                  <path d="M4.5 1.5H2a1 1 0 00-1 1v6.5a1 1 0 001 1h6.5a1 1 0 001-1v-2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                  <path d="M6.5 1h3.5v3.5M9.5 1.5L5.5 5.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </Tooltip>
+          </div>
         </div>
 
         {/* ── Tab content ─────────────────────────────────────────────────── */}
@@ -404,6 +429,27 @@ function WrestlerSidebar() {
       </div>
 
       <MatchHistoryModal />
+      <TorikumiModal
+        isOpen={torikumiModalOpen}
+        onClose={() => setTorikumiModalOpen(false)}
+        torikumiData={torikumiData}
+        isLoading={isTorikumiLoading}
+        isFetching={isTorikumiFetching}
+        error={torikumiError}
+        refetch={refetchTorikumi}
+        torikumiMaxDay={torikumiMaxDay}
+        maxDay={maxDay}
+        day={effectiveTorikumiDay}
+        onDayChange={handleTorikumiDayChange}
+        activeView={activeView}
+        onDivisionChange={handleDivisionChange}
+        currentApiDivision={currentApiDivision}
+        currentColor={currentColor}
+        currentIsDivisionView={currentIsDivisionView}
+        currentRank={currentRank}
+        wrestlerById={wrestlerById}
+        openModal={openModal}
+      />
     </>
   );
 }
