@@ -13,6 +13,22 @@ vi.mock('../../../components/modal/KimariteModal', () => ({
     ) : null,
 }))
 
+// HeadToHeadModal uses Headless UI — mock it for simplicity
+vi.mock('../../../components/modal/HeadToHeadModal', () => ({
+  default: ({ isOpen, onClose, wrestlerPerspective }) =>
+    isOpen ? (
+      <div data-testid="h2h-modal" data-wrestler-perspective={String(wrestlerPerspective)}>
+        <button onClick={onClose}>Close H2H</button>
+      </div>
+    ) : null,
+}))
+
+vi.mock('../../../hooks/useRikishi', () => ({
+  useRikishiMatches: vi.fn(),
+}))
+
+import { useRikishiMatches } from '../../../hooks/useRikishi'
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const makeBout = (overrides = {}) => ({
@@ -51,7 +67,10 @@ const makeWrestlerById = (map) => (id) => map[id] ?? null
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('TorikumiList', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => {
+    vi.clearAllMocks()
+    useRikishiMatches.mockReturnValue({ data: null, isLoading: false })
+  })
 
   // ── Header ────────────────────────────────────────────────────────────────
 
@@ -255,4 +274,73 @@ describe('TorikumiList', () => {
     expect(screen.getByText('Alpha')).toBeInTheDocument()
     expect(screen.getByText('Gamma')).toBeInTheDocument()
   })
+
+  // ── H2H record link ───────────────────────────────────────────────────────
+
+  it('shows 0–0 when wrestlers have no prior meetings', () => {
+    useRikishiMatches.mockReturnValue({
+      data: { rikishiWins: 0, opponentWins: 0, total: 0, matches: [] },
+      isLoading: false,
+    })
+    render(
+      <TorikumiList bouts={[makeBout()]} wrestlerById={noopWrestlerById} day={1} division="Makuuchi" />,
+    )
+    expect(screen.getByText('0–0')).toBeInTheDocument()
+  })
+
+  it('shows the h2h record when wrestlers have prior meetings', () => {
+    useRikishiMatches.mockReturnValue({
+      data: { rikishiWins: 3, opponentWins: 2, total: 5, matches: [] },
+      isLoading: false,
+    })
+    render(
+      <TorikumiList bouts={[makeBout()]} wrestlerById={noopWrestlerById} day={1} division="Makuuchi" />,
+    )
+    expect(screen.getByText('3–2')).toBeInTheDocument()
+  })
+
+  it('shows loading dots while h2h data is fetching', () => {
+    useRikishiMatches.mockReturnValue({ data: null, isLoading: true })
+    render(
+      <TorikumiList bouts={[makeBout()]} wrestlerById={noopWrestlerById} day={1} division="Makuuchi" />,
+    )
+    expect(screen.getByLabelText('Loading record')).toBeInTheDocument()
+  })
+
+  it('shows nothing for h2h when both wrestler IDs are absent', () => {
+    useRikishiMatches.mockReturnValue({
+      data: { rikishiWins: 5, opponentWins: 1, total: 6, matches: [] },
+      isLoading: false,
+    })
+    const bout = makeBout({ eastId: null, westId: null })
+    render(
+      <TorikumiList bouts={[bout]} wrestlerById={noopWrestlerById} day={1} division="Makuuchi" />,
+    )
+    expect(screen.queryByText('5–1')).not.toBeInTheDocument()
+  })
+
+  it('opens the h2h modal when the record link is clicked', () => {
+    useRikishiMatches.mockReturnValue({
+      data: { rikishiWins: 2, opponentWins: 1, total: 3, matches: [] },
+      isLoading: false,
+    })
+    render(
+      <TorikumiList bouts={[makeBout()]} wrestlerById={noopWrestlerById} day={1} division="Makuuchi" />,
+    )
+    fireEvent.click(screen.getByText('2–1'))
+    expect(screen.getByTestId('h2h-modal')).toBeInTheDocument()
+  })
+
+  it('opens h2h modal with wrestlerPerspective={false}', () => {
+    useRikishiMatches.mockReturnValue({
+      data: { rikishiWins: 2, opponentWins: 1, total: 3, matches: [] },
+      isLoading: false,
+    })
+    render(
+      <TorikumiList bouts={[makeBout()]} wrestlerById={noopWrestlerById} day={1} division="Makuuchi" />,
+    )
+    fireEvent.click(screen.getByText('2–1'))
+    expect(screen.getByTestId('h2h-modal').dataset.wrestlerPerspective).toBe('false')
+  })
+
 })

@@ -82,8 +82,8 @@ describe('HeadToHeadModal', () => {
     })
   })
 
-  describe('match summary subtitle', () => {
-    it('should render win and loss counts', () => {
+  describe('match summary subtitle — wrestler perspective (default)', () => {
+    it('should render win and loss counts with W/L labels', () => {
       useRikishiMatches.mockReturnValue({ data: mockData, isLoading: false, isError: false })
       render(<HeadToHeadModal {...defaultProps} />)
       expect(screen.getByText('2W')).toBeInTheDocument()
@@ -91,14 +91,12 @@ describe('HeadToHeadModal', () => {
     })
 
     it('should show positive percentage when wins exceed losses', () => {
-      // wins/total = 2/3*100 = 66.7%
       useRikishiMatches.mockReturnValue({ data: mockData, isLoading: false, isError: false })
       render(<HeadToHeadModal {...defaultProps} />)
       expect(screen.getByText('66.7%')).toBeInTheDocument()
     })
 
     it('should show actual win rate when losses exceed wins', () => {
-      // wins/total = 1/3*100 = 33.3%
       useRikishiMatches.mockReturnValue({
         data: { ...mockData, rikishiWins: 1, opponentWins: 2 },
         isLoading: false,
@@ -143,10 +141,9 @@ describe('HeadToHeadModal', () => {
       render(<HeadToHeadModal {...defaultProps} />)
       expect(screen.getByText('100.0%')).toBeInTheDocument()
     })
-
   })
 
-  describe('win percentage colour', () => {
+  describe('win percentage colour — wrestler perspective', () => {
     it('applies the positive (green) class when wins exceed losses', () => {
       useRikishiMatches.mockReturnValue({ data: mockData, isLoading: false, isError: false })
       render(<HeadToHeadModal {...defaultProps} />)
@@ -177,6 +174,48 @@ describe('HeadToHeadModal', () => {
       const pct = screen.getByText('50.0%')
       expect(pct.className).not.toMatch(/winPctPositive/)
       expect(pct.className).not.toMatch(/winPctNegative/)
+    })
+  })
+
+  describe('match summary subtitle — neutral perspective (wrestlerPerspective={false})', () => {
+    const neutralProps = { ...defaultProps, wrestlerPerspective: false }
+
+    it('should not render W/L labels or percentage', () => {
+      useRikishiMatches.mockReturnValue({ data: mockData, isLoading: false, isError: false })
+      render(<HeadToHeadModal {...neutralProps} />)
+      expect(screen.queryByText('2W')).not.toBeInTheDocument()
+      expect(screen.queryByText('1L')).not.toBeInTheDocument()
+      expect(screen.queryByText('66.7%')).not.toBeInTheDocument()
+    })
+
+    it('should render plain win and loss numbers', () => {
+      useRikishiMatches.mockReturnValue({ data: mockData, isLoading: false, isError: false })
+      render(<HeadToHeadModal {...neutralProps} />)
+      expect(screen.getByText('2')).toBeInTheDocument()
+      expect(screen.getByText('1')).toBeInTheDocument()
+    })
+
+    it('applies green class to the higher number and red to the lower', () => {
+      useRikishiMatches.mockReturnValue({ data: mockData, isLoading: false, isError: false })
+      render(<HeadToHeadModal {...neutralProps} />)
+      const two = screen.getByText('2')
+      const one = screen.getByText('1')
+      expect(two.className).toMatch(/wins/)
+      expect(one.className).toMatch(/losses/)
+    })
+
+    it('applies no colour class when the record is even', () => {
+      useRikishiMatches.mockReturnValue({
+        data: { ...mockData, rikishiWins: 3, opponentWins: 3, total: 6 },
+        isLoading: false,
+        isError: false,
+      })
+      render(<HeadToHeadModal {...neutralProps} />)
+      const threes = screen.getAllByText('3')
+      threes.forEach((el) => {
+        expect(el.className).not.toMatch(/wins/)
+        expect(el.className).not.toMatch(/losses/)
+      })
     })
   })
 
@@ -285,4 +324,5 @@ describe('HeadToHeadModal', () => {
       expect(screen.queryByRole('button', { name: /Basho.*↓/ })).not.toBeInTheDocument()
     })
   })
+
 })
