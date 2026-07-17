@@ -128,14 +128,19 @@ function TorikumiRow({ bout, wrestlerById, day, division, onWrestlerClick, onKim
       return <span className={`${styles.torikumiName}${winnerClass}`}>{shikona ?? '–'}</span>;
     }
     return (
-      <button
-        type="button"
-        className={`${styles.torikumiNameBtn}${winnerClass}`}
-        onClick={() => onWrestlerClick(wrestler)}
-        aria-label={`View ${shikona}'s match history`}
+      <Tooltip
+        position="top"
+        content={<><strong>Bout history</strong><span>Click to view basho record</span></>}
       >
-        {shikona ?? '–'}
-      </button>
+        <button
+          type="button"
+          className={`${styles.torikumiNameBtn}${winnerClass}`}
+          onClick={() => onWrestlerClick(wrestler)}
+          aria-label={`View ${shikona}'s bout history`}
+        >
+          {shikona ?? '–'}
+        </button>
+      </Tooltip>
     );
   };
 

@@ -116,7 +116,7 @@ function HoshitoriGrid({ matches = [], color }) {
                         type="button"
                         className={styles.opponentBtn}
                         onClick={() => handleOpponentClick(match.opponentID)}
-                        aria-label={`View ${name}'s match history`}
+                        aria-label={`View ${name}'s bout history`}
                       >
                         {name}
                       </button>

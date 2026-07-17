@@ -330,7 +330,7 @@ function MatchHistoryModal() {
                     className={`${styles.tab} ${activeTab === 'list' ? styles.tabActive : ''}`}
                     onClick={() => setActiveTab('list')}
                   >
-                    Match History
+                    Bout History
                   </button>
                   <button
                     className={`${styles.tab} ${activeTab === 'hoshitori' ? styles.tabActive : ''}`}
