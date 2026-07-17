@@ -143,6 +143,67 @@ describe('records utilities', () => {
     })
   })
 
+  describe('computeRecordOnDay', () => {
+    const r = (result) => ({ result })
+
+    it('returns null for falsy day', () => {
+      expect(computeRecordOnDay([r('win')], 0)).toBeNull()
+      expect(computeRecordOnDay([r('win')], null)).toBeNull()
+    })
+
+    it('returns null for non-array record', () => {
+      expect(computeRecordOnDay(null, 5)).toBeNull()
+      expect(computeRecordOnDay(undefined, 5)).toBeNull()
+    })
+
+    it('counts wins, losses, and all absences without division (legacy behaviour)', () => {
+      const record = [r('win'), r('absent'), r('loss'), r('absent'), r('win')]
+      expect(computeRecordOnDay(record, 5)).toEqual({ wins: 2, losses: 1, absences: 2 })
+    })
+
+    it('stops at undefined or empty-string result', () => {
+      const record = [r('win'), r('loss'), { result: '' }, r('win')]
+      expect(computeRecordOnDay(record, 4)).toEqual({ wins: 1, losses: 1, absences: 0 })
+    })
+
+    it('counts fusen win and fusen loss correctly', () => {
+      const record = [r('fusen win'), r('fusen loss')]
+      expect(computeRecordOnDay(record, 2)).toEqual({ wins: 1, losses: 1, absences: 0 })
+    })
+
+    describe('with division — kyujo-aware absence counting', () => {
+      it('counts all absences for sekitori because every absence is genuine kyujo', () => {
+        // day 2 is absent with future bouts — still counted for sekitori
+        const record = [r('win'), r('absent'), r('win'), r('loss')]
+        expect(computeRecordOnDay(record, 2, 'Makuuchi')).toEqual({ wins: 1, losses: 0, absences: 1 })
+        expect(computeRecordOnDay(record, 2, 'Juryo')).toEqual({ wins: 1, losses: 0, absences: 1 })
+      })
+
+      it('does not count a scheduled off-day absence for lower divisions when future bouts exist', () => {
+        // record has a bout on day 1, an off-day on day 2, then a bout on day 3
+        const record = [r('win'), r('absent'), r('loss')]
+        // on day 2 the 'absent' is a scheduled off-day (future bouts remain)
+        expect(computeRecordOnDay(record, 2, 'Makushita')).toEqual({ wins: 1, losses: 0, absences: 0 })
+      })
+
+      it('counts a genuine kyujo for lower divisions when no future bouts follow', () => {
+        // wrestler withdrew: absent on day 2 with nothing after
+        const record = [r('win'), r('absent'), r('absent')]
+        expect(computeRecordOnDay(record, 3, 'Sandanme')).toEqual({ wins: 1, losses: 0, absences: 2 })
+      })
+
+      it('does not misidentify lower-division off-days mid-tournament as kyujo', () => {
+        // 4 bouts fought in alternating days typical of lower divisions
+        const record = [r('win'), r('absent'), r('loss'), r('absent'), r('win'), r('absent'), r('win')]
+        // on day 7, final state: 3 wins, 1 loss, 0 real absences (all absent entries have future bouts)
+        // Wait, the last entry IS a win so by day 7 we're at the actual last entry — no future bouts needed
+        // Actually: let's check through day 6 where day 6 is 'absent' with a 'win' after
+        expect(computeRecordOnDay(record, 6, 'Jonidan')).toEqual({ wins: 2, losses: 1, absences: 0 })
+        expect(computeRecordOnDay(record, 7, 'Jonidan')).toEqual({ wins: 3, losses: 1, absences: 0 })
+      })
+    })
+  })
+
   describe('isYokozuna', () => {
     it('should return true for Yokozuna ranks', () => {
       expect(isYokozuna('Yokozuna 1 East')).toBe(true)
