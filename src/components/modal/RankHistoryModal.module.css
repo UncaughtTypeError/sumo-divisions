@@ -9,7 +9,7 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--color-overlay);
 }
 
 .modalContainer {
@@ -67,7 +67,7 @@
   flex-shrink: 0;
 }
 
-.closeButton:hover { background: rgba(255, 255, 255, 0.2); }
+.closeButton:hover { background: var(--color-on-color-surface); }
 
 .summary {
   display: flex;

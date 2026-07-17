@@ -14,8 +14,8 @@
 
 .select {
   appearance: none;
-  background-color: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: var(--color-on-color-select-bg);
+  border: 1px solid var(--color-on-color-border);
   color: white;
   padding: 0.5rem 2rem 0.5rem 0.75rem;
   border-radius: var(--radius-sm);
@@ -32,15 +32,15 @@
 }
 
 .select:hover {
-  background-color: rgba(255, 255, 255, 0.25);
+  background-color: var(--color-on-color-badge);
   border-color: rgba(255, 255, 255, 0.4);
 }
 
 .select:focus {
   outline: none;
-  background-color: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+  background-color: var(--color-on-color-border);
+  border-color: var(--color-on-color-focus);
+  box-shadow: 0 0 0 2px var(--color-on-color-surface);
 }
 
 .select option {
@@ -51,6 +51,6 @@
 
 .select option:disabled,
 .cancelledOption {
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-on-color-focus);
   font-style: italic;
 }

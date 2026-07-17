@@ -64,7 +64,7 @@
 /* ── Provisional clinch box ─────────────────────────────────────────────────── */
 
 .clinched {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  background: linear-gradient(135deg, var(--color-warning-bg) 0%, var(--color-gold-bg-mid) 100%);
   border: 1.5px dashed var(--color-gold-dark);
   border-radius: var(--radius-sm);
   padding: 0.75rem;

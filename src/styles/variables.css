@@ -70,6 +70,31 @@
   --color-ichimon-tokitsukaze-bg:  #f3e8ff;
   --color-ichimon-tokitsukaze-text: #6b21a8;
 
+  /* Semantic stat colours */
+  --color-win: #16a34a;
+  --color-loss: var(--color-error-dark);
+  --color-text-faint: #6b7280;
+
+  /* Inset surface colour (cards, stat cells) */
+  --color-background-inset: #f9fafb;
+
+  /* Modal overlay */
+  --color-overlay: rgba(0, 0, 0, 0.5);
+
+  /* On-colour overlays (white-on-division-colour headers/sidebars) */
+  --color-on-color-select-bg: rgba(255, 255, 255, 0.15);
+  --color-on-color-surface: rgba(255, 255, 255, 0.2);
+  --color-on-color-badge: rgba(255, 255, 255, 0.25);
+  --color-on-color-border: rgba(255, 255, 255, 0.3);
+  --color-on-color-focus: rgba(255, 255, 255, 0.5);
+
+  /* Border grays (division legend) */
+  --color-border-light: rgb(197, 197, 197);
+  --color-border-hover: rgb(140, 140, 140);
+
+  /* Gold gradient mid-stop (yusho arasoi) */
+  --color-gold-bg-mid: #fde68a;
+
   /* Transitions */
   --transition-fast: 150ms ease-in-out;
   --transition-normal: 300ms ease-in-out;

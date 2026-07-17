@@ -7,7 +7,7 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--color-overlay);
 }
 
 .modalContainer {
@@ -97,7 +97,7 @@
   font-weight: 600;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-on-color-surface);
   color: white;
 }
 
@@ -148,7 +148,7 @@
   font-weight: 700;
   padding: 0.1rem 0.3rem;
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--color-on-color-badge);
   color: white;
 }
 
@@ -157,7 +157,7 @@
   font-weight: 700;
   padding: 0.1rem 0.3rem;
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--color-on-color-badge);
   color: white;
 }
 
@@ -166,7 +166,7 @@
   font-weight: 700;
   padding: 0.1rem 0.3rem;
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--color-on-color-badge);
   color: white;
 }
 
@@ -175,7 +175,7 @@
   font-weight: 700;
   padding: 0.1rem 0.3rem;
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--color-on-color-badge);
   color: white;
 }
 
@@ -216,14 +216,14 @@
   font-weight: 500;
   padding: 0.125rem 0.375rem;
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-on-color-surface);
 }
 
 .infoButton {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-on-color-surface);
   border: none;
   cursor: pointer;
   color: white;
@@ -260,7 +260,7 @@
 }
 
 .closeButton:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-on-color-surface);
 }
 
 .modalContent {

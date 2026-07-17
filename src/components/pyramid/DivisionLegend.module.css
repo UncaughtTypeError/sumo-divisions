@@ -14,7 +14,7 @@
   border-left: 4px solid;
   min-height: 63px;
   justify-content: center;
-  border-left-color: rgb(197, 197, 197);
+  border-left-color: var(--color-border-light);
 }
 
 .legendItemClickable {
@@ -26,7 +26,7 @@
 .legendItemClickable:hover,
 .legendItemClickable:focus-visible {
   background: rgba(0, 0, 0, 0.04);
-  border-left-color: rgb(140, 140, 140);
+  border-left-color: var(--color-border-hover);
   outline: none;
 }
 
@@ -66,12 +66,12 @@
     padding-left: 0;
     padding-right: 0.5rem;
     border-left-color: transparent;
-    border-right-color: rgb(197, 197, 197);
+    border-right-color: var(--color-border-light);
   }
 
   .legendItemClickable:hover,
   .legendItemClickable:focus-visible {
-    border-right-color: rgb(140, 140, 140);
+    border-right-color: var(--color-border-hover);
     border-left-color: transparent;
   }
 
