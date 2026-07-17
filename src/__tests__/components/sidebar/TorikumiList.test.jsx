@@ -192,6 +192,39 @@ describe('TorikumiList', () => {
     expect(onWrestlerClick).toHaveBeenCalledWith(wrestler)
   })
 
+  it('wrestler name button has aria-label containing "bout history"', () => {
+    const wrestler = makeWrestler(10)
+    const wrestlerById = makeWrestlerById({ 10: wrestler })
+    render(
+      <TorikumiList
+        bouts={[makeBout()]}
+        wrestlerById={wrestlerById}
+        day={1}
+        division="Makuuchi"
+        onWrestlerClick={vi.fn()}
+      />,
+    )
+    expect(screen.getByRole('button', { name: /bout history/i })).toBeInTheDocument()
+  })
+
+  it('hovering the wrestler name button shows "Bout history" tooltip', () => {
+    const wrestler = makeWrestler(10)
+    const wrestlerById = makeWrestlerById({ 10: wrestler })
+    render(
+      <TorikumiList
+        bouts={[makeBout()]}
+        wrestlerById={wrestlerById}
+        day={1}
+        division="Makuuchi"
+        onWrestlerClick={vi.fn()}
+      />,
+    )
+    const btn = screen.getByRole('button', { name: /bout history/i })
+    fireEvent.mouseEnter(btn.closest('[class*="tooltipWrapper"]'))
+    expect(screen.getByText('Bout history')).toBeInTheDocument()
+    expect(screen.getByText('Click to view basho record')).toBeInTheDocument()
+  })
+
   it('renders wrestler name as plain text when not found in banzuke', () => {
     render(
       <TorikumiList

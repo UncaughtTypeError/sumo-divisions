@@ -108,9 +108,9 @@ describe('MatchHistoryModal', () => {
       expect(screen.getByText(/80.00% Win Rate/)).toBeInTheDocument()
     })
 
-    it('should render Match History title', () => {
+    it('should render Bout History title', () => {
       render(<MatchHistoryModal />)
-      expect(screen.getByText('Match History')).toBeInTheDocument()
+      expect(screen.getByText('Bout History')).toBeInTheDocument()
     })
 
     it('should render MatchGrid with matches', () => {
