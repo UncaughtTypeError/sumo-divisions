@@ -191,12 +191,13 @@ function RankHistoryModal({ isOpen, onClose, rikishiDetails, color }) {
                             : record
                               ? `${record.wins}-${record.losses}${record.absences > 0 ? `-${record.absences}` : ''}`
                               : '—';
+                          const totalLosses = record ? record.losses + record.absences : 0;
                           const badge = !matchesLoading && record && (
-                            record.wins > record.losses ? (
+                            record.wins > totalLosses ? (
                               <Tooltip position="top" content={<><strong>{KK_INFO.nameEn}</strong><span>{KK_INFO.nameJp}</span><span>{KK_INFO.description}</span></>}>
                                 <span className={styles.kkBadge}>KK</span>
                               </Tooltip>
-                            ) : record.losses > record.wins ? (
+                            ) : totalLosses > record.wins ? (
                               <Tooltip position="top" content={<><strong>{MK_INFO.nameEn}</strong><span>{MK_INFO.nameJp}</span><span>{MK_INFO.description}</span></>}>
                                 <span className={styles.mkBadge}>MK</span>
                               </Tooltip>
