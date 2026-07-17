@@ -31,10 +31,10 @@ vi.mock('../../../hooks/useBashoResults', () => ({
 }))
 
 vi.mock('../../../components/sidebar/WrestlerGrid', () => ({
-  default: ({ wrestlers, side }) => (
+  default: ({ wrestlers, side, onWrestlerClick }) => (
     <div data-testid={`wrestler-grid-${side.toLowerCase()}`}>
       {wrestlers.map((w) => (
-        <div key={w.rikishiID}>
+        <div key={w.rikishiID} onClick={() => onWrestlerClick?.(w)}>
           {w.shikonaEn}
           {w.isKyujo && <span>Kyujo</span>}
         </div>
@@ -209,6 +209,12 @@ describe('HeyaSidebar', () => {
         expect(mockCloseHeyaSidebar).toHaveBeenCalled()
       }, { timeout: 500 })
     })
+
+    it('passes the new basho ID to useAllDivisionsBanzuke when basho changes', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      fireEvent.change(screen.getByTestId('basho-selector'), { target: { value: '202603' } })
+      expect(useAllDivisionsBanzuke).toHaveBeenCalledWith('202603', expect.any(Object))
+    })
   })
 
   describe('with heya wrestlers', () => {
@@ -290,6 +296,51 @@ describe('HeyaSidebar', () => {
       fireEvent.change(screen.getByLabelText('Select heya'), { target: { value: 'Tatsunami' } })
 
       expect(screen.getByPlaceholderText('Search rikishi...')).toHaveValue('')
+    })
+
+    it('shows clear search button when search input has text', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      expect(screen.queryByLabelText('Clear search')).not.toBeInTheDocument()
+      fireEvent.change(screen.getByPlaceholderText('Search rikishi...'), { target: { value: 'teru' } })
+      expect(screen.getByLabelText('Clear search')).toBeInTheDocument()
+    })
+
+    it('clears the search input when clear button is clicked', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      const input = screen.getByPlaceholderText('Search rikishi...')
+      fireEvent.change(input, { target: { value: 'teru' } })
+      fireEvent.click(screen.getByLabelText('Clear search'))
+      expect(input.value).toBe('')
+    })
+
+    it('calls openModal with wrestler, color, and apiDivision derived from rank', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      fireEvent.click(screen.getByText('Terunofuji'))
+      expect(mockOpenModal).toHaveBeenCalledWith(
+        expect.objectContaining({ rikishiID: 1, shikonaEn: 'Terunofuji' }),
+        'yokozuna',
+        'Makuuchi',
+      )
+    })
+
+    it('sorts wrestlers ascending by wins when wins-asc is selected', () => {
+      const high = { ...makuuchiWrestler, rikishiID: 1, shikonaEn: 'HighWins', wins: 12, rankValue: 101 }
+      const low  = { ...makuuchiWrestler, rikishiID: 2, shikonaEn: 'LowWins',  wins: 3,  rankValue: 102, rank: 'Yokozuna 2 East' }
+      setupStore({ selectedHeyaRikishiIds: [1, 2] })
+      useAllDivisionsBanzuke.mockReturnValue({
+        allWrestlers: [high, low],
+        isLoading: false,
+        isError: false,
+      })
+      renderWithQueryClient(<HeyaSidebar />)
+      // Default rank-asc: HighWins (rankValue 101) first
+      const eastGrid = screen.getByTestId('wrestler-grid-east')
+      expect(eastGrid.children[0].textContent).toContain('HighWins')
+
+      fireEvent.change(screen.getByLabelText('Sort order'), { target: { value: 'wins-asc' } })
+      // After wins-asc: LowWins (3 wins) should come first
+      expect(eastGrid.children[0].textContent).toContain('LowWins')
+      expect(eastGrid.children[1].textContent).toContain('HighWins')
     })
   })
 

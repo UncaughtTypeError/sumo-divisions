@@ -294,4 +294,39 @@ describe('BanzukeTab', () => {
     expect(select.options).toHaveLength(3) // Any day + Day 1 + Day 2
     expect(Array.from(select.options).map((o) => o.text)).not.toContain('Day 3')
   })
+
+  // ── Sort by wins ──────────────────────────────────────────────────────────────
+
+  describe('sort by wins', () => {
+    const highWins = baseWrestler({ rikishiID: 1, shikonaEn: 'Terunofuji', wins: 12, losses: 3, rankValue: 1 })
+    const lowWins  = baseWrestler({ rikishiID: 2, shikonaEn: 'Hoshoryu',   wins: 3,  losses: 9, rankValue: 2 })
+
+    it('sorts wrestlers ascending by wins', () => {
+      const group = baseGroup('Yokozuna', [highWins, lowWins], [])
+      render(<BanzukeTab {...defaultProps} rankGroups={[group]} />)
+      fireEvent.change(screen.getByLabelText('Sort order'), { target: { value: 'wins-asc' } })
+      const eastGrid = screen.getByTestId('wrestler-grid-east')
+      // Hoshoryu (3 wins) should appear before Terunofuji (12 wins)
+      expect(eastGrid.children[0].textContent).toContain('Hoshoryu')
+      expect(eastGrid.children[1].textContent).toContain('Terunofuji')
+    })
+
+    it('sorts wrestlers descending by wins', () => {
+      const group = baseGroup('Yokozuna', [lowWins, highWins], [])
+      render(<BanzukeTab {...defaultProps} rankGroups={[group]} />)
+      fireEvent.change(screen.getByLabelText('Sort order'), { target: { value: 'wins-desc' } })
+      const eastGrid = screen.getByTestId('wrestler-grid-east')
+      // Terunofuji (12 wins) should appear before Hoshoryu (3 wins)
+      expect(eastGrid.children[0].textContent).toContain('Terunofuji')
+      expect(eastGrid.children[1].textContent).toContain('Hoshoryu')
+    })
+  })
+
+  // ── "No rikishi found" empty state ────────────────────────────────────────────
+
+  it('shows "No rikishi found for {rank}" when rank group east and west are both empty', () => {
+    const emptyGroup = baseGroup('Yokozuna', [], [])
+    render(<BanzukeTab {...defaultProps} rankGroups={[emptyGroup]} />)
+    expect(screen.getByText(/No rikishi found for Yokozuna/)).toBeInTheDocument()
+  })
 })

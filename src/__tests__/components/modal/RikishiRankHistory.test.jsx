@@ -342,6 +342,25 @@ describe('RikishiRankHistory', () => {
       expect(screen.getByText('Losing Record')).toBeInTheDocument()
     })
 
+    it('shows no badge when wins equal total losses exactly', () => {
+      const rikishiWithId = { id: 45, ...rikishiWithHistory }
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            // 8 wins + 8 losses = 16 bouts in a 15-bout basho → absences = max(0, 15-16) = 0
+            // totalLosses = losses(8) + absences(0) = 8 = wins(8) → no badge
+            ...Array(8).fill({ bashoId: '202605', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(8).fill({ bashoId: '202605', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
+      expect(screen.getByText('8-8')).toBeInTheDocument()
+      expect(screen.queryByText('KK')).not.toBeInTheDocument()
+      expect(screen.queryByText('MK')).not.toBeInTheDocument()
+    })
+
     it('still shows "—" for bashos with no match data', () => {
       const rikishiWithId = { id: 45, ...rikishiWithHistory }
       useRikishiAllMatches.mockReturnValue({

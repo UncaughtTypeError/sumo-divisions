@@ -325,4 +325,52 @@ describe('HeadToHeadModal', () => {
     })
   })
 
+  describe('sort row reordering', () => {
+    beforeEach(() => {
+      useRikishiMatches.mockReturnValue({ data: mockData, isLoading: false, isError: false })
+    })
+
+    it('clicking Day header twice (desc) puts the highest-day match first', () => {
+      render(<HeadToHeadModal {...defaultProps} />)
+      const dayBtn = screen.getByRole('button', { name: /^Day/i })
+      fireEvent.click(dayBtn) // → asc
+      fireEvent.click(dayBtn) // → desc (day 10 first)
+      const kimariteButtons = screen.getAllByRole('button', { name: /view details for/i })
+      expect(kimariteButtons[0]).toHaveTextContent('hatakikomi')
+    })
+
+    it('clicking Result sorts losses first (ascending)', () => {
+      render(<HeadToHeadModal {...defaultProps} />)
+      fireEvent.click(screen.getByRole('button', { name: /^Result/i }))
+      const kimariteButtons = screen.getAllByRole('button', { name: /view details for/i })
+      expect(kimariteButtons[0]).toHaveTextContent('oshidashi')
+    })
+
+    it('clicking Kimarite sorts alphabetically — hatakikomi first', () => {
+      render(<HeadToHeadModal {...defaultProps} />)
+      fireEvent.click(screen.getByRole('button', { name: /^Kimarite/i }))
+      const kimariteButtons = screen.getAllByRole('button', { name: /view details for/i })
+      expect(kimariteButtons[0]).toHaveTextContent('hatakikomi')
+    })
+  })
+
+  describe('unknown kimarite', () => {
+    it('renders unknown kimarite as plain text, not a clickable button', () => {
+      useRikishiMatches.mockReturnValue({
+        data: {
+          matches: [
+            { bashoId: '202605', division: 'Makuuchi', day: 1, winnerId: 1, kimarite: 'unknowntechnique' },
+          ],
+          rikishiWins: 1,
+          opponentWins: 0,
+          total: 1,
+        },
+        isLoading: false,
+        isError: false,
+      })
+      render(<HeadToHeadModal {...defaultProps} />)
+      expect(screen.getByText('unknowntechnique')).toBeInTheDocument()
+      expect(screen.queryAllByRole('button', { name: /view details for unknowntechnique/i })).toHaveLength(0)
+    })
+  })
 })

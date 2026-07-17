@@ -343,4 +343,40 @@ describe('TorikumiList', () => {
     expect(screen.getByTestId('h2h-modal').dataset.wrestlerPerspective).toBe('false')
   })
 
+  // ── divisionFor Juryo branch ─────────────────────────────────────────────────
+
+  it('uses Juryo KK threshold (8) for Juryo-ranked wrestlers even when tab division is lower', () => {
+    const juryoRecord = Array(4).fill({ result: 'win', opponentID: 99, kimarite: 'yorikiri' })
+    const wrestler = makeWrestler(10, 'Juryo 1 East', juryoRecord)
+    const wrestlerById = makeWrestlerById({ 10: wrestler })
+    render(
+      <TorikumiList
+        bouts={[makeBout()]}
+        wrestlerById={wrestlerById}
+        day={4}
+        division="Makushita"
+      />,
+    )
+    expect(screen.queryByText('KK')).not.toBeInTheDocument()
+  })
+
+  // ── MK from absences ─────────────────────────────────────────────────────────
+
+  it('shows MK badge when 7 losses plus 1 absence reaches the 8-loss threshold', () => {
+    const mkAbsenceRecord = [
+      ...Array(7).fill({ result: 'loss', opponentID: 99, kimarite: 'oshidashi' }),
+      { result: 'absent', opponentID: null, kimarite: '' },
+    ]
+    const wrestler = makeWrestler(10, 'Maegashira 1 East', mkAbsenceRecord)
+    const wrestlerById = makeWrestlerById({ 10: wrestler })
+    render(
+      <TorikumiList
+        bouts={[makeBout()]}
+        wrestlerById={wrestlerById}
+        day={8}
+        division="Makuuchi"
+      />,
+    )
+    expect(screen.getByText('MK')).toBeInTheDocument()
+  })
 })

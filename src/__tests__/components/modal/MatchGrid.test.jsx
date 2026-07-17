@@ -385,4 +385,40 @@ describe('MatchGrid', () => {
       expect(useDivisionStore.getState().selectedWrestler).toEqual(primaryWrestler)
     })
   })
+
+  describe('kinboshi star', () => {
+    afterEach(() => {
+      useDivisionStore.getState().reset()
+    })
+
+    it('renders ★ when a Maegashira beats a Yokozuna', () => {
+      useDivisionStore.getState().setRankLookup(new Map([[42, 'Yokozuna 1 East']]))
+      const matches = [{ result: 'win', opponentShikonaEn: 'Terunofuji', opponentID: 42, kimarite: 'yorikiri' }]
+      render(<MatchGrid matches={matches} wrestlerRank="Maegashira 5 East" />)
+      expect(screen.getByText('★')).toBeInTheDocument()
+    })
+
+    it('renders ★ when a Yokozuna loses to a Maegashira (reverse kinboshi)', () => {
+      useDivisionStore.getState().setRankLookup(new Map([[99, 'Maegashira 3 East']]))
+      const matches = [{ result: 'loss', opponentShikonaEn: 'Onosato', opponentID: 99, kimarite: 'oshidashi' }]
+      render(<MatchGrid matches={matches} wrestlerRank="Yokozuna 1 East" />)
+      expect(screen.getByText('★')).toBeInTheDocument()
+    })
+
+    it('does not render ★ when Maegashira beats a non-Yokozuna', () => {
+      useDivisionStore.getState().setRankLookup(new Map([[99, 'Ozeki 1 East']]))
+      const matches = [{ result: 'win', opponentShikonaEn: 'Kotozakura', opponentID: 99, kimarite: 'yorikiri' }]
+      render(<MatchGrid matches={matches} wrestlerRank="Maegashira 5 East" />)
+      expect(screen.queryByText('★')).not.toBeInTheDocument()
+    })
+
+    it('shows Kinboshi tooltip text on hover for a Maegashira kinboshi win', () => {
+      useDivisionStore.getState().setRankLookup(new Map([[42, 'Yokozuna 1 East']]))
+      const matches = [{ result: 'win', opponentShikonaEn: 'Terunofuji', opponentID: 42, kimarite: 'yorikiri' }]
+      render(<MatchGrid matches={matches} wrestlerRank="Maegashira 5 East" />)
+      fireEvent.mouseEnter(screen.getByText('★').closest('[class*="tooltipWrapper"]'))
+      expect(screen.getByText('Kinboshi')).toBeInTheDocument()
+      expect(screen.getByText('Gold star for defeating a Yokozuna')).toBeInTheDocument()
+    })
+  })
 })
