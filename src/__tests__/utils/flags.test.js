@@ -72,6 +72,11 @@ describe('flags', () => {
       expect(getFlagComponent('China')).toBe(FlagChina)
     })
 
+    it('should return China flag when region contains another country name', () => {
+      // "Inner Mongolia" must not override the leading country "China"
+      expect(getFlagComponent('China, Inner Mongolia')).toBe(FlagChina)
+    })
+
     it('should return Russia flag for Russian wrestlers', () => {
       expect(getFlagComponent('Russia')).toBe(FlagRussia)
     })
