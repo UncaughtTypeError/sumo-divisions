@@ -1,6 +1,7 @@
 import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { SIDEBAR_VIEWS } from '../../utils/constants';
+import { getCurrentBashoId, BASHO_NICKNAMES } from '../../utils/bashoId';
 import TorikumiTab from '../sidebar/TorikumiTab';
 import styles from './TorikumiModal.module.css';
 
@@ -25,6 +26,14 @@ function TorikumiModal({
   wrestlerById,
   openModal,
 }) {
+  const _bashoId = getCurrentBashoId();
+  const _month   = _bashoId ? parseInt(_bashoId.slice(4, 6), 10) : null;
+  const _nick    = _month ? BASHO_NICKNAMES[_month] : null;
+  const _abbr    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const bashoTitle = _month
+    ? `${_abbr[_month - 1]} ${_bashoId.slice(0, 4)}${_nick ? ` · ${_nick.short}` : ''}`
+    : '';
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="div" className={styles.dialog} onClose={onClose}>
@@ -56,6 +65,7 @@ function TorikumiModal({
                 style={{ backgroundColor: `var(--color-${currentColor})` }}
               >
                 <Dialog.Title as="div" className={styles.headerLeft}>
+                  <span className={styles.bashoTitle}>{bashoTitle}</span>
                   <select
                     className={styles.divisionSelect}
                     value={activeView?.value ?? ''}

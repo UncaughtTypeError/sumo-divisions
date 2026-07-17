@@ -240,7 +240,7 @@
 
 .statWins     { color: #16a34a; }
 .statLosses   { color: #dc2626; }
-.statAbsences { color: #d97706; }
+.statAbsences { color: var(--color-text-muted); }
 
 /* ── Career tab — meta summary ──────────────────────────────────────── */
 
@@ -304,7 +304,7 @@
   line-height: 1.2;
 }
 
-.yushoWon  { color: #92400e; }
+.yushoWon  { color: var(--color-gold-dark); }
 .yushoZero { color: var(--color-text-accent); opacity: 0.4; }
 
 .yushoLabel {
@@ -340,7 +340,7 @@
   line-height: 1.2;
 }
 
-.prizeWon  { color: #92400e; }
+.prizeWon  { color: #6b7280; }
 .prizeZero { color: var(--color-text-accent); opacity: 0.4; }
 
 .prizeLabel {
