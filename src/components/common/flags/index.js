@@ -120,6 +120,14 @@ export function getFlagData(shusshin) {
     }
   }
 
+  // When the format is "<country>, <region>", match on the country part only first.
+  // Without this, "China, Inner Mongolia" would match Mongolia before China.
+  const commaIdx = lowerShusshin.indexOf(',');
+  if (commaIdx !== -1) {
+    const countryPart = lowerShusshin.slice(0, commaIdx).trim();
+    if (FLAG_DATA[countryPart]) return FLAG_DATA[countryPart];
+  }
+
   // Check for country match - use word boundary to avoid partial matches
   for (const [country, data] of Object.entries(FLAG_DATA)) {
     // Create a regex that matches the country as a whole word or at start of string
