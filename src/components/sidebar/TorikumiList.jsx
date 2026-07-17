@@ -80,8 +80,10 @@ function TorikumiRow({ bout, wrestlerById, day, division, onWrestlerClick, onKim
     return division;
   };
 
-  const eastRecord = east ? computeRecordOnDay(east.record, day) : null;
-  const westRecord = west ? computeRecordOnDay(west.record, day) : null;
+  const eastDiv = divisionFor(east, bout.eastRank);
+  const westDiv = divisionFor(west, bout.westRank);
+  const eastRecord = east ? computeRecordOnDay(east.record, day, eastDiv) : null;
+  const westRecord = west ? computeRecordOnDay(west.record, day, westDiv) : null;
 
   const fmtRecord = (r) => r ? `${r.wins}-${r.losses}${r.absences ? `-${r.absences}` : ''}` : null;
 
@@ -126,7 +128,7 @@ function TorikumiRow({ bout, wrestlerById, day, division, onWrestlerClick, onKim
       {/* East */}
       <div className={`${styles.torikumiWrestler} ${styles.torikumiEast}`}>
         <div className={styles.torikumiNameRow}>
-          <RecordBadge record={eastRecord} division={divisionFor(east, bout.eastRank)} />
+          <RecordBadge record={eastRecord} division={eastDiv} />
           {renderName(bout.eastId, bout.eastShikona, eastWon)}
           <ResultIcon result={getResult(eastWon)} />
         </div>
@@ -142,7 +144,7 @@ function TorikumiRow({ bout, wrestlerById, day, division, onWrestlerClick, onKim
       {/* West */}
       <div className={`${styles.torikumiWrestler} ${styles.torikumiWest}`}>
         <div className={styles.torikumiNameRow}>
-          <RecordBadge record={westRecord} division={divisionFor(west, bout.westRank)} />
+          <RecordBadge record={westRecord} division={westDiv} />
           {renderName(bout.westId, bout.westShikona, westWon)}
           <ResultIcon result={getResult(westWon)} />
         </div>

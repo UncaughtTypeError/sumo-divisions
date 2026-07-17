@@ -160,8 +160,8 @@ function HeyaSidebar() {
         if (selectedDay > 0) {
           const dayResult = w.record?.[selectedDay - 1]?.result;
           if (!dayResult || dayResult === '') return null;
-          const dayRecord = computeRecordOnDay(w.record, selectedDay);
           const apiDiv = RANK_TO_API_DIVISION[w.rank?.split(' ')[0]];
+          const dayRecord = computeRecordOnDay(w.record, selectedDay, apiDiv);
           return { ...w, ...dayRecord, isKyujo: dayResult === 'absent' && isAbsentKyujo(w.record, selectedDay, apiDiv) };
         }
         return { ...w, isKyujo: false };

@@ -57,11 +57,16 @@ export function getRecordStatus(wins, losses, division, absences = 0) {
  * Compute a wrestler's cumulative win/loss/absence record up to and including
  * the given tournament day.
  *
- * @param {Array}  record - Wrestler's record array from banzuke data
- * @param {number} day    - 1-based day to compute up to
+ * When `division` is provided, only genuine kyujo absences are counted —
+ * scheduled non-bout days for lower-division wrestlers are excluded via
+ * isAbsentKyujo. Without division, all 'absent' entries count (legacy behaviour).
+ *
+ * @param {Array}  record   - Wrestler's record array from banzuke data
+ * @param {number} day      - 1-based day to compute up to
+ * @param {string} [division] - API division name; enables kyujo-aware absence counting
  * @returns {{ wins: number, losses: number, absences: number } | null}
  */
-export function computeRecordOnDay(record, day) {
+export function computeRecordOnDay(record, day, division = null) {
   if (!day || !Array.isArray(record)) return null;
   let wins = 0, losses = 0, absences = 0;
   for (let i = 0; i < day; i++) {
@@ -69,7 +74,9 @@ export function computeRecordOnDay(record, day) {
     if (r === undefined || r === '') break;
     if (r === 'win'  || r === 'fusen win')  wins++;
     else if (r === 'loss' || r === 'fusen loss') losses++;
-    else if (r === 'absent') absences++;
+    else if (r === 'absent') {
+      if (!division || isAbsentKyujo(record, i + 1, division)) absences++;
+    }
   }
   return { wins, losses, absences };
 }
