@@ -98,6 +98,49 @@ describe('RikishiOverview', () => {
     })
   })
 
+  describe('value colour classes', () => {
+    const statsBase = {
+      totalWins: 50,
+      totalLosses: 30,
+      totalAbsences: 0,
+      yushoByDivision: {},
+      bashosByDivision: {},
+      shukunsho: 0,
+      kantosho: 0,
+      ginosho: 0,
+    }
+
+    it('applies statAbsences class to the absences value', () => {
+      useCareerStats.mockReturnValue({ ...statsBase, totalAbsences: 10 })
+      render(<RikishiOverview rikishiDetails={mockDetails} />)
+      expect(screen.getByText('10').className).toMatch(/statAbsences/)
+    })
+
+    it('applies yushoWon class when a division has yusho wins', () => {
+      useCareerStats.mockReturnValue({ ...statsBase, yushoByDivision: { Makuuchi: 3 } })
+      render(<RikishiOverview rikishiDetails={mockDetails} />)
+      expect(screen.getByText('3').className).toMatch(/yushoWon/)
+    })
+
+    it('applies yushoZero class when a division has no yusho wins', () => {
+      useCareerStats.mockReturnValue({ ...statsBase })
+      render(<RikishiOverview rikishiDetails={mockDetails} />)
+      expect(document.querySelector('[class*="yushoZero"]')).toBeInTheDocument()
+    })
+
+    it('applies prizeWon class to a special prize value greater than zero', () => {
+      useCareerStats.mockReturnValue({ ...statsBase, shukunsho: 2 })
+      render(<RikishiOverview rikishiDetails={mockDetails} />)
+      expect(screen.getByText('2').className).toMatch(/prizeWon/)
+    })
+
+    it('applies prizeZero class to a special prize value of zero', () => {
+      useCareerStats.mockReturnValue({ ...statsBase })
+      render(<RikishiOverview rikishiDetails={mockDetails} />)
+      expect(document.querySelector('[class*="prizeZero"]')).toBeInTheDocument()
+    })
+  })
+
   describe('Career section', () => {
     it('does not render Career section when careerStats is null', () => {
       useCareerStats.mockReturnValue(null)

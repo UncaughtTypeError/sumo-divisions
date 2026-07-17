@@ -7,6 +7,20 @@ vi.mock('../../../components/sidebar/TorikumiTab', () => ({
   default: () => <div data-testid="torikumi-tab-content">TorikumiTabContent</div>,
 }))
 
+vi.mock('../../../utils/bashoId', () => ({
+  getCurrentBashoId: vi.fn(() => '202607'),
+  BASHO_NICKNAMES: {
+    1: { short: 'Hatsu' },
+    3: { short: 'Haru' },
+    5: { short: 'Natsu' },
+    7: { short: 'Nagoya' },
+    9: { short: 'Aki' },
+    11: { short: 'Kyushu' },
+  },
+}))
+
+import { getCurrentBashoId } from '../../../utils/bashoId'
+
 describe('TorikumiModal', () => {
   const mockOnClose = vi.fn()
   const mockOnDivisionChange = vi.fn()
@@ -108,6 +122,32 @@ describe('TorikumiModal', () => {
       render(<TorikumiModal {...defaultProps} activeView={makuuchiView} />)
       fireEvent.change(screen.getByLabelText('Select division or rank'), { target: { value: 'makuuchi' } })
       expect(mockOnDivisionChange).toHaveBeenCalledWith('makuuchi')
+    })
+  })
+
+  describe('basho title', () => {
+    it('renders the current basho title with nickname above the division select', () => {
+      render(<TorikumiModal {...defaultProps} />)
+      expect(screen.getByText('Jul 2026 · Nagoya')).toBeInTheDocument()
+    })
+
+    it('basho title appears before the division select in the DOM', () => {
+      render(<TorikumiModal {...defaultProps} />)
+      const title = screen.getByText('Jul 2026 · Nagoya')
+      const select = screen.getByLabelText('Select division or rank')
+      expect(title.compareDocumentPosition(select) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    })
+
+    it('renders month and year without separator when basho month has no nickname', () => {
+      getCurrentBashoId.mockReturnValueOnce('202602')
+      render(<TorikumiModal {...defaultProps} />)
+      expect(screen.getByText('Feb 2026')).toBeInTheDocument()
+    })
+
+    it('renders no title text when getCurrentBashoId returns null', () => {
+      getCurrentBashoId.mockReturnValueOnce(null)
+      render(<TorikumiModal {...defaultProps} />)
+      expect(screen.queryByText(/2026/)).not.toBeInTheDocument()
     })
   })
 })
