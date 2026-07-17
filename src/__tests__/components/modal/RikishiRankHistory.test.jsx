@@ -275,7 +275,7 @@ describe('RikishiRankHistory', () => {
       expect(screen.queryByText('MK')).not.toBeInTheDocument()
     })
 
-    it('shows no badge for an even record', () => {
+    it('shows MK badge for 7-7-1 in Makuuchi because absences count toward make-koshi', () => {
       const rikishiWithId = { id: 45, ...rikishiWithHistory }
       useRikishiAllMatches.mockReturnValue({
         data: {
@@ -288,8 +288,8 @@ describe('RikishiRankHistory', () => {
       })
       render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
       expect(screen.getByText('7-7-1')).toBeInTheDocument()
+      expect(screen.getByText('MK')).toBeInTheDocument()
       expect(screen.queryByText('KK')).not.toBeInTheDocument()
-      expect(screen.queryByText('MK')).not.toBeInTheDocument()
     })
 
     it('uses 7 expected bouts for lower divisions', () => {
