@@ -6,7 +6,7 @@
 
 .matchGridHeader {
   display: grid;
-  grid-template-columns: 28px 100px 1fr 150px 52px;
+  grid-template-columns: 28px 100px 1fr 150px 90px;
   gap: 1rem;
   padding: 1rem;
   background: var(--color-text);
@@ -28,7 +28,7 @@
 
 .matchRow {
   display: grid;
-  grid-template-columns: 28px 100px 1fr 150px 52px;
+  grid-template-columns: 28px 100px 1fr 150px 90px;
   gap: 1rem;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--color-border);
@@ -140,6 +140,49 @@
   border-radius: 2px;
 }
 
+.h2hCell {
+  gap: 0.375rem;
+}
+
+.h2hRecord {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.h2hRecordWin {
+  color: var(--color-success);
+}
+
+.h2hRecordLoss {
+  color: var(--color-error);
+}
+
+.h2hRecordLoading {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.h2hRecordLoading span {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+  animation: h2hRecordLoadingPulse 1.2s ease-in-out infinite;
+}
+
+.h2hRecordLoading span:nth-child(2) { animation-delay: 0.2s; }
+.h2hRecordLoading span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes h2hRecordLoadingPulse {
+  0%, 80%, 100% { opacity: 0.25; transform: scale(0.8); }
+  40%           { opacity: 1;    transform: scale(1);   }
+}
+
 .h2hButton {
   background: none;
   border: none;
@@ -202,7 +245,7 @@
 @media (max-width: 768px) {
   .matchGridHeader,
   .matchRow {
-    grid-template-columns: 22px 80px 1fr 120px 44px;
+    grid-template-columns: 22px 80px 1fr 120px 80px;
     gap: 0.5rem;
     padding: 0.5rem;
   }
@@ -229,7 +272,7 @@
   .matchGridHeader,
   .matchRow {
     min-width: 400px;
-    grid-template-columns: 22px 80px 1fr 120px 44px;
+    grid-template-columns: 22px 80px 1fr 120px 80px;
     gap: 0.5rem;
     padding: 0.5rem;
   }

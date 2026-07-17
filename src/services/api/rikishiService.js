@@ -67,3 +67,13 @@ export async function getRikishiMatches(rikishiId, opponentId) {
     throw error
   }
 }
+
+export async function getRikishiAllMatches(rikishiId) {
+  try {
+    const response = await sumoApiClient.get(`/rikishi/${rikishiId}/matches`)
+    return response.data
+  } catch (error) {
+    console.error(`Failed to fetch all matches for rikishi ${rikishiId}:`, error)
+    throw error
+  }
+}

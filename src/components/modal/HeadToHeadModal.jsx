@@ -4,6 +4,7 @@ import { useRikishiMatches } from '../../hooks/useRikishi';
 import KimariteModal from './KimariteModal';
 import { getKimariteInfo } from '../../utils/kimarite';
 import Tooltip from '../common/Tooltip';
+import { BASHO_NICKNAMES } from '../../utils/bashoId';
 import styles from './HeadToHeadModal.module.css';
 
 function formatBasho(bashoId) {
@@ -12,7 +13,9 @@ function formatBasho(bashoId) {
   const year = s.slice(0, 4);
   const month = parseInt(s.slice(4, 6), 10);
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${months[month - 1]} ${year}`;
+  const nickname = BASHO_NICKNAMES[month];
+  const dateStr = `${months[month - 1]} ${year}`;
+  return nickname ? `${dateStr} · ${nickname.short}` : dateStr;
 }
 
 function HeadToHeadModal({ isOpen, onClose, rikishiId, opponentId, rikishiName, opponentName }) {

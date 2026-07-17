@@ -6,7 +6,54 @@ import { getKimariteInfo } from '../../utils/kimarite';
 import { isKinboshiMatch, isYokozuna } from '../../utils/records';
 import { abbreviateRank } from '../../utils/constants';
 import useDivisionStore from '../../store/divisionStore';
+import { useRikishi, useRikishiMatches } from '../../hooks/useRikishi';
 import styles from './MatchGrid.module.css';
+
+function OpponentCell({ match, opponent, openModal }) {
+  const { data: opponentDetails } = useRikishi(match.opponentID, { enabled: !!match.opponentID });
+  const name = match.opponentShikonaEn || 'Unknown';
+
+  const nameEl = opponent ? (
+    <button
+      type="button"
+      className={styles.opponentLink}
+      onClick={() => openModal(opponent)}
+      aria-label={`View ${name}'s match history`}
+    >
+      {name}
+    </button>
+  ) : name;
+
+  const heya = opponentDetails?.heya;
+  const shusshin = opponentDetails?.shusshin;
+  if (!heya && !shusshin) return nameEl;
+
+  return (
+    <Tooltip
+      position="top"
+      content={
+        <>
+          {heya && <strong>{heya}</strong>}
+          {shusshin && <span>{shusshin}</span>}
+        </>
+      }
+    >
+      {nameEl}
+    </Tooltip>
+  );
+}
+
+function H2HRecord({ rikishiId, opponentId }) {
+  const { data, isLoading } = useRikishiMatches(rikishiId, opponentId, {
+    enabled: !!rikishiId && !!opponentId,
+  });
+  if (isLoading) return <span className={`${styles.h2hRecord} ${styles.h2hRecordLoading}`} aria-label="Loading record"><span /><span /><span /></span>;
+  if (!data) return null;
+  const wins   = data.rikishiWins   ?? 0;
+  const losses = data.opponentWins  ?? 0;
+  const cls = wins > losses ? styles.h2hRecordWin : losses > wins ? styles.h2hRecordLoss : '';
+  return <span className={`${styles.h2hRecord} ${cls}`}>{wins}-{losses}</span>;
+}
 
 function MatchGrid({ matches, color, wrestlerRank, rikishiId, rikishiName }) {
   const [selectedKimarite, setSelectedKimarite] = useState(null);
@@ -176,21 +223,6 @@ function MatchGrid({ matches, color, wrestlerRank, rikishiId, rikishiName }) {
     allWrestlers.find((w) => w.rikishiID === id) ??
     adjacentWrestlers.find((w) => w.rikishiID === id);
 
-  const renderOpponentName = (match, opponent) => {
-    const name = match.opponentShikonaEn || 'Unknown';
-    if (!opponent) return name;
-    return (
-      <button
-        type="button"
-        className={styles.opponentLink}
-        onClick={() => openModal(opponent)}
-        aria-label={`View ${name}'s match history`}
-      >
-        {name}
-      </button>
-    );
-  };
-
   return (
     <>
       <div className={styles.matchGridContainer}>
@@ -224,7 +256,7 @@ function MatchGrid({ matches, color, wrestlerRank, rikishiId, rikishiName }) {
                 {getResultCircle(match.result)}
               </div>
               <div className={styles.cell}>
-                {renderOpponentName(match, opponent)}
+                <OpponentCell match={match} opponent={opponent} openModal={openModal} />
                 {opponent?.rank && (
                   <span className={styles.opponentRank}>
                     {abbreviateRank(opponent.rank)}
@@ -235,18 +267,24 @@ function MatchGrid({ matches, color, wrestlerRank, rikishiId, rikishiName }) {
               <div className={styles.cell}>
                 {renderKimarite(match.kimarite)}
               </div>
-              <div className={styles.cell}>
+              <div className={`${styles.cell} ${styles.h2hCell}`}>
                 {rikishiId && match.opponentID && match.opponentShikonaEn ? (
-                  <Tooltip content="Head-to-head history" position="left">
-                    <button
-                      type="button"
-                      className={styles.h2hButton}
-                      onClick={() => handleH2HClick(match)}
-                      aria-label={`View head-to-head history with ${match.opponentShikonaEn}`}
-                    >
-                      ⚔
-                    </button>
-                  </Tooltip>
+                  <>
+                    <H2HRecord rikishiId={rikishiId} opponentId={match.opponentID} />
+                    <Tooltip content="Head-to-head history" position="left">
+                      <button
+                        type="button"
+                        className={styles.h2hButton}
+                        onClick={() => handleH2HClick(match)}
+                        aria-label={`View head-to-head history with ${match.opponentShikonaEn}`}
+                      >
+                        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden="true">
+                          <path d="M4.5 1.5H2a1 1 0 00-1 1v6.5a1 1 0 001 1h6.5a1 1 0 001-1v-2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+                          <path d="M6.5 1h3.5v3.5M9.5 1.5L5.5 5.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      </button>
+                    </Tooltip>
+                  </>
                 ) : '—'}
               </div>
             </div>

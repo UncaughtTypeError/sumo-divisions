@@ -1,6 +1,6 @@
 import { useQuery, useQueries } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { getAllRikishi, getRikishi, getRikishiMatches } from '../services/api/rikishiService'
+import { getAllRikishi, getRikishi, getRikishiMatches, getRikishiAllMatches } from '../services/api/rikishiService'
 
 /**
  * Fetch the active-wrestler roster for the heya overview grid/cards.
@@ -119,6 +119,24 @@ export function useRikishiMatches(rikishiId, opponentId, options = {}) {
     queryFn: () => getRikishiMatches(rikishiId, opponentId),
     enabled: !!rikishiId && !!opponentId,
     staleTime: 1000 * 60 * 60, // 1 hour — match history is immutable once recorded
+    ...options,
+  })
+}
+
+/**
+ * Fetch all career matches for a rikishi in a single request.
+ * Used to compute per-basho win/loss records for the rank history table.
+ *
+ * @param {number} rikishiId - The rikishi ID
+ * @param {object} options   - Additional React Query options
+ * @returns {object} Query result with data.records array
+ */
+export function useRikishiAllMatches(rikishiId, options = {}) {
+  return useQuery({
+    queryKey: ['rikishiAllMatches', rikishiId],
+    queryFn: () => getRikishiAllMatches(rikishiId),
+    enabled: !!rikishiId,
+    staleTime: 1000 * 60 * 60,
     ...options,
   })
 }
