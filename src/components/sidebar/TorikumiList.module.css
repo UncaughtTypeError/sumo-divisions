@@ -229,3 +229,50 @@
   color: var(--color-text-muted);
   font-style: italic;
 }
+
+/* ── Head-to-head record link ──────────────────────────────────────────────── */
+.h2hLink {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+  letter-spacing: 0.02em;
+  transition: color var(--transition-fast);
+}
+
+.h2hLink:hover {
+  color: var(--color-link);
+}
+
+.h2hLinkLoading {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+  cursor: default;
+  text-decoration: none;
+}
+
+.h2hLinkLoading span {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+  animation: h2hLinkPulse 1.2s ease-in-out infinite;
+}
+
+.h2hLinkLoading span:nth-child(2) { animation-delay: 0.2s; }
+.h2hLinkLoading span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes h2hLinkPulse {
+  0%, 80%, 100% { opacity: 0.25; transform: scale(0.8); }
+  40%           { opacity: 1;    transform: scale(1);   }
+}

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import Tooltip from '../common/Tooltip';
 import KimariteModal from '../modal/KimariteModal';
+import HeadToHeadModal from '../modal/HeadToHeadModal';
 import { getKimariteInfo } from '../../utils/kimarite';
 import {
   computeRecordOnDay, getRecordStatus, RECORD_STATUS_INFO,
 } from '../../utils/records';
+import { useRikishiMatches } from '../../hooks/useRikishi';
 import styles from './TorikumiList.module.css';
 
 // ── Result icon ───────────────────────────────────────────────────────────────
@@ -57,9 +59,41 @@ function RecordBadge({ record, division }) {
   );
 }
 
+// ── Head-to-head record link ──────────────────────────────────────────────────
+
+function H2HLink({ eastId, westId, eastShikona, westShikona, onH2hClick }) {
+  const { data, isLoading } = useRikishiMatches(eastId, westId, {
+    enabled: !!eastId && !!westId,
+  });
+  if (!eastId || !westId) return null;
+  if (isLoading) return (
+    <span className={`${styles.h2hLink} ${styles.h2hLinkLoading}`} aria-label="Loading record">
+      <span /><span /><span />
+    </span>
+  );
+  if (!data) return null;
+  const eastWins = data.rikishiWins ?? 0;
+  const westWins = data.opponentWins ?? 0;
+  return (
+    <Tooltip
+      position="top"
+      content={<><strong>Head-to-head history</strong><span>Click to view all meetings</span></>}
+    >
+      <button
+        type="button"
+        className={styles.h2hLink}
+        onClick={() => onH2hClick({ eastId, westId, eastShikona, westShikona })}
+        aria-label={`Head-to-head: ${eastShikona} ${eastWins}–${westWins} ${westShikona}`}
+      >
+        {eastWins}–{westWins}
+      </button>
+    </Tooltip>
+  );
+}
+
 // ── Single bout row ───────────────────────────────────────────────────────────
 
-function TorikumiRow({ bout, wrestlerById, day, division, onWrestlerClick, onKimariteClick }) {
+function TorikumiRow({ bout, wrestlerById, day, division, onWrestlerClick, onKimariteClick, onH2hClick }) {
   const east = wrestlerById(bout.eastId);
   const west = wrestlerById(bout.westId);
 
@@ -139,7 +173,16 @@ function TorikumiRow({ bout, wrestlerById, day, division, onWrestlerClick, onKim
       </div>
 
       {/* Centre */}
-      <div className={styles.torikumiCenter}>{renderKimarite()}</div>
+      <div className={styles.torikumiCenter}>
+        {renderKimarite()}
+        <H2HLink
+          eastId={bout.eastId}
+          westId={bout.westId}
+          eastShikona={bout.eastShikona}
+          westShikona={bout.westShikona}
+          onH2hClick={onH2hClick}
+        />
+      </div>
 
       {/* West */}
       <div className={`${styles.torikumiWrestler} ${styles.torikumiWest}`}>
@@ -161,6 +204,7 @@ function TorikumiRow({ bout, wrestlerById, day, division, onWrestlerClick, onKim
 
 function TorikumiList({ bouts, wrestlerById, day, division, onWrestlerClick }) {
   const [kimariteModal, setKimariteModal] = useState(null);
+  const [h2hModal, setH2hModal] = useState(null);
 
   return (
     <>
@@ -179,6 +223,7 @@ function TorikumiList({ bouts, wrestlerById, day, division, onWrestlerClick }) {
             division={division}
             onWrestlerClick={onWrestlerClick}
             onKimariteClick={(k, info) => setKimariteModal({ kimarite: k, info })}
+            onH2hClick={setH2hModal}
           />
         ))}
       </div>
@@ -187,6 +232,15 @@ function TorikumiList({ bouts, wrestlerById, day, division, onWrestlerClick }) {
         onClose={() => setKimariteModal(null)}
         kimarite={kimariteModal?.kimarite ?? null}
         kimariteInfo={kimariteModal?.info ?? null}
+      />
+      <HeadToHeadModal
+        isOpen={h2hModal !== null}
+        onClose={() => setH2hModal(null)}
+        rikishiId={h2hModal?.eastId ?? null}
+        opponentId={h2hModal?.westId ?? null}
+        rikishiName={h2hModal?.eastShikona ?? ''}
+        opponentName={h2hModal?.westShikona ?? ''}
+        wrestlerPerspective={false}
       />
     </>
   );

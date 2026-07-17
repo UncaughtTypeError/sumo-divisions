@@ -18,7 +18,7 @@ function formatBasho(bashoId) {
   return nickname ? `${dateStr} · ${nickname.short}` : dateStr;
 }
 
-function HeadToHeadModal({ isOpen, onClose, rikishiId, opponentId, rikishiName, opponentName }) {
+function HeadToHeadModal({ isOpen, onClose, rikishiId, opponentId, rikishiName, opponentName, wrestlerPerspective = true }) {
   const { data, isLoading, isError } = useRikishiMatches(rikishiId, opponentId, {
     enabled: isOpen,
   });
@@ -35,6 +35,8 @@ function HeadToHeadModal({ isOpen, onClose, rikishiId, opponentId, rikishiName, 
   const winPct = total > 0 ? ((wins / total) * 100).toFixed(1) : null;
   const winPctPositive = wins > losses;
   const winPctNegative = wins < losses;
+  const neutralWinsClass = wins > losses ? styles.wins : wins < losses ? styles.losses : '';
+  const neutralLossesClass = losses > wins ? styles.wins : losses < wins ? styles.losses : '';
 
   const isMatchWin = (match) => Number(match.winnerId) === Number(rikishiId);
   const isFusen = (match) => match.kimarite === 'fusen';
@@ -157,9 +159,20 @@ function HeadToHeadModal({ isOpen, onClose, rikishiId, opponentId, rikishiName, 
                   {total > 0 && (
                     <p className={styles.modalSubtitle}>
                       {total} match{total !== 1 ? 'es' : ''}{' '}
-                      &bull; <span className={styles.wins}>{wins}W</span>{' '}
-                      &ndash; <span className={styles.losses}>{losses}L</span>{' '}
-                      &bull; <span className={`${styles.winPct} ${winPctPositive ? styles.winPctPositive : winPctNegative ? styles.winPctNegative : ''}`}>{winPct}%</span>
+                      {wrestlerPerspective ? (
+                        <>
+                          &bull; <span className={styles.wins}>{wins}W</span>{' '}
+                          &ndash; <span className={styles.losses}>{losses}L</span>{' '}
+                          &bull; <span className={`${styles.winPct} ${winPctPositive ? styles.winPctPositive : winPctNegative ? styles.winPctNegative : ''}`}>{winPct}%</span>
+                        </>
+                      ) : (
+                        <>
+                          &bull;{' '}
+                          <span className={neutralWinsClass}>{wins}</span>
+                          {' – '}
+                          <span className={neutralLossesClass}>{losses}</span>
+                        </>
+                      )}
                     </p>
                   )}
                 </div>
