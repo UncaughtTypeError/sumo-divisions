@@ -220,11 +220,12 @@ describe('HeadToHeadModal', () => {
       expect(document.body.querySelector('[class*="fusenpaiSquare"]')).toBeInTheDocument()
     })
 
-    it('should render formatted basho dates', () => {
+    it('should render formatted basho dates with tournament nickname', () => {
       render(<HeadToHeadModal {...defaultProps} />)
-      // basho span contains date + division so use getAllByText with regex
-      expect(screen.getAllByText(/May 2026/).length).toBeGreaterThanOrEqual(1)
-      expect(screen.getAllByText(/Jan 2026/).length).toBeGreaterThanOrEqual(1)
+      // basho span contains "Mon YYYY · Nickname" followed by a child division span
+      expect(screen.getAllByText(/May 2026 · Natsu/).length).toBeGreaterThanOrEqual(1)
+      expect(screen.getAllByText(/Jan 2026 · Hatsu/).length).toBeGreaterThanOrEqual(1)
+      expect(screen.getAllByText(/Mar 2025 · Haru/).length).toBeGreaterThanOrEqual(1)
     })
 
     it('should render division labels', () => {

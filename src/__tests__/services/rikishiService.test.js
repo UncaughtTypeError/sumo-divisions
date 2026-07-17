@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { getRikishi, getAllRikishi, rikishiQueryFn, allRikishiQueryFn } from '../../services/api/rikishiService'
+import { getRikishi, getAllRikishi, getRikishiAllMatches, rikishiQueryFn, allRikishiQueryFn } from '../../services/api/rikishiService'
 import sumoApiClient from '../../services/api/sumoApi'
 
 // Mock the sumoApiClient
@@ -88,6 +88,26 @@ describe('rikishiService', () => {
 
       expect(sumoApiClient.get).toHaveBeenCalledWith('/rikishis')
       expect(result).toEqual(mockAllRikishi)
+    })
+  })
+
+  describe('getRikishiAllMatches', () => {
+    it('fetches all career matches for a rikishi', async () => {
+      const mockData = {
+        records: [
+          { bashoId: '202605', winnerId: 19, division: 'Makuuchi' },
+          { bashoId: '202603', winnerId: 99, division: 'Makuuchi' },
+        ],
+      }
+      sumoApiClient.get.mockResolvedValueOnce({ data: mockData })
+      const result = await getRikishiAllMatches(19)
+      expect(sumoApiClient.get).toHaveBeenCalledWith('/rikishi/19/matches')
+      expect(result).toEqual(mockData)
+    })
+
+    it('throws on API failure', async () => {
+      sumoApiClient.get.mockRejectedValueOnce(new Error('Network error'))
+      await expect(getRikishiAllMatches(19)).rejects.toThrow('Network error')
     })
   })
 

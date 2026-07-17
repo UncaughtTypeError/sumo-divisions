@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
-import { useRikishi, useAllRikishi, useRikishiList, useRikishiMatches } from '../../hooks/useRikishi'
+import { useRikishi, useAllRikishi, useRikishiList, useRikishiMatches, useRikishiAllMatches } from '../../hooks/useRikishi'
 import { QueryClientWrapper } from '../testUtils'
 import * as rikishiService from '../../services/api/rikishiService'
 
@@ -9,6 +9,7 @@ vi.mock('../../services/api/rikishiService', () => ({
   getRikishi: vi.fn(),
   getAllRikishi: vi.fn(),
   getRikishiMatches: vi.fn(),
+  getRikishiAllMatches: vi.fn(),
 }))
 
 describe('useRikishi', () => {
@@ -153,6 +154,50 @@ describe('useRikishiMatches', () => {
 
     expect(rikishiService.getRikishiMatches).toHaveBeenCalledWith(1, 2)
     expect(result.current.data).toEqual(mockMatches)
+  })
+})
+
+describe('useRikishiAllMatches', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('does not fetch when rikishiId is null', () => {
+    renderHook(() => useRikishiAllMatches(null), { wrapper: QueryClientWrapper })
+    expect(rikishiService.getRikishiAllMatches).not.toHaveBeenCalled()
+  })
+
+  it('does not fetch when rikishiId is undefined', () => {
+    renderHook(() => useRikishiAllMatches(undefined), { wrapper: QueryClientWrapper })
+    expect(rikishiService.getRikishiAllMatches).not.toHaveBeenCalled()
+  })
+
+  it('fetches all career matches when rikishiId is provided', async () => {
+    const mockData = { records: [{ bashoId: '202605', winnerId: 19, division: 'Makuuchi' }] }
+    rikishiService.getRikishiAllMatches.mockResolvedValueOnce(mockData)
+
+    const { result } = renderHook(() => useRikishiAllMatches(19), { wrapper: QueryClientWrapper })
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
+
+    expect(rikishiService.getRikishiAllMatches).toHaveBeenCalledWith(19)
+    expect(result.current.data).toEqual(mockData)
+  })
+
+  it('does not fetch when enabled option is false', () => {
+    renderHook(() => useRikishiAllMatches(19, { enabled: false }), { wrapper: QueryClientWrapper })
+    expect(rikishiService.getRikishiAllMatches).not.toHaveBeenCalled()
+  })
+
+  it('handles API errors', async () => {
+    const error = new Error('Network error')
+    rikishiService.getRikishiAllMatches.mockRejectedValueOnce(error)
+
+    const { result } = renderHook(() => useRikishiAllMatches(19), { wrapper: QueryClientWrapper })
+
+    await waitFor(() => expect(result.current.isError).toBe(true))
+
+    expect(result.current.error).toEqual(error)
   })
 })
 

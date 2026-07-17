@@ -1,6 +1,11 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import RankHistoryModal from '../../../components/modal/RankHistoryModal'
+import { useRikishiAllMatches } from '../../../hooks/useRikishi'
+
+vi.mock('../../../hooks/useRikishi', () => ({
+  useRikishiAllMatches: vi.fn(() => ({ data: null, isLoading: false })),
+}))
 
 const mockClose = vi.fn()
 
@@ -16,6 +21,9 @@ const rikishiWithHistory = {
 }
 
 describe('RankHistoryModal', () => {
+  afterEach(() => {
+    useRikishiAllMatches.mockReturnValue({ data: null, isLoading: false })
+  })
   it('renders nothing when closed', () => {
     const { container } = render(
       <RankHistoryModal isOpen={false} onClose={mockClose} rikishiDetails={rikishiWithHistory} />
@@ -38,11 +46,11 @@ describe('RankHistoryModal', () => {
     expect(screen.queryByText('Mae-zumo')).not.toBeInTheDocument()
   })
 
-  it('formats bashoId as month + year', () => {
+  it('formats bashoId as month + year + nickname', () => {
     render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishiWithHistory} />)
-    expect(screen.getByText('May 2026')).toBeInTheDocument()
-    expect(screen.getByText('March 2026')).toBeInTheDocument()
-    expect(screen.getByText('November 2020')).toBeInTheDocument()
+    expect(screen.getByText('May 2026 · Natsu')).toBeInTheDocument()
+    expect(screen.getByText('March 2026 · Haru')).toBeInTheDocument()
+    expect(screen.getByText('November 2020 · Kyushu')).toBeInTheDocument()
   })
 
   it('excludes entries with rankValue >= 2000 (pre-banzuke statuses)', () => {
@@ -119,10 +127,11 @@ describe('RankHistoryModal', () => {
     })
   })
 
-  it('renders Tournament, Rank, and Change column headers', () => {
+  it('renders Tournament, Rank, Record, and Change column headers', () => {
     render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishiWithHistory} />)
     expect(screen.getByText('Tournament')).toBeInTheDocument()
     expect(screen.getByText('Rank')).toBeInTheDocument()
+    expect(screen.getByText('Record')).toBeInTheDocument()
     expect(screen.getByText('Change')).toBeInTheDocument()
   })
 
@@ -297,6 +306,178 @@ describe('RankHistoryModal', () => {
       // arrow badges (e.g. "▲ 1.5") should not appear in the Change column
       expect(screen.queryByText(/▲ \d+\.\d+/)).not.toBeInTheDocument()
       expect(screen.queryByText(/▼ \d+\.\d+/)).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Record column', () => {
+    it('shows loading placeholder for all rows while matches are fetching', () => {
+      useRikishiAllMatches.mockReturnValue({ data: null, isLoading: true })
+      render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishiWithHistory} />)
+      const placeholders = screen.getAllByLabelText('Loading record')
+      expect(placeholders.length).toBeGreaterThanOrEqual(4)
+    })
+
+    it('shows "—" for all rows when fetch completes with no data', () => {
+      render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishiWithHistory} />)
+      const dashes = screen.getAllByText('—')
+      expect(dashes.length).toBeGreaterThanOrEqual(4)
+    })
+
+    it('shows win-loss record when match data is available', () => {
+      const rikishiWithId = { id: 45, ...rikishiWithHistory }
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(10).fill({ bashoId: '202605', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(5).fill({ bashoId: '202605', winnerId: 99, division: 'Makuuchi' }),
+            ...Array(11).fill({ bashoId: '202603', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(4).fill({ bashoId: '202603', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishiWithId} />)
+      expect(screen.getByText('10-5')).toBeInTheDocument()
+      expect(screen.getByText('11-4')).toBeInTheDocument()
+    })
+
+    it('includes absences when wrestler had kyujo days', () => {
+      const rikishiWithId = { id: 45, ...rikishiWithHistory }
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            { bashoId: '202605', winnerId: 99, division: 'Makuuchi' },
+            { bashoId: '202605', winnerId: 99, division: 'Makuuchi' },
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishiWithId} />)
+      expect(screen.getByText('0-2-13')).toBeInTheDocument()
+    })
+
+    it('shows KK badge when wins exceed losses', () => {
+      const rikishiWithId = { id: 45, ...rikishiWithHistory }
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(10).fill({ bashoId: '202605', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(5).fill({ bashoId: '202605', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishiWithId} />)
+      expect(screen.getByText('KK')).toBeInTheDocument()
+    })
+
+    it('shows MK badge when losses exceed wins', () => {
+      const rikishiWithId = { id: 45, ...rikishiWithHistory }
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(5).fill({ bashoId: '202605', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(10).fill({ bashoId: '202605', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishiWithId} />)
+      expect(screen.getByText('MK')).toBeInTheDocument()
+    })
+
+    it('still shows "—" for bashos with no match data', () => {
+      const rikishiWithId = { id: 45, ...rikishiWithHistory }
+      useRikishiAllMatches.mockReturnValue({
+        data: { records: [{ bashoId: '202605', winnerId: 45, division: 'Makuuchi' }] },
+        isLoading: false,
+      })
+      render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishiWithId} />)
+      // 1 win in a 15-bout basho → 14 absences
+      expect(screen.getByText('1-0-14')).toBeInTheDocument()
+      expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(2)
+    })
+
+    it('omits absence suffix when no absences', () => {
+      const rikishiWithId = { id: 45, ...rikishiWithHistory }
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(8).fill({ bashoId: '202605', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(7).fill({ bashoId: '202605', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishiWithId} />)
+      expect(screen.getByText('8-7')).toBeInTheDocument()
+    })
+
+    it('shows no badge for an even record', () => {
+      const rikishiWithId = { id: 45, ...rikishiWithHistory }
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(7).fill({ bashoId: '202605', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(7).fill({ bashoId: '202605', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishiWithId} />)
+      expect(screen.getByText('7-7-1')).toBeInTheDocument()
+      expect(screen.queryByText('KK')).not.toBeInTheDocument()
+      expect(screen.queryByText('MK')).not.toBeInTheDocument()
+    })
+
+    it('uses 7 expected bouts for lower divisions', () => {
+      const rikishiWithId = { id: 45, ...rikishiWithHistory }
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(5).fill({ bashoId: '201911', winnerId: 45, division: 'Makushita' }),
+            ...Array(2).fill({ bashoId: '201911', winnerId: 99, division: 'Makushita' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishiWithId} />)
+      // 5 + 2 = 7 bouts, 7 expected → 0 absences
+      expect(screen.getByText('5-2')).toBeInTheDocument()
+    })
+
+    it('KK badge shows Kachi-koshi tooltip on hover', () => {
+      const rikishiWithId = { id: 45, ...rikishiWithHistory }
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(10).fill({ bashoId: '202605', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(5).fill({ bashoId: '202605', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishiWithId} />)
+      fireEvent.mouseEnter(screen.getByText('KK').closest('[class*="tooltipWrapper"]'))
+      expect(screen.getByText('Kachi-koshi')).toBeInTheDocument()
+      expect(screen.getByText('Winning Record')).toBeInTheDocument()
+    })
+
+    it('MK badge shows Make-koshi tooltip on hover', () => {
+      const rikishiWithId = { id: 45, ...rikishiWithHistory }
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(5).fill({ bashoId: '202605', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(10).fill({ bashoId: '202605', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RankHistoryModal isOpen onClose={mockClose} rikishiDetails={rikishiWithId} />)
+      fireEvent.mouseEnter(screen.getByText('MK').closest('[class*="tooltipWrapper"]'))
+      expect(screen.getByText('Make-koshi')).toBeInTheDocument()
+      expect(screen.getByText('Losing Record')).toBeInTheDocument()
     })
   })
 })

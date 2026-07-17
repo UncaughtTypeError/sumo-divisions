@@ -2,10 +2,16 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import MatchGrid from '../../../components/modal/MatchGrid'
 import useDivisionStore from '../../../store/divisionStore'
+import { useRikishi, useRikishiMatches } from '../../../hooks/useRikishi'
 
 vi.mock('../../../components/modal/HeadToHeadModal', () => ({
   default: ({ isOpen }) =>
     isOpen ? <div data-testid="h2h-modal">H2H Modal</div> : null,
+}))
+
+vi.mock('../../../hooks/useRikishi', () => ({
+  useRikishi: vi.fn(() => ({ data: null, isLoading: false })),
+  useRikishiMatches: vi.fn(() => ({ data: null, isLoading: false })),
 }))
 
 describe('MatchGrid', () => {
@@ -234,6 +240,67 @@ describe('MatchGrid', () => {
       expect(screen.queryByTestId('h2h-modal')).not.toBeInTheDocument()
       fireEvent.click(screen.getAllByRole('button', { name: /head-to-head/i })[0])
       expect(screen.getByTestId('h2h-modal')).toBeInTheDocument()
+    })
+
+    it('should show loading placeholder while H2H record is fetching', () => {
+      useRikishiMatches.mockReturnValue({ data: null, isLoading: true })
+      render(<MatchGrid matches={matchesWithOpponent} rikishiId={1} rikishiName="Terunofuji" />)
+      expect(screen.getAllByLabelText('Loading record').length).toBeGreaterThanOrEqual(1)
+      useRikishiMatches.mockReturnValue({ data: null, isLoading: false })
+    })
+
+    it('should show H2H record when data is loaded', () => {
+      useRikishiMatches.mockReturnValue({
+        data: { rikishiWins: 3, opponentWins: 2 },
+        isLoading: false,
+      })
+      render(<MatchGrid matches={matchesWithOpponent} rikishiId={1} rikishiName="Terunofuji" />)
+      expect(screen.getAllByText('3-2').length).toBeGreaterThanOrEqual(1)
+      useRikishiMatches.mockReturnValue({ data: null, isLoading: false })
+    })
+
+    it('applies win class when rikishi leads the H2H record', () => {
+      useRikishiMatches.mockReturnValue({
+        data: { rikishiWins: 3, opponentWins: 2 },
+        isLoading: false,
+      })
+      render(<MatchGrid matches={matchesWithOpponent} rikishiId={1} rikishiName="Terunofuji" />)
+      expect(screen.getAllByText('3-2')[0].className).toMatch(/h2hRecordWin/)
+      useRikishiMatches.mockReturnValue({ data: null, isLoading: false })
+    })
+
+    it('applies loss class when opponent leads the H2H record', () => {
+      useRikishiMatches.mockReturnValue({
+        data: { rikishiWins: 2, opponentWins: 3 },
+        isLoading: false,
+      })
+      render(<MatchGrid matches={matchesWithOpponent} rikishiId={1} rikishiName="Terunofuji" />)
+      expect(screen.getAllByText('2-3')[0].className).toMatch(/h2hRecordLoss/)
+      useRikishiMatches.mockReturnValue({ data: null, isLoading: false })
+    })
+
+    it('applies no colour class for an even H2H record', () => {
+      useRikishiMatches.mockReturnValue({
+        data: { rikishiWins: 3, opponentWins: 3 },
+        isLoading: false,
+      })
+      render(<MatchGrid matches={matchesWithOpponent} rikishiId={1} rikishiName="Terunofuji" />)
+      const record = screen.getAllByText('3-3')[0]
+      expect(record.className).not.toMatch(/h2hRecordWin/)
+      expect(record.className).not.toMatch(/h2hRecordLoss/)
+      useRikishiMatches.mockReturnValue({ data: null, isLoading: false })
+    })
+
+    it('should show opponent tooltip with heya and shusshin when opponent details loaded', () => {
+      useRikishi.mockReturnValue({
+        data: { heya: 'Miyagino', shusshin: 'Hokkaido' },
+        isLoading: false,
+      })
+      render(<MatchGrid matches={matchesWithOpponent} rikishiId={1} rikishiName="Terunofuji" />)
+      const nameEl = screen.getByText('Takakeisho')
+      fireEvent.mouseEnter(nameEl.closest('[class*="tooltipWrapper"]'))
+      expect(screen.getAllByText('Miyagino').length).toBeGreaterThanOrEqual(1)
+      useRikishi.mockReturnValue({ data: null, isLoading: false })
     })
   })
 
