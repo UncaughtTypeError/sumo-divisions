@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { computeHistoryRowIndicators, getBanzukePosition } from '../../utils/rankMovement';
 import { RECORD_STATUS_INFO, RECORD_STATUS_TYPES } from '../../utils/records';
-import { BASHO_NICKNAMES } from '../../utils/bashoId';
+import { BASHO_NICKNAMES, getCurrentBashoId } from '../../utils/bashoId';
 import Tooltip from '../common/Tooltip';
 import { useRikishiAllMatches } from '../../hooks/useRikishi';
 import styles from './RankHistoryModal.module.css';
@@ -80,6 +80,7 @@ function RikishiRankHistory({ rikishiDetails }) {
 
   const recordByBasho = useMemo(() => {
     if (!allMatchesData?.records || !rikishiId) return {};
+    const currentBashoId = getCurrentBashoId();
     const map = {};
     for (const match of allMatchesData.records) {
       const { bashoId, winnerId, division } = match;
@@ -90,8 +91,10 @@ function RikishiRankHistory({ rikishiDetails }) {
       if (winnerId === rikishiId) map[bashoId].wins++;
       else map[bashoId].losses++;
     }
-    for (const rec of Object.values(map)) {
-      rec.absences = Math.max(0, rec.expectedBouts - rec.wins - rec.losses);
+    for (const [bashoId, rec] of Object.entries(map)) {
+      rec.absences = bashoId === currentBashoId
+        ? 0
+        : Math.max(0, rec.expectedBouts - rec.wins - rec.losses);
     }
     return map;
   }, [allMatchesData, rikishiId]);
@@ -142,12 +145,13 @@ function RikishiRankHistory({ rikishiDetails }) {
                   ? `${record.wins}-${record.losses}${record.absences > 0 ? `-${record.absences}` : ''}`
                   : '—';
               const totalLosses = record ? record.losses + record.absences : 0;
+              const threshold = record ? Math.floor(record.expectedBouts / 2) + 1 : 0;
               const badge = !matchesLoading && record && (
-                record.wins > totalLosses ? (
+                record.wins >= threshold && record.wins > totalLosses ? (
                   <Tooltip position="top" content={<><strong>{KK_INFO.nameEn}</strong><span>{KK_INFO.nameJp}</span><span>{KK_INFO.description}</span></>}>
                     <span className={styles.kkBadge}>KK</span>
                   </Tooltip>
-                ) : totalLosses > record.wins ? (
+                ) : totalLosses >= threshold && totalLosses > record.wins ? (
                   <Tooltip position="top" content={<><strong>{MK_INFO.nameEn}</strong><span>{MK_INFO.nameJp}</span><span>{MK_INFO.description}</span></>}>
                     <span className={styles.mkBadge}>MK</span>
                   </Tooltip>
