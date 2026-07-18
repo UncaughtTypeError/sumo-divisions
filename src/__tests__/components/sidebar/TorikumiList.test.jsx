@@ -2,6 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import TorikumiList from '../../../components/sidebar/TorikumiList'
 
+vi.mock('@tanstack/react-query', () => ({
+  useQueryClient: vi.fn(),
+}))
+
+import { useQueryClient } from '@tanstack/react-query'
+
 // KimariteModal uses Headless UI — mock it for simplicity
 vi.mock('../../../components/modal/KimariteModal', () => ({
   default: ({ isOpen, onClose, kimarite }) =>
@@ -64,12 +70,16 @@ const makeWrestler = (id, rank = 'Yokozuna 1 East', record = []) => ({
 const noopWrestlerById = () => null
 const makeWrestlerById = (map) => (id) => map[id] ?? null
 
+const mockInvalidateQueries = vi.fn()
+const mockQueryClient = { invalidateQueries: mockInvalidateQueries }
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('TorikumiList', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     useRikishiMatches.mockReturnValue({ data: null, isLoading: false })
+    useQueryClient.mockReturnValue(mockQueryClient)
   })
 
   // ── Header ────────────────────────────────────────────────────────────────
@@ -411,5 +421,73 @@ describe('TorikumiList', () => {
       />,
     )
     expect(screen.getByText('MK')).toBeInTheDocument()
+  })
+
+  // ── H2H cache invalidation on bout result ─────────────────────────────────
+
+  it('invalidates the h2h query when a bout result is detected after a poll', () => {
+    useRikishiMatches.mockReturnValue({
+      data: { rikishiWins: 2, opponentWins: 1, total: 3, matches: [] },
+      isLoading: false,
+    })
+    const { rerender } = render(
+      <TorikumiList bouts={[makeBout({ winnerId: null })]} wrestlerById={noopWrestlerById} day={1} division="Makuuchi" />,
+    )
+    expect(mockInvalidateQueries).not.toHaveBeenCalled()
+
+    rerender(
+      <TorikumiList bouts={[makeBout({ winnerId: 10, kimarite: 'yorikiri' })]} wrestlerById={noopWrestlerById} day={1} division="Makuuchi" />,
+    )
+    expect(mockInvalidateQueries).toHaveBeenCalledTimes(1)
+    expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: ['rikishiMatches', 10, 20] })
+  })
+
+  it('does not invalidate h2h query when bout already has a result on initial render', () => {
+    useRikishiMatches.mockReturnValue({
+      data: { rikishiWins: 2, opponentWins: 1, total: 3, matches: [] },
+      isLoading: false,
+    })
+    render(
+      <TorikumiList bouts={[makeBout({ winnerId: 10, kimarite: 'yorikiri' })]} wrestlerById={noopWrestlerById} day={1} division="Makuuchi" />,
+    )
+    expect(mockInvalidateQueries).not.toHaveBeenCalled()
+  })
+
+  it('does not invalidate h2h query when bout remains pending after a poll', () => {
+    useRikishiMatches.mockReturnValue({
+      data: { rikishiWins: 2, opponentWins: 1, total: 3, matches: [] },
+      isLoading: false,
+    })
+    const { rerender } = render(
+      <TorikumiList bouts={[makeBout({ winnerId: null })]} wrestlerById={noopWrestlerById} day={1} division="Makuuchi" />,
+    )
+    rerender(
+      <TorikumiList bouts={[makeBout({ winnerId: null })]} wrestlerById={noopWrestlerById} day={1} division="Makuuchi" />,
+    )
+    expect(mockInvalidateQueries).not.toHaveBeenCalled()
+  })
+
+  it('only invalidates the pair whose result changed, not already-settled bouts', () => {
+    useRikishiMatches.mockReturnValue({
+      data: { rikishiWins: 1, opponentWins: 1, total: 2, matches: [] },
+      isLoading: false,
+    })
+    const settledBout  = makeBout({ matchNo: 1, eastId: 10, westId: 20, winnerId: 10, kimarite: 'yorikiri' })
+    const pendingBout  = makeBout({ matchNo: 2, eastId: 30, westId: 40, winnerId: null })
+    const { rerender } = render(
+      <TorikumiList bouts={[settledBout, pendingBout]} wrestlerById={noopWrestlerById} day={1} division="Makuuchi" />,
+    )
+    expect(mockInvalidateQueries).not.toHaveBeenCalled()
+
+    rerender(
+      <TorikumiList
+        bouts={[settledBout, makeBout({ matchNo: 2, eastId: 30, westId: 40, winnerId: 30, kimarite: 'oshidashi' })]}
+        wrestlerById={noopWrestlerById}
+        day={1}
+        division="Makuuchi"
+      />,
+    )
+    expect(mockInvalidateQueries).toHaveBeenCalledTimes(1)
+    expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: ['rikishiMatches', 30, 40] })
   })
 })
