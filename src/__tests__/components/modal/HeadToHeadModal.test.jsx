@@ -219,6 +219,59 @@ describe('HeadToHeadModal', () => {
     })
   })
 
+  describe('match list — neutral perspective', () => {
+    const neutralProps = { ...defaultProps, wrestlerPerspective: false }
+
+    beforeEach(() => {
+      useRikishiMatches.mockReturnValue({ data: mockData, isLoading: false, isError: false })
+    })
+
+    it('shows wrestler names in the column headers', () => {
+      render(<HeadToHeadModal {...neutralProps} />)
+      const headers = document.querySelectorAll('[class*="neutralHeaderName"]')
+      expect(headers[0]).toHaveTextContent('Kirishima')
+      expect(headers[1]).toHaveTextContent('Ichiyamamoto')
+    })
+
+    it('shows "Win" in the rikishi cell and "Loss" in the opponent cell when rikishi wins', () => {
+      render(<HeadToHeadModal {...neutralProps} />)
+      // Default sort: bashoId desc — 202605 (rikishi win) is row 0
+      const rows = document.querySelectorAll('[class*="matchRowNeutral"]')
+      expect(rows[0].children[0]).toHaveTextContent('Win')
+      expect(rows[0].children[4]).toHaveTextContent('Loss')
+    })
+
+    it('shows "Loss" in the rikishi cell and "Win" in the opponent cell when rikishi loses', () => {
+      render(<HeadToHeadModal {...neutralProps} />)
+      // Default sort: bashoId desc — 202601 (rikishi loss) is row 1
+      const rows = document.querySelectorAll('[class*="matchRowNeutral"]')
+      expect(rows[1].children[0]).toHaveTextContent('Loss')
+      expect(rows[1].children[4]).toHaveTextContent('Win')
+    })
+
+    it('shows shiroboshi in the rikishi cell and kuroboshi in the opponent cell when rikishi wins', () => {
+      render(<HeadToHeadModal {...neutralProps} />)
+      const rows = document.querySelectorAll('[class*="matchRowNeutral"]')
+      expect(rows[0].children[0].querySelector('[class*="shiroboshi"]')).not.toBeNull()
+      expect(rows[0].children[4].querySelector('[class*="kuroboshi"]')).not.toBeNull()
+    })
+
+    it('shows kuroboshi in the rikishi cell and shiroboshi in the opponent cell when rikishi loses', () => {
+      render(<HeadToHeadModal {...neutralProps} />)
+      const rows = document.querySelectorAll('[class*="matchRowNeutral"]')
+      expect(rows[1].children[0].querySelector('[class*="kuroboshi"]')).not.toBeNull()
+      expect(rows[1].children[4].querySelector('[class*="shiroboshi"]')).not.toBeNull()
+    })
+
+    it('shows Basho, Day and Kimarite sort buttons but no Result sort button', () => {
+      render(<HeadToHeadModal {...neutralProps} />)
+      expect(screen.getByRole('button', { name: /Basho/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /^Day$/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Kimarite/i })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /^Result$/i })).not.toBeInTheDocument()
+    })
+  })
+
   describe('match list', () => {
     beforeEach(() => {
       useRikishiMatches.mockReturnValue({ data: mockData, isLoading: false, isError: false })
