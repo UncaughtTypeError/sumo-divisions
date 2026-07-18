@@ -118,7 +118,7 @@ export function useRikishiMatches(rikishiId, opponentId, options = {}) {
     queryKey: ['rikishiMatches', rikishiId, opponentId],
     queryFn: () => getRikishiMatches(rikishiId, opponentId),
     enabled: !!rikishiId && !!opponentId,
-    staleTime: 1000 * 60 * 60, // 1 hour — match history is immutable once recorded
+    staleTime: 1000 * 60 * 60, // 1 hour; H2HLink invalidates on bout result to force an immediate refresh
     ...options,
   })
 }
