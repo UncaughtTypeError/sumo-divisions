@@ -148,7 +148,7 @@ function HeadToHeadModal({ isOpen, onClose, rikishiId, opponentId, rikishiName, 
             leaveFrom={styles.panelLeaveFrom}
             leaveTo={styles.panelLeaveTo}
           >
-            <Dialog.Panel className={styles.modalPanel}>
+            <Dialog.Panel className={`${styles.modalPanel} ${!wrestlerPerspective ? styles.modalPanelWide : ''}`}>
               <div className={styles.modalHeader}>
                 <div>
                   <Dialog.Title className={styles.modalTitle}>
@@ -193,29 +193,52 @@ function HeadToHeadModal({ isOpen, onClose, rikishiId, opponentId, rikishiName, 
                 )}
                 {!isLoading && !isError && matches.length > 0 && (
                   <div className={styles.matchList}>
-                    <div className={styles.matchHeader}>
-                      {[
-                        { key: 'bashoId', label: 'Basho' },
-                        { key: 'day', label: 'Day' },
-                        { key: 'result', label: 'Result' },
-                        { key: 'kimarite', label: 'Kimarite' },
-                      ].map(({ key, label }) => (
-                        <button
-                          key={key}
-                          className={`${styles.sortBtn} ${sortKey === key ? styles.sortBtnActive : ''}`}
-                          onClick={() => handleSort(key)}
-                        >
-                          {label}
-                          <span className={styles.sortIndicator}>
-                            {sortKey === key ? (sortDir === 'asc' ? '↑' : '↓') : ''}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
+                    {wrestlerPerspective ? (
+                      <div className={styles.matchHeader}>
+                        {[
+                          { key: 'bashoId', label: 'Basho' },
+                          { key: 'day', label: 'Day' },
+                          { key: 'result', label: 'Result' },
+                          { key: 'kimarite', label: 'Kimarite' },
+                        ].map(({ key, label }) => (
+                          <button
+                            key={key}
+                            className={`${styles.sortBtn} ${sortKey === key ? styles.sortBtnActive : ''}`}
+                            onClick={() => handleSort(key)}
+                          >
+                            {label}
+                            <span className={styles.sortIndicator}>
+                              {sortKey === key ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className={styles.matchHeaderNeutral}>
+                        <span className={styles.neutralHeaderName}>{rikishiName}</span>
+                        {[
+                          { key: 'bashoId', label: 'Basho' },
+                          { key: 'day', label: 'Day' },
+                          { key: 'kimarite', label: 'Kimarite' },
+                        ].map(({ key, label }) => (
+                          <button
+                            key={key}
+                            className={`${styles.sortBtn} ${sortKey === key ? styles.sortBtnActive : ''}`}
+                            onClick={() => handleSort(key)}
+                          >
+                            {label}
+                            <span className={styles.sortIndicator}>
+                              {sortKey === key ? (sortDir === 'asc' ? '↑' : '↓') : ''}
+                            </span>
+                          </button>
+                        ))}
+                        <span className={styles.neutralHeaderName}>{opponentName}</span>
+                      </div>
+                    )}
                     {sortedMatches.map((match, i) => {
                       const won = isMatchWin(match);
                       const fusen = isFusen(match);
-                      return (
+                      return wrestlerPerspective ? (
                         <div key={i} className={styles.matchRow}>
                           <span>
                             {formatBasho(match.bashoId)}
@@ -229,6 +252,25 @@ function HeadToHeadModal({ isOpen, onClose, rikishiId, opponentId, rikishiName, 
                             {renderResultIcon(won, fusen)}
                           </span>
                           <span>{renderKimarite(match.kimarite)}</span>
+                        </div>
+                      ) : (
+                        <div key={i} className={styles.matchRowNeutral}>
+                          <span className={won ? styles.win : styles.loss}>
+                            {won ? 'Win' : 'Loss'}
+                            {renderResultIcon(won, fusen)}
+                          </span>
+                          <span>
+                            {formatBasho(match.bashoId)}
+                            {match.division && (
+                              <span className={styles.division}>{match.division}</span>
+                            )}
+                          </span>
+                          <span>{match.day != null ? `Day ${match.day}` : '—'}</span>
+                          <span>{renderKimarite(match.kimarite)}</span>
+                          <span className={!won ? styles.win : styles.loss}>
+                            {!won ? 'Win' : 'Loss'}
+                            {renderResultIcon(!won, fusen)}
+                          </span>
                         </div>
                       );
                     })}
