@@ -7,6 +7,11 @@ vi.mock('../../../hooks/useRikishi', () => ({
   useRikishiAllMatches: vi.fn(() => ({ data: null, isLoading: false })),
 }))
 
+vi.mock('../../../utils/bashoId', async (importOriginal) => {
+  const actual = await importOriginal()
+  return { ...actual, getCurrentBashoId: vi.fn().mockReturnValue('202607') }
+})
+
 const rikishiWithHistory = {
   rankHistory: [
     { id: '202605-45', bashoId: '202605', rank: 'Yokozuna 1 East',   rankValue: 101 },
@@ -373,6 +378,75 @@ describe('RikishiRankHistory', () => {
       // 1 win in a 15-bout basho → 14 absences
       expect(screen.getByText('1-0-14')).toBeInTheDocument()
       expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(2)
+    })
+  })
+
+  describe('ongoing current basho', () => {
+    const currentRikishi = {
+      id: 45,
+      rankHistory: [
+        { id: '202607-45', bashoId: '202607', rank: 'Maegashira 1 East', rankValue: 501 },
+      ],
+    }
+
+    it('does not count unplayed bouts as absences for the current basho', () => {
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(5).fill({ bashoId: '202607', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(3).fill({ bashoId: '202607', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RikishiRankHistory rikishiDetails={currentRikishi} />)
+      expect(screen.getByText('5-3')).toBeInTheDocument()
+    })
+
+    it('does not show MK badge when unplayed current-basho bouts would artificially push losses past wins', () => {
+      // 3W–3L with 9 bouts remaining: without fix absences=9 → totalLosses=12 → MK; with fix absences=0 → tied → no badge
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(3).fill({ bashoId: '202607', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(3).fill({ bashoId: '202607', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RikishiRankHistory rikishiDetails={currentRikishi} />)
+      expect(screen.getByText('3-3')).toBeInTheDocument()
+      expect(screen.queryByText('MK')).not.toBeInTheDocument()
+    })
+
+    it('does not show KK badge for a 6-1 record before the 8-win threshold is reached', () => {
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(6).fill({ bashoId: '202607', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(1).fill({ bashoId: '202607', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RikishiRankHistory rikishiDetails={currentRikishi} />)
+      expect(screen.getByText('6-1')).toBeInTheDocument()
+      expect(screen.queryByText('KK')).not.toBeInTheDocument()
+    })
+
+    it('does not show MK badge for a 2-5 record before the 8-loss threshold is reached', () => {
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(2).fill({ bashoId: '202607', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(5).fill({ bashoId: '202607', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RikishiRankHistory rikishiDetails={currentRikishi} />)
+      expect(screen.getByText('2-5')).toBeInTheDocument()
+      expect(screen.queryByText('MK')).not.toBeInTheDocument()
     })
   })
 })
