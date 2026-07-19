@@ -2,6 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import TorikumiTab from '../../../components/sidebar/TorikumiTab'
 
+vi.mock('@tanstack/react-query', () => ({
+  useQueryClient: vi.fn(),
+}))
+
+import { useQueryClient } from '@tanstack/react-query'
+
 vi.mock('../../../components/sidebar/TorikumiList', () => ({
   default: ({ bouts }) => (
     <div data-testid="torikumi-list">
@@ -21,6 +27,9 @@ vi.mock('../../../components/common/Loading', () => ({
 vi.mock('../../../components/common/ErrorMessage', () => ({
   default: ({ error }) => <div data-testid="error-message">{error?.message}</div>,
 }))
+
+const mockInvalidateQueries = vi.fn()
+const mockQueryClient = { invalidateQueries: mockInvalidateQueries }
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -53,7 +62,10 @@ const defaultProps = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('TorikumiTab', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => {
+    vi.clearAllMocks()
+    useQueryClient.mockReturnValue(mockQueryClient)
+  })
   afterEach(() => vi.useRealTimers())
 
   // ── Controls ──────────────────────────────────────────────────────────────
@@ -292,5 +304,62 @@ describe('TorikumiTab', () => {
       />,
     )
     expect(screen.getAllByTestId('bout-row')).toHaveLength(2)
+  })
+
+  // ── H2H cache invalidation on bout result ─────────────────────────────────
+
+  const makeBoutRaw = (matchNo, eastId, westId, winnerId = 0) => ({
+    matchNo, eastId, westId, winnerId,
+    eastShikona: `E${eastId}`, westShikona: `W${westId}`,
+    eastRank: 'Yokozuna 1 East', westRank: 'Ozeki 1 West',
+    kimarite: winnerId ? 'yorikiri' : null,
+  })
+
+  it('does not invalidate h2h queries for bouts already settled on first data load', () => {
+    render(
+      <TorikumiTab
+        {...defaultProps}
+        torikumiData={{ bouts: [makeBoutRaw(1, 10, 20, 10)] }}
+      />,
+    )
+    expect(mockInvalidateQueries).not.toHaveBeenCalled()
+  })
+
+  it('invalidates the h2h query when a bout result is detected after a poll', () => {
+    const { rerender } = render(
+      <TorikumiTab
+        {...defaultProps}
+        torikumiData={{ bouts: [makeBoutRaw(1, 10, 20, 0)] }}
+      />,
+    )
+    expect(mockInvalidateQueries).not.toHaveBeenCalled()
+
+    rerender(
+      <TorikumiTab
+        {...defaultProps}
+        torikumiData={{ bouts: [makeBoutRaw(1, 10, 20, 10)] }}
+      />,
+    )
+    expect(mockInvalidateQueries).toHaveBeenCalledTimes(1)
+    expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: ['rikishiMatches', 10, 20] })
+  })
+
+  it('only invalidates the pair whose result changed, not pre-existing settled bouts', () => {
+    const { rerender } = render(
+      <TorikumiTab
+        {...defaultProps}
+        torikumiData={{ bouts: [makeBoutRaw(1, 10, 20, 10), makeBoutRaw(2, 30, 40, 0)] }}
+      />,
+    )
+    expect(mockInvalidateQueries).not.toHaveBeenCalled()
+
+    rerender(
+      <TorikumiTab
+        {...defaultProps}
+        torikumiData={{ bouts: [makeBoutRaw(1, 10, 20, 10), makeBoutRaw(2, 30, 40, 30)] }}
+      />,
+    )
+    expect(mockInvalidateQueries).toHaveBeenCalledTimes(1)
+    expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: ['rikishiMatches', 30, 40] })
   })
 })
