@@ -1,5 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import Tooltip from '../common/Tooltip';
 import KimariteModal from '../modal/KimariteModal';
 import HeadToHeadModal from '../modal/HeadToHeadModal';
@@ -62,21 +61,10 @@ function RecordBadge({ record, division }) {
 
 // ── Head-to-head record link ──────────────────────────────────────────────────
 
-function H2HLink({ eastId, westId, eastShikona, westShikona, onH2hClick, hasResult }) {
-  const queryClient = useQueryClient();
+function H2HLink({ eastId, westId, eastShikona, westShikona, onH2hClick }) {
   const { data, isLoading } = useRikishiMatches(eastId, westId, {
     enabled: !!eastId && !!westId,
   });
-
-  // Invalidate the cached H2H record the moment this bout's result is detected,
-  // so the displayed count reflects the outcome without waiting for the 1-hour staleTime.
-  const prevHasResultRef = useRef(hasResult);
-  useEffect(() => {
-    if (!prevHasResultRef.current && hasResult) {
-      queryClient.invalidateQueries({ queryKey: ['rikishiMatches', eastId, westId] });
-    }
-    prevHasResultRef.current = hasResult;
-  }, [hasResult, eastId, westId, queryClient]);
 
   if (!eastId || !westId) return null;
   if (isLoading) return (
@@ -199,7 +187,6 @@ function TorikumiRow({ bout, wrestlerById, day, division, onWrestlerClick, onKim
           eastShikona={bout.eastShikona}
           westShikona={bout.westShikona}
           onH2hClick={onH2hClick}
-          hasResult={!!bout.winnerId}
         />
       </div>
 

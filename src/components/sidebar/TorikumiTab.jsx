@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import TorikumiList from './TorikumiList';
 import Loading from '../common/Loading';
 import ErrorMessage from '../common/ErrorMessage';
@@ -53,7 +54,7 @@ function TorikumiTab({
 
   useEffect(() => () => clearTimeout(loaderTimerRef.current), []);
 
-  const allBouts = torikumiData?.bouts ?? [];
+  const allBouts = useMemo(() => torikumiData?.bouts ?? [], [torikumiData]);
 
   const filteredBouts = useMemo(() => {
     let result = allBouts;
@@ -89,6 +90,31 @@ function TorikumiTab({
     refetch,
     enabled:   true,
   });
+
+  // ── H2H cache invalidation on new bout result ──────────────────────────────
+  // Seeded on first data arrival so pre-existing results don't re-query.
+  // Lives here (not in H2HLink) because TorikumiList unmounts during the refresh loader.
+  const queryClient = useQueryClient();
+  const knownSettledKeysRef = useRef(null);
+
+  useEffect(() => {
+    if (knownSettledKeysRef.current === null) {
+      if (allBouts.length > 0) {
+        knownSettledKeysRef.current = new Set(
+          allBouts.filter((b) => !!b.winnerId).map((b) => `${b.eastId}:${b.westId}`)
+        );
+      }
+      return;
+    }
+    for (const bout of allBouts) {
+      if (!bout.winnerId) continue;
+      const key = `${bout.eastId}:${bout.westId}`;
+      if (!knownSettledKeysRef.current.has(key)) {
+        queryClient.invalidateQueries({ queryKey: ['rikishiMatches', bout.eastId, bout.westId] });
+        knownSettledKeysRef.current.add(key);
+      }
+    }
+  }, [allBouts, queryClient]);
 
   const showLoader = isLoading || showRefreshLoader;
 
