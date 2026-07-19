@@ -80,14 +80,14 @@ This application uses the **Sumo API** (https://www.sumo-api.com/) to fetch real
 | `GET /api/rikishi/:id?ranks=true` | Full rikishi profile **with complete rank history** for a single wrestler. Called in parallel for every wrestler currently displayed in a sidebar (typically ≤ 42 for Makuuchi). Includes retired wrestlers, `intai` date, heya, and the `rankHistory` array used for rank movement indicators and career-high detection. | `['rikishi', id]` — 1 hour stale |
 | `GET /api/basho/:bashoId/banzuke/:division` | Wrestler rankings and records for one division. | `['banzuke', bashoId, division]` — shared between `useBanzuke` and `useAllDivisionsBanzuke` so data fetched in the Rankings view is immediately available in the Heya view |
 | `GET /api/basho/:bashoId` | Tournament results (yusho winners, special prizes) | `['bashoResults', bashoId]` |
-| `GET /api/rikishi/:id/matches/:opponentId` | Head-to-head match history between two wrestlers | `['rikishiMatches', id, opponentId]` — 1 hour stale; invalidated by `H2HLink` when a bout result is detected during a torikumi poll |
+| `GET /api/rikishi/:id/matches/:opponentId` | Head-to-head match history between two wrestlers | `['rikishiMatches', id, opponentId]` — 1 hour stale; invalidated by `TorikumiTab` when a bout result is detected during a torikumi poll |
 | `GET /api/basho/:bashoId/torikumi/:division/:day` | Scheduled and completed bouts for one day of a basho | `['torikumi', bashoId, division, day]` — 5 min stale; bypassed on manual/auto refresh |
 
 ### Torikumi auto-refresh back-off strategy
 
 When the torikumi tab is open and the latest day has pending results, the app auto-refreshes every 3 minutes. If three consecutive refreshes return no new results, it switches to an incremental back-off (5–25 minute intervals, up to 5 attempts) before stopping for the session. The manual refresh button remains active throughout and restarts auto-refresh once the session has been fully stopped (clicking during back-off does not reset the counter).
 
-When a poll returns a new bout result, each `H2HLink` component in the torikumi list independently detects the `winnerId` transition from falsy to truthy and immediately calls `queryClient.invalidateQueries` for that specific `['rikishiMatches', eastId, westId]` key — triggering a targeted re-fetch for only the pair that just competed. Bouts that already had results when the page loaded initialise with `hasResult: true` and are never re-queried.
+When a poll returns a new bout result, `TorikumiTab` detects newly-settled pairs by comparing against a `Set` seeded on the first data arrival. Only pairs that transition from pending to settled after that initial load trigger a targeted `queryClient.invalidateQueries` call for their `['rikishiMatches', eastId, westId]` key — so the H2H count in the torikumi list updates immediately for only the pair that just competed. Bouts already settled when data first loaded are recorded in the seed set and never re-queried. Detection lives in `TorikumiTab` rather than `H2HLink` because `TorikumiList` (and all its children) unmounts during the refresh loader phase on every poll cycle.
 
 ### Why per-wrestler fetches instead of the bulk endpoint
 
@@ -354,7 +354,7 @@ npm run generate:career-stats
 - `useBanzuke` and `useAllDivisionsBanzuke` deliberately share the same query key shape — `['banzuke', bashoId, division]` — so data fetched from the Rankings sidebar is already in cache when the Heya sidebar opens
 - `useRikishiList` fetches individual rikishi via `['rikishi', id]` — if a wrestler's detail was already fetched (e.g. when a sidebar was open), the MatchHistoryModal detail pop-up is a cache hit with zero network requests
 - `HeyaDashboard` prefetches all six division banzuke queries for the current basho on mount, so the Heya sidebar opens with no loading state on the first click
-- `useRikishiMatches` uses a 1-hour stale time — `H2HLink` bypasses this by calling `queryClient.invalidateQueries` the moment a bout's `winnerId` transitions from falsy to truthy, so the H2H count in the torikumi list updates immediately when a result is detected rather than waiting for staleTime expiry
+- `useRikishiMatches` uses a 1-hour stale time — `TorikumiTab` bypasses this by calling `queryClient.invalidateQueries` the moment a new bout result is detected during a torikumi poll, so the H2H count in the torikumi list updates immediately rather than waiting for staleTime expiry
 
 ### Rank Movement Calculation
 
