@@ -1,0 +1,14 @@
+.badge {
+  font-size: 0.625rem;
+  font-weight: 600;
+  padding: 0.125rem 0.25rem;
+  border-radius: 3px;
+  background: var(--color-border);
+  color: var(--color-text-accent);
+  flex-shrink: 0;
+}
+
+.badge.yusho {
+  background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+  color: var(--color-gold-text);
+}

@@ -46,15 +46,6 @@
   color: var(--color-text-accent);
 }
 
-.award.yusho {
-  background: linear-gradient(
-    135deg,
-    var(--color-gold) 0%,
-    var(--color-gold-dark) 100%
-  );
-  color: var(--color-gold-text);
-}
-
 .award.kachiKoshi {
   background: var(--color-success-bg);
   color: var(--color-success);

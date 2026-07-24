@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AWARD_INFO, AWARD_TYPES } from '../../utils/awards';
+import { AWARD_TYPES } from '../../utils/awards';
 import {
   RECORD_STATUS_INFO,
   getRecordStatus,
@@ -10,6 +10,7 @@ import {
 import { getFlagData } from '../common/flags';
 import useDivisionStore from '../../store/divisionStore';
 import Tooltip from '../common/Tooltip';
+import AwardBadge from '../common/AwardBadge';
 import RikishiDetailModal from '../modal/RikishiDetailModal';
 import RankHistoryModal from '../modal/RankHistoryModal';
 import styles from './WrestlerRow.module.css';
@@ -103,31 +104,9 @@ function WrestlerRow({ wrestler, onClick, color, division, rikishiMap }) {
               </Tooltip>
             )}
             {/* Award badges */}
-            {awards.map((award) => {
-              const info = AWARD_INFO[award];
-              if (!info) return null;
-              return (
-                <Tooltip
-                  key={award}
-                  content={
-                    <>
-                      <strong>{info.nameEn}</strong>
-                      <span>{info.nameJp}</span>
-                      <span>{info.description}</span>
-                    </>
-                  }
-                >
-                  <span
-                    className={`${styles.award} ${
-                      award === AWARD_TYPES.YUSHO ? styles.yusho : ''
-                    }`}
-                  >
-                    {award === AWARD_TYPES.YUSHO && '🏆'}
-                    {info.abbrev}
-                  </span>
-                </Tooltip>
-              );
-            })}
+            {awards.map((award) => (
+              <AwardBadge key={award} type={award} />
+            ))}
             {/* Kinboshi badge */}
             {kinboshiCount > 0 && (
               <Tooltip

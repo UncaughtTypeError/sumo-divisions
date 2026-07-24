@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
 import { computeHistoryRowIndicators, getBanzukePosition } from '../../utils/rankMovement';
 import { RECORD_STATUS_INFO, RECORD_STATUS_TYPES } from '../../utils/records';
+import { AWARD_TYPES } from '../../utils/awards';
 import { BASHO_NICKNAMES, getCurrentBashoId } from '../../utils/bashoId';
 import Tooltip from '../common/Tooltip';
+import AwardBadge from '../common/AwardBadge';
 import { useRikishiAllMatches } from '../../hooks/useRikishi';
 import { useCareerStats } from '../../hooks/useCareerStats';
 import styles from './RankHistoryModal.module.css';
@@ -125,32 +127,14 @@ function RikishiRankHistory({ rikishiDetails }) {
           <span className={styles.summaryLabel}>Bashos</span>
           <span className={styles.summaryValue}>{displayHistory.length}</span>
         </span>
-        {careerStats?.yusho > 0 && (
+        {(careerStats?.yusho > 0 || careerStats?.shukunsho > 0 || careerStats?.kantosho > 0 || careerStats?.ginosho > 0) && (
           <span className={styles.summaryItem}>
-            <Tooltip position="top" content={<><strong>Yusho</strong><span>Tournament championships (優勝)</span></>}>
-              <span className={styles.yushoBadge}>Y {careerStats.yusho}</span>
-            </Tooltip>
-          </span>
-        )}
-        {careerStats?.shukunsho > 0 && (
-          <span className={styles.summaryItem}>
-            <Tooltip position="top" content={<><strong>Shukunsho</strong><span>Outstanding Performance Prize (殊勲賞)</span></>}>
-              <span className={styles.sanshoBadge}>Sh {careerStats.shukunsho}</span>
-            </Tooltip>
-          </span>
-        )}
-        {careerStats?.kantosho > 0 && (
-          <span className={styles.summaryItem}>
-            <Tooltip position="top" content={<><strong>Kantosho</strong><span>Fighting Spirit Prize (敢闘賞)</span></>}>
-              <span className={styles.sanshoBadge}>Kt {careerStats.kantosho}</span>
-            </Tooltip>
-          </span>
-        )}
-        {careerStats?.ginosho > 0 && (
-          <span className={styles.summaryItem}>
-            <Tooltip position="top" content={<><strong>Ginosho</strong><span>Technique Prize (技能賞)</span></>}>
-              <span className={styles.sanshoBadge}>Gn {careerStats.ginosho}</span>
-            </Tooltip>
+            <span className={styles.awardBadges}>
+              {careerStats.yusho > 0 && <AwardBadge type={AWARD_TYPES.YUSHO} count={careerStats.yusho} />}
+              {careerStats.shukunsho > 0 && <AwardBadge type={AWARD_TYPES.SHUKUN_SHO} count={careerStats.shukunsho} />}
+              {careerStats.kantosho > 0 && <AwardBadge type={AWARD_TYPES.KANTO_SHO} count={careerStats.kantosho} />}
+              {careerStats.ginosho > 0 && <AwardBadge type={AWARD_TYPES.GINO_SHO} count={careerStats.ginosho} />}
+            </span>
           </span>
         )}
         <span className={styles.summaryItem}>
@@ -200,26 +184,10 @@ function RikishiRankHistory({ rikishiDetails }) {
                     {formatBashoId(entry.bashoId)}
                     {(awardSets.yusho.has(entry.bashoId) || awardSets.shukunsho.has(entry.bashoId) || awardSets.kantosho.has(entry.bashoId) || awardSets.ginosho.has(entry.bashoId)) && (
                       <span className={styles.awardBadges}>
-                        {awardSets.yusho.has(entry.bashoId) && (
-                          <Tooltip position="top" content={<><strong>Yusho</strong><span>Tournament champion (優勝)</span></>}>
-                            <span className={styles.yushoBadge}>Y</span>
-                          </Tooltip>
-                        )}
-                        {awardSets.shukunsho.has(entry.bashoId) && (
-                          <Tooltip position="top" content={<><strong>Shukunsho</strong><span>Outstanding Performance Prize (殊勲賞)</span></>}>
-                            <span className={styles.sanshoBadge}>Sh</span>
-                          </Tooltip>
-                        )}
-                        {awardSets.kantosho.has(entry.bashoId) && (
-                          <Tooltip position="top" content={<><strong>Kantosho</strong><span>Fighting Spirit Prize (敢闘賞)</span></>}>
-                            <span className={styles.sanshoBadge}>Kt</span>
-                          </Tooltip>
-                        )}
-                        {awardSets.ginosho.has(entry.bashoId) && (
-                          <Tooltip position="top" content={<><strong>Ginosho</strong><span>Technique Prize (技能賞)</span></>}>
-                            <span className={styles.sanshoBadge}>Gn</span>
-                          </Tooltip>
-                        )}
+                        {awardSets.yusho.has(entry.bashoId) && <AwardBadge type={AWARD_TYPES.YUSHO} />}
+                        {awardSets.shukunsho.has(entry.bashoId) && <AwardBadge type={AWARD_TYPES.SHUKUN_SHO} />}
+                        {awardSets.kantosho.has(entry.bashoId) && <AwardBadge type={AWARD_TYPES.KANTO_SHO} />}
+                        {awardSets.ginosho.has(entry.bashoId) && <AwardBadge type={AWARD_TYPES.GINO_SHO} />}
                       </span>
                     )}
                   </td>
