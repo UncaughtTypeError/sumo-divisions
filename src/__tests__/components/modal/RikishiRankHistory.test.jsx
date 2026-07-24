@@ -468,55 +468,55 @@ describe('RikishiRankHistory', () => {
   describe('award badges (yusho and sansho)', () => {
     it('shows no award badges when career stats are unavailable', () => {
       render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
-      expect(screen.queryByText('Y')).not.toBeInTheDocument()
-      expect(screen.queryByText('Sh')).not.toBeInTheDocument()
-      expect(screen.queryByText('Kt')).not.toBeInTheDocument()
-      expect(screen.queryByText('Gn')).not.toBeInTheDocument()
+      expect(screen.queryByText('🏆Y')).not.toBeInTheDocument()
+      expect(screen.queryByText('S')).not.toBeInTheDocument()
+      expect(screen.queryByText('K')).not.toBeInTheDocument()
+      expect(screen.queryByText('G')).not.toBeInTheDocument()
     })
 
     it('shows no award badges when career stats exist but no matching bashos', () => {
       useCareerStats.mockReturnValue(emptyCareerStats)
       render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
-      expect(screen.queryByText('Y')).not.toBeInTheDocument()
+      expect(screen.queryByText('🏆Y')).not.toBeInTheDocument()
     })
 
     it('shows Y badge on the row matching a yusho basho', () => {
       useCareerStats.mockReturnValue({ ...emptyCareerStats, yusho: 1, yushoBashos: ['202605'] })
       render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
-      expect(screen.getByText('Y')).toBeInTheDocument()
+      expect(screen.getByText('🏆Y')).toBeInTheDocument()
     })
 
     it('does not show Y badge on non-yusho rows', () => {
       useCareerStats.mockReturnValue({ ...emptyCareerStats, yusho: 1, yushoBashos: ['202605'] })
       render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
-      // Only one Y badge even though there are multiple rows
-      expect(screen.getAllByText('Y')).toHaveLength(1)
+      // Only one row badge even though there are multiple rows
+      expect(screen.getAllByText('🏆Y')).toHaveLength(1)
     })
 
     it('Y badge shows Yusho tooltip on hover', () => {
       useCareerStats.mockReturnValue({ ...emptyCareerStats, yusho: 1, yushoBashos: ['202605'] })
       render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
-      fireEvent.mouseEnter(screen.getByText('Y').closest('[class*="tooltipWrapper"]'))
+      fireEvent.mouseEnter(screen.getByText('🏆Y').closest('[class*="tooltipWrapper"]'))
       expect(screen.getByText('Yusho')).toBeInTheDocument()
-      expect(screen.getByText('Tournament champion (優勝)')).toBeInTheDocument()
+      expect(screen.getByText('Tournament Champion')).toBeInTheDocument()
     })
 
-    it('shows Sh badge for a shukunsho basho', () => {
+    it('shows S badge for a shukunsho basho', () => {
       useCareerStats.mockReturnValue({ ...emptyCareerStats, shukunsho: 1, shukunshoBashos: ['202603'] })
       render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
-      expect(screen.getByText('Sh')).toBeInTheDocument()
+      expect(screen.getByText('S')).toBeInTheDocument()
     })
 
-    it('shows Kt badge for a kantosho basho', () => {
+    it('shows K badge for a kantosho basho', () => {
       useCareerStats.mockReturnValue({ ...emptyCareerStats, kantosho: 1, kantoshoBashos: ['202603'] })
       render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
-      expect(screen.getByText('Kt')).toBeInTheDocument()
+      expect(screen.getByText('K')).toBeInTheDocument()
     })
 
-    it('shows Gn badge for a ginosho basho', () => {
+    it('shows G badge for a ginosho basho', () => {
       useCareerStats.mockReturnValue({ ...emptyCareerStats, ginosho: 1, ginoshoBashos: ['202603'] })
       render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
-      expect(screen.getByText('Gn')).toBeInTheDocument()
+      expect(screen.getByText('G')).toBeInTheDocument()
     })
 
     it('shows multiple award badges on the same row when wrestler won yusho and a sansho in the same basho', () => {
@@ -526,14 +526,14 @@ describe('RikishiRankHistory', () => {
         shukunsho: 1, shukunshoBashos: ['202605'],
       })
       render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
-      expect(screen.getByText('Y')).toBeInTheDocument()
-      expect(screen.getByText('Sh')).toBeInTheDocument()
+      expect(screen.getByText('🏆Y')).toBeInTheDocument()
+      expect(screen.getByText('S')).toBeInTheDocument()
     })
 
     it('shows Y count badge in summary bar when yusho total > 0', () => {
       useCareerStats.mockReturnValue({ ...emptyCareerStats, yusho: 4, yushoBashos: [] })
       render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
-      expect(screen.getByText('Y 4')).toBeInTheDocument()
+      expect(screen.getByText('🏆Y 4')).toBeInTheDocument()
     })
 
     it('shows sansho count badges in summary bar', () => {
@@ -544,23 +544,23 @@ describe('RikishiRankHistory', () => {
         ginosho: 1, ginoshoBashos: [],
       })
       render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
-      expect(screen.getByText('Sh 3')).toBeInTheDocument()
-      expect(screen.getByText('Kt 2')).toBeInTheDocument()
-      expect(screen.getByText('Gn 1')).toBeInTheDocument()
+      expect(screen.getByText('S 3')).toBeInTheDocument()
+      expect(screen.getByText('K 2')).toBeInTheDocument()
+      expect(screen.getByText('G 1')).toBeInTheDocument()
     })
 
     it('omits summary count badges when counts are zero', () => {
       useCareerStats.mockReturnValue(emptyCareerStats)
       render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
-      expect(screen.queryByText(/^Y \d/)).not.toBeInTheDocument()
-      expect(screen.queryByText(/^Sh \d/)).not.toBeInTheDocument()
-      expect(screen.queryByText(/^Kt \d/)).not.toBeInTheDocument()
-      expect(screen.queryByText(/^Gn \d/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/🏆Y \d/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/^S \d/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/^K \d/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/^G \d/)).not.toBeInTheDocument()
     })
 
     it('omits all summary award badges when career stats are unavailable', () => {
       render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
-      expect(screen.queryByText(/^Y \d/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/🏆Y \d/)).not.toBeInTheDocument()
     })
   })
 })
