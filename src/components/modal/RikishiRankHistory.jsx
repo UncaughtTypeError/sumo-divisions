@@ -4,6 +4,7 @@ import { RECORD_STATUS_INFO, RECORD_STATUS_TYPES } from '../../utils/records';
 import { BASHO_NICKNAMES, getCurrentBashoId } from '../../utils/bashoId';
 import Tooltip from '../common/Tooltip';
 import { useRikishiAllMatches } from '../../hooks/useRikishi';
+import { useCareerStats } from '../../hooks/useCareerStats';
 import styles from './RankHistoryModal.module.css';
 
 const KK_INFO = RECORD_STATUS_INFO[RECORD_STATUS_TYPES.KACHI_KOSHI];
@@ -77,6 +78,14 @@ function RikishiRankHistory({ rikishiDetails }) {
     : null;
 
   const { data: allMatchesData, isLoading: matchesLoading } = useRikishiAllMatches(rikishiId, { enabled: !!rikishiId && displayHistory.length > 0 });
+
+  const careerStats = useCareerStats(rikishiId);
+  const awardSets = useMemo(() => ({
+    yusho:     new Set(careerStats?.yushoBashos    ?? []),
+    shukunsho: new Set(careerStats?.shukunshoBashos ?? []),
+    kantosho:  new Set(careerStats?.kantoshoBashos  ?? []),
+    ginosho:   new Set(careerStats?.ginoshoBashos   ?? []),
+  }), [careerStats]);
 
   const recordByBasho = useMemo(() => {
     if (!allMatchesData?.records || !rikishiId) return {};
@@ -159,7 +168,33 @@ function RikishiRankHistory({ rikishiDetails }) {
               );
               return (
                 <tr key={entry.id ?? entry.bashoId} className={styles.row}>
-                  <td className={`${styles.td} ${styles.tdTournament}`}>{formatBashoId(entry.bashoId)}</td>
+                  <td className={`${styles.td} ${styles.tdTournament}`}>
+                    {formatBashoId(entry.bashoId)}
+                    {(awardSets.yusho.has(entry.bashoId) || awardSets.shukunsho.has(entry.bashoId) || awardSets.kantosho.has(entry.bashoId) || awardSets.ginosho.has(entry.bashoId)) && (
+                      <span className={styles.awardBadges}>
+                        {awardSets.yusho.has(entry.bashoId) && (
+                          <Tooltip position="top" content={<><strong>Yusho</strong><span>Tournament champion (優勝)</span></>}>
+                            <span className={styles.yushoBadge}>Y</span>
+                          </Tooltip>
+                        )}
+                        {awardSets.shukunsho.has(entry.bashoId) && (
+                          <Tooltip position="top" content={<><strong>Shukunsho</strong><span>Outstanding Performance Prize (殊勲賞)</span></>}>
+                            <span className={styles.sanshoBadge}>Sh</span>
+                          </Tooltip>
+                        )}
+                        {awardSets.kantosho.has(entry.bashoId) && (
+                          <Tooltip position="top" content={<><strong>Kantosho</strong><span>Fighting Spirit Prize (敢闘賞)</span></>}>
+                            <span className={styles.sanshoBadge}>Kt</span>
+                          </Tooltip>
+                        )}
+                        {awardSets.ginosho.has(entry.bashoId) && (
+                          <Tooltip position="top" content={<><strong>Ginosho</strong><span>Technique Prize (技能賞)</span></>}>
+                            <span className={styles.sanshoBadge}>Gn</span>
+                          </Tooltip>
+                        )}
+                      </span>
+                    )}
+                  </td>
                   <td className={styles.td}>{entry.rank}</td>
                   <td className={`${styles.td} ${styles.tdRecord}`}>
                     <span className={styles.recordCell}>{badge}{recordStr}</span>
