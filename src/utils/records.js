@@ -105,6 +105,27 @@ export function isAbsentKyujo(record, day, division) {
   );
 }
 
+/**
+ * Returns true if a wrestler has withdrawn from the basho — i.e. they have at
+ * least one 'absent' day with no subsequent win, loss, or fusen-win. Works for
+ * all divisions (unlike isAbsentKyujo, does not short-circuit for sekitori).
+ * Use this for the full-tournament default view where we want to detect current
+ * withdrawal regardless of division.
+ *
+ * @param {Array} record - Wrestler's full record array
+ * @returns {boolean}
+ */
+export function isWithdrawn(record) {
+  if (!Array.isArray(record)) return false;
+  return record.some(
+    (entry, i) =>
+      entry.result === 'absent' &&
+      !record.slice(i + 1).some(
+        (r) => r.result === 'win' || r.result === 'loss' || r.result === 'fusen win',
+      ),
+  );
+}
+
 // ─── Rank classification ──────────────────────────────────────────────────────
 
 /** @param {string} rank @returns {boolean} */

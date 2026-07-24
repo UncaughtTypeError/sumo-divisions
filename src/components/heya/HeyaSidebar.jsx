@@ -7,7 +7,7 @@ import { useHeyaData } from '../../hooks/useHeyaData';
 import { getCurrentBashoId } from '../../utils/bashoId';
 import { RANK_ORDER, RANK_INFO, RANK_TO_API_DIVISION, RANK_COLORS } from '../../utils/constants';
 import { getWrestlerAwards } from '../../utils/awards';
-import { computeRecordOnDay, isAbsentKyujo } from '../../utils/records';
+import { computeRecordOnDay, isAbsentKyujo, isWithdrawn } from '../../utils/records';
 import { getPreviousBashoId, computeWrestlerRankIndicators } from '../../utils/rankMovement';
 import IchimonBadge from './IchimonBadge';
 import WrestlerGrid from '../sidebar/WrestlerGrid';
@@ -164,7 +164,7 @@ function HeyaSidebar() {
           const dayRecord = computeRecordOnDay(w.record, selectedDay, apiDiv);
           return { ...w, ...dayRecord, isKyujo: dayResult === 'absent' && isAbsentKyujo(w.record, selectedDay, apiDiv) };
         }
-        return { ...w, isKyujo: false };
+        return { ...w, isKyujo: isWithdrawn(w.record) };
       })
       .filter(Boolean);
 
