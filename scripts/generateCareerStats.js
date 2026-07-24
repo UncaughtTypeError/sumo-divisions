@@ -169,7 +169,10 @@ function sleep(ms) {
 function ensureRecord(records, id) {
   if (!records.has(id)) {
     records.set(id, {
-      yusho: 0, yushoByDivision: {}, shukunsho: 0, kantosho: 0, ginosho: 0,
+      yusho: 0, yushoByDivision: {}, yushoBashos: [],
+      shukunsho: 0, shukunshoBashos: [],
+      kantosho: 0, kantoshoBashos: [],
+      ginosho: 0, ginoshoBashos: [],
       totalWins: 0, totalLosses: 0, totalAbsences: 0,
       bashosByDivision: {},
     });
@@ -196,6 +199,7 @@ async function processBasho(bashoId, records) {
     if (!id) continue;
     const r = ensureRecord(records, id);
     r.yusho++;
+    r.yushoBashos.push(bashoId);
     if (y.type) r.yushoByDivision[y.type] = (r.yushoByDivision[y.type] ?? 0) + 1;
   }
 
@@ -204,9 +208,9 @@ async function processBasho(bashoId, records) {
     const id = wrestlerId(p);
     if (!id) continue;
     const r = ensureRecord(records, id);
-    if      (p.type === 'Shukun-sho') r.shukunsho++;
-    else if (p.type === 'Kanto-sho')  r.kantosho++;
-    else if (p.type === 'Gino-sho')   r.ginosho++;
+    if      (p.type === 'Shukun-sho') { r.shukunsho++; r.shukunshoBashos.push(bashoId); }
+    else if (p.type === 'Kanto-sho')  { r.kantosho++;  r.kantoshoBashos.push(bashoId); }
+    else if (p.type === 'Gino-sho')   { r.ginosho++;   r.ginoshoBashos.push(bashoId); }
   }
 
   // Banzuke — wins/losses/absences and division appearance counts
@@ -255,7 +259,11 @@ async function main() {
     for (const [id, stats] of Object.entries(existing.records ?? {})) {
       records.set(Number(id), {
         ...stats,
-        yushoByDivision: { ...(stats.yushoByDivision ?? {}) },
+        yushoByDivision:  { ...(stats.yushoByDivision ?? {}) },
+        yushoBashos:      [...(stats.yushoBashos ?? [])],
+        shukunshoBashos:  [...(stats.shukunshoBashos ?? [])],
+        kantoshoBashos:   [...(stats.kantoshoBashos ?? [])],
+        ginoshoBashos:    [...(stats.ginoshoBashos ?? [])],
         bashosByDivision: { ...(stats.bashosByDivision ?? {}) },
       });
     }
