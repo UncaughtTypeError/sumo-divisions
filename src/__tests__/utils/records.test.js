@@ -6,6 +6,7 @@ import {
   getRecordStatus,
   computeRecordOnDay,
   isAbsentKyujo,
+  isWithdrawn,
   isYokozuna,
   isMaegashira,
   buildRankLookup,
@@ -484,6 +485,41 @@ describe('records utilities', () => {
       it('returns true when only fusen loss follows — not evidence of subsequent presence', () => {
         expect(isAbsentKyujo([r('win'), r('absent'), r('fusen loss')], 2, 'Makushita')).toBe(true)
       })
+    })
+  })
+
+  describe('isWithdrawn', () => {
+    const r = (result) => ({ result })
+
+    it('returns true when wrestler has absent days with no subsequent bouts (sekitori)', () => {
+      // Hoshoryu 0-2-13 pattern: fought 2, then all absent
+      expect(isWithdrawn([r('loss'), r('loss'), r('absent'), r('absent')])).toBe(true)
+    })
+
+    it('returns true when wrestler never fought (Onosato 0-0-15 pattern)', () => {
+      expect(isWithdrawn(Array(15).fill(r('absent')))).toBe(true)
+    })
+
+    it('returns false when wrestler was absent one day but fought again after', () => {
+      // Temporary absence — not a withdrawal
+      expect(isWithdrawn([r('win'), r('absent'), r('loss')])).toBe(false)
+    })
+
+    it('returns false when wrestler has no absences', () => {
+      expect(isWithdrawn([r('win'), r('loss'), r('win')])).toBe(false)
+    })
+
+    it('returns false for non-array record', () => {
+      expect(isWithdrawn(null)).toBe(false)
+      expect(isWithdrawn(undefined)).toBe(false)
+    })
+
+    it('returns false for empty record', () => {
+      expect(isWithdrawn([])).toBe(false)
+    })
+
+    it('treats fusen loss after absent as non-bout (does not count as return)', () => {
+      expect(isWithdrawn([r('win'), r('absent'), r('fusen loss')])).toBe(true)
     })
   })
 })

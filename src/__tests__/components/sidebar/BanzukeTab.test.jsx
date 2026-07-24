@@ -210,6 +210,24 @@ describe('BanzukeTab', () => {
     expect(screen.getByText('Hoshoryu')).toBeInTheDocument()
   })
 
+  it('shows Kyujo badge in default view for a wrestler who withdrew mid-basho', () => {
+    const group = baseGroup('Makuuchi',
+      [wrestlerWithRecord(1, 'Terunofuji', makeRecord('win', 'loss', 'win'))],
+      [wrestlerWithRecord(2, 'Hoshoryu', makeRecord('loss', 'loss', 'absent', 'absent'))],
+    )
+    render(<BanzukeTab {...defaultProps} maxDay={4} rankGroups={[group]} />)
+    expect(screen.getByText('Kyujo')).toBeInTheDocument()
+  })
+
+  it('does not show Kyujo badge in default view when wrestler was absent then returned', () => {
+    const group = baseGroup('Makuuchi',
+      [wrestlerWithRecord(1, 'Terunofuji', makeRecord('win', 'absent', 'win'))],
+      [],
+    )
+    render(<BanzukeTab {...defaultProps} maxDay={3} rankGroups={[group]} />)
+    expect(screen.queryByText('Kyujo')).not.toBeInTheDocument()
+  })
+
   it('shows Kyujo badge for absent wrestlers on selected day', () => {
     const group = baseGroup('Yokozuna',
       [wrestlerWithRecord(1, 'Terunofuji', makeRecord('win', 'loss', 'win'))],
