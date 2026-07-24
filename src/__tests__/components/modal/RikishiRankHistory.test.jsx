@@ -529,5 +529,38 @@ describe('RikishiRankHistory', () => {
       expect(screen.getByText('Y')).toBeInTheDocument()
       expect(screen.getByText('Sh')).toBeInTheDocument()
     })
+
+    it('shows Y count badge in summary bar when yusho total > 0', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, yusho: 4, yushoBashos: [] })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('Y 4')).toBeInTheDocument()
+    })
+
+    it('shows sansho count badges in summary bar', () => {
+      useCareerStats.mockReturnValue({
+        ...emptyCareerStats,
+        shukunsho: 3, shukunshoBashos: [],
+        kantosho: 2, kantoshoBashos: [],
+        ginosho: 1, ginoshoBashos: [],
+      })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('Sh 3')).toBeInTheDocument()
+      expect(screen.getByText('Kt 2')).toBeInTheDocument()
+      expect(screen.getByText('Gn 1')).toBeInTheDocument()
+    })
+
+    it('omits summary count badges when counts are zero', () => {
+      useCareerStats.mockReturnValue(emptyCareerStats)
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.queryByText(/^Y \d/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/^Sh \d/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/^Kt \d/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/^Gn \d/)).not.toBeInTheDocument()
+    })
+
+    it('omits all summary award badges when career stats are unavailable', () => {
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.queryByText(/^Y \d/)).not.toBeInTheDocument()
+    })
   })
 })

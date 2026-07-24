@@ -125,6 +125,34 @@ function RikishiRankHistory({ rikishiDetails }) {
           <span className={styles.summaryLabel}>Bashos</span>
           <span className={styles.summaryValue}>{displayHistory.length}</span>
         </span>
+        {careerStats?.yusho > 0 && (
+          <span className={styles.summaryItem}>
+            <Tooltip position="top" content={<><strong>Yusho</strong><span>Tournament championships (優勝)</span></>}>
+              <span className={styles.yushoBadge}>Y {careerStats.yusho}</span>
+            </Tooltip>
+          </span>
+        )}
+        {careerStats?.shukunsho > 0 && (
+          <span className={styles.summaryItem}>
+            <Tooltip position="top" content={<><strong>Shukunsho</strong><span>Outstanding Performance Prize (殊勲賞)</span></>}>
+              <span className={styles.sanshoBadge}>Sh {careerStats.shukunsho}</span>
+            </Tooltip>
+          </span>
+        )}
+        {careerStats?.kantosho > 0 && (
+          <span className={styles.summaryItem}>
+            <Tooltip position="top" content={<><strong>Kantosho</strong><span>Fighting Spirit Prize (敢闘賞)</span></>}>
+              <span className={styles.sanshoBadge}>Kt {careerStats.kantosho}</span>
+            </Tooltip>
+          </span>
+        )}
+        {careerStats?.ginosho > 0 && (
+          <span className={styles.summaryItem}>
+            <Tooltip position="top" content={<><strong>Ginosho</strong><span>Technique Prize (技能賞)</span></>}>
+              <span className={styles.sanshoBadge}>Gn {careerStats.ginosho}</span>
+            </Tooltip>
+          </span>
+        )}
         <span className={styles.summaryItem}>
           <span className={`${styles.summaryValue} ${styles.summaryUp}`}>▲ {improved}</span>
           <span className={styles.summaryLabel}> climbs</span>
