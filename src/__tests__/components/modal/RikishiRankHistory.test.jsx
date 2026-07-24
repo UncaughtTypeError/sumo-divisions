@@ -2,9 +2,14 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import RikishiRankHistory from '../../../components/modal/RikishiRankHistory'
 import { useRikishiAllMatches } from '../../../hooks/useRikishi'
+import { useCareerStats } from '../../../hooks/useCareerStats'
 
 vi.mock('../../../hooks/useRikishi', () => ({
   useRikishiAllMatches: vi.fn(() => ({ data: null, isLoading: false })),
+}))
+
+vi.mock('../../../hooks/useCareerStats', () => ({
+  useCareerStats: vi.fn(() => null),
 }))
 
 vi.mock('../../../utils/bashoId', async (importOriginal) => {
@@ -22,9 +27,19 @@ const rikishiWithHistory = {
   ],
 }
 
+const emptyCareerStats = {
+  yusho: 0, yushoByDivision: {}, yushoBashos: [],
+  shukunsho: 0, shukunshoBashos: [],
+  kantosho: 0, kantoshoBashos: [],
+  ginosho: 0, ginoshoBashos: [],
+  totalWins: 0, totalLosses: 0, totalAbsences: 0,
+  bashosByDivision: {},
+}
+
 describe('RikishiRankHistory', () => {
   afterEach(() => {
     useRikishiAllMatches.mockReturnValue({ data: null, isLoading: false })
+    useCareerStats.mockReturnValue(null)
   })
   it('renders empty message when rankHistory is empty', () => {
     render(<RikishiRankHistory rikishiDetails={{ rankHistory: [] }} />)
@@ -447,6 +462,72 @@ describe('RikishiRankHistory', () => {
       render(<RikishiRankHistory rikishiDetails={currentRikishi} />)
       expect(screen.getByText('2-5')).toBeInTheDocument()
       expect(screen.queryByText('MK')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('award badges (yusho and sansho)', () => {
+    it('shows no award badges when career stats are unavailable', () => {
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.queryByText('Y')).not.toBeInTheDocument()
+      expect(screen.queryByText('Sh')).not.toBeInTheDocument()
+      expect(screen.queryByText('Kt')).not.toBeInTheDocument()
+      expect(screen.queryByText('Gn')).not.toBeInTheDocument()
+    })
+
+    it('shows no award badges when career stats exist but no matching bashos', () => {
+      useCareerStats.mockReturnValue(emptyCareerStats)
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.queryByText('Y')).not.toBeInTheDocument()
+    })
+
+    it('shows Y badge on the row matching a yusho basho', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, yusho: 1, yushoBashos: ['202605'] })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('Y')).toBeInTheDocument()
+    })
+
+    it('does not show Y badge on non-yusho rows', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, yusho: 1, yushoBashos: ['202605'] })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      // Only one Y badge even though there are multiple rows
+      expect(screen.getAllByText('Y')).toHaveLength(1)
+    })
+
+    it('Y badge shows Yusho tooltip on hover', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, yusho: 1, yushoBashos: ['202605'] })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      fireEvent.mouseEnter(screen.getByText('Y').closest('[class*="tooltipWrapper"]'))
+      expect(screen.getByText('Yusho')).toBeInTheDocument()
+      expect(screen.getByText('Tournament champion (優勝)')).toBeInTheDocument()
+    })
+
+    it('shows Sh badge for a shukunsho basho', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, shukunsho: 1, shukunshoBashos: ['202603'] })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('Sh')).toBeInTheDocument()
+    })
+
+    it('shows Kt badge for a kantosho basho', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, kantosho: 1, kantoshoBashos: ['202603'] })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('Kt')).toBeInTheDocument()
+    })
+
+    it('shows Gn badge for a ginosho basho', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, ginosho: 1, ginoshoBashos: ['202603'] })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('Gn')).toBeInTheDocument()
+    })
+
+    it('shows multiple award badges on the same row when wrestler won yusho and a sansho in the same basho', () => {
+      useCareerStats.mockReturnValue({
+        ...emptyCareerStats,
+        yusho: 1, yushoBashos: ['202605'],
+        shukunsho: 1, shukunshoBashos: ['202605'],
+      })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('Y')).toBeInTheDocument()
+      expect(screen.getByText('Sh')).toBeInTheDocument()
     })
   })
 })
