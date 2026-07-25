@@ -32,6 +32,7 @@ const emptyCareerStats = {
   shukunsho: 0, shukunshoBashos: [],
   kantosho: 0, kantoshoBashos: [],
   ginosho: 0, ginoshoBashos: [],
+  kinboshiWon: 0, kinboshiGiven: 0,
   totalWins: 0, totalLosses: 0, totalAbsences: 0,
   bashosByDivision: {},
 }
@@ -61,7 +62,7 @@ describe('RikishiRankHistory', () => {
 
   it('renders one row per non-Mae-zumo entry', () => {
     render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
-    // "Yokozuna 1 East" appears in summary (career best) + 2 table rows
+    // "Yokozuna 1 East" appears in summary bar (career highest rank) + 2 table rows
     expect(screen.getAllByText('Yokozuna 1 East').length).toBeGreaterThanOrEqual(2)
     expect(screen.getByText('Komusubi 1 East')).toBeInTheDocument()
     expect(screen.getByText('Makushita 10 West')).toBeInTheDocument()
@@ -82,12 +83,9 @@ describe('RikishiRankHistory', () => {
   })
 
   describe('summary bar', () => {
-    it('renders career best, bashos, climbs and drops', () => {
+    it('renders bashos count', () => {
       render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
-      expect(screen.getByText('Career best')).toBeInTheDocument()
       expect(screen.getByText('Bashos')).toBeInTheDocument()
-      expect(screen.getByText('climbs')).toBeInTheDocument()
-      expect(screen.getByText('drops')).toBeInTheDocument()
     })
 
     it('shows correct basho count excluding Mae-zumo', () => {
@@ -98,8 +96,75 @@ describe('RikishiRankHistory', () => {
 
     it('does not render summary when history is empty', () => {
       render(<RikishiRankHistory rikishiDetails={{ rankHistory: [] }} />)
-      expect(screen.queryByText('Career best')).not.toBeInTheDocument()
       expect(screen.queryByText('Bashos')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('stats row', () => {
+    it('shows career highest rank in the summary bar', () => {
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('Career highest rank')).toBeInTheDocument()
+      // "Yokozuna 1 East" appears in summary bar + 2 table rows
+      expect(screen.getAllByText('Yokozuna 1 East').length).toBeGreaterThanOrEqual(2)
+    })
+
+    it('shows climbs and drops in the stats row', () => {
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('climbs')).toBeInTheDocument()
+      expect(screen.getByText('drops')).toBeInTheDocument()
+    })
+
+    it('shows career best record loading state while matches are fetching', () => {
+      useRikishiAllMatches.mockReturnValue({ data: null, isLoading: true })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('Career best record')).toBeInTheDocument()
+      // loading spinner for best record (in addition to per-row spinners)
+      expect(screen.getAllByLabelText('Loading record').length).toBeGreaterThanOrEqual(1)
+    })
+
+    it('shows career best record with division when match data is available', () => {
+      const rikishiWithId = { id: 45, ...rikishiWithHistory }
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(11).fill({ bashoId: '202603', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(4).fill({ bashoId: '202603', winnerId: 99, division: 'Makuuchi' }),
+            ...Array(10).fill({ bashoId: '202605', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(5).fill({ bashoId: '202605', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
+      expect(screen.getByText('Career best record')).toBeInTheDocument()
+      // 11-4 is the best record (202603) — appears in stats row + table row
+      expect(screen.getAllByText('11-4').length).toBeGreaterThanOrEqual(2)
+      // division label appears after the record in the stats row
+      expect(screen.getByText('· Makuuchi')).toBeInTheDocument()
+    })
+
+    it('shows best record including absences', () => {
+      const rikishiWithId = { id: 45, ...rikishiWithHistory }
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(10).fill({ bashoId: '202605', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(2).fill({ bashoId: '202605', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
+      // 10-2-3 (3 absences from 15 expected - 10 - 2) — appears in stats row + table row
+      expect(screen.getAllByText('10-2-3').length).toBeGreaterThanOrEqual(2)
+    })
+
+    it('does not render stats row or summary when history is empty', () => {
+      render(<RikishiRankHistory rikishiDetails={{ rankHistory: [] }} />)
+      expect(screen.queryByText('Career highest rank')).not.toBeInTheDocument()
+      expect(screen.queryByText('Career best record')).not.toBeInTheDocument()
+      expect(screen.queryByText('climbs')).not.toBeInTheDocument()
+      expect(screen.queryByText('drops')).not.toBeInTheDocument()
     })
   })
 
@@ -225,7 +290,8 @@ describe('RikishiRankHistory', () => {
       })
       render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
       expect(screen.getByText('10-5')).toBeInTheDocument()
-      expect(screen.getByText('11-4')).toBeInTheDocument()
+      // 11-4 is the best record — appears in stats row + table row
+      expect(screen.getAllByText('11-4').length).toBeGreaterThanOrEqual(2)
     })
 
     it('includes absences in record when wrestler had kyujo days', () => {
@@ -241,7 +307,8 @@ describe('RikishiRankHistory', () => {
         isLoading: false,
       })
       render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
-      expect(screen.getByText('0-2-13')).toBeInTheDocument()
+      // 0-2-13 appears in stats row (best record) + table row
+      expect(screen.getAllByText('0-2-13').length).toBeGreaterThanOrEqual(2)
     })
 
     it('omits absence suffix when no absences', () => {
@@ -256,7 +323,8 @@ describe('RikishiRankHistory', () => {
         isLoading: false,
       })
       render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
-      expect(screen.getByText('8-7')).toBeInTheDocument()
+      // 8-7 appears in stats row (best record) + table row
+      expect(screen.getAllByText('8-7').length).toBeGreaterThanOrEqual(2)
     })
 
     it('shows KK badge when wins exceed losses', () => {
@@ -307,7 +375,8 @@ describe('RikishiRankHistory', () => {
         isLoading: false,
       })
       render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
-      expect(screen.getByText('7-7-1')).toBeInTheDocument()
+      // 7-7-1 appears in stats row (best record) + table row
+      expect(screen.getAllByText('7-7-1').length).toBeGreaterThanOrEqual(2)
       expect(screen.getByText('MK')).toBeInTheDocument()
       expect(screen.queryByText('KK')).not.toBeInTheDocument()
     })
@@ -324,8 +393,8 @@ describe('RikishiRankHistory', () => {
         isLoading: false,
       })
       render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
-      // 5 + 2 = 7 bouts, 7 expected → 0 absences
-      expect(screen.getByText('5-2')).toBeInTheDocument()
+      // 5-2 (no absences): appears in stats row (best record) + table row
+      expect(screen.getAllByText('5-2').length).toBeGreaterThanOrEqual(2)
     })
 
     it('KK badge shows Kachi-koshi tooltip on hover', () => {
@@ -376,7 +445,8 @@ describe('RikishiRankHistory', () => {
         isLoading: false,
       })
       render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
-      expect(screen.getByText('8-8')).toBeInTheDocument()
+      // 8-8 appears in stats row (best record) + table row
+      expect(screen.getAllByText('8-8').length).toBeGreaterThanOrEqual(2)
       expect(screen.queryByText('KK')).not.toBeInTheDocument()
       expect(screen.queryByText('MK')).not.toBeInTheDocument()
     })
@@ -390,8 +460,8 @@ describe('RikishiRankHistory', () => {
         isLoading: false,
       })
       render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
-      // 1 win in a 15-bout basho → 14 absences
-      expect(screen.getByText('1-0-14')).toBeInTheDocument()
+      // 1-0-14: appears in stats row (best record) + table row
+      expect(screen.getAllByText('1-0-14').length).toBeGreaterThanOrEqual(2)
       expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(2)
     })
   })
@@ -415,7 +485,8 @@ describe('RikishiRankHistory', () => {
         isLoading: false,
       })
       render(<RikishiRankHistory rikishiDetails={currentRikishi} />)
-      expect(screen.getByText('5-3')).toBeInTheDocument()
+      // 5-3 appears in stats row (best record) + table row
+      expect(screen.getAllByText('5-3').length).toBeGreaterThanOrEqual(2)
     })
 
     it('does not show MK badge when unplayed current-basho bouts would artificially push losses past wins', () => {
@@ -430,7 +501,8 @@ describe('RikishiRankHistory', () => {
         isLoading: false,
       })
       render(<RikishiRankHistory rikishiDetails={currentRikishi} />)
-      expect(screen.getByText('3-3')).toBeInTheDocument()
+      // 3-3 appears in stats row (best record) + table row
+      expect(screen.getAllByText('3-3').length).toBeGreaterThanOrEqual(2)
       expect(screen.queryByText('MK')).not.toBeInTheDocument()
     })
 
@@ -445,7 +517,8 @@ describe('RikishiRankHistory', () => {
         isLoading: false,
       })
       render(<RikishiRankHistory rikishiDetails={currentRikishi} />)
-      expect(screen.getByText('6-1')).toBeInTheDocument()
+      // 6-1 appears in stats row (best record) + table row
+      expect(screen.getAllByText('6-1').length).toBeGreaterThanOrEqual(2)
       expect(screen.queryByText('KK')).not.toBeInTheDocument()
     })
 
@@ -460,7 +533,8 @@ describe('RikishiRankHistory', () => {
         isLoading: false,
       })
       render(<RikishiRankHistory rikishiDetails={currentRikishi} />)
-      expect(screen.getByText('2-5')).toBeInTheDocument()
+      // 2-5 appears in stats row (best record) + table row
+      expect(screen.getAllByText('2-5').length).toBeGreaterThanOrEqual(2)
       expect(screen.queryByText('MK')).not.toBeInTheDocument()
     })
   })
@@ -561,6 +635,47 @@ describe('RikishiRankHistory', () => {
     it('omits all summary award badges when career stats are unavailable', () => {
       render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
       expect(screen.queryByText(/🏆Y \d/)).not.toBeInTheDocument()
+    })
+
+    it('shows kinboshi won badge in summary bar when kinboshiWon > 0', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, kinboshiWon: 12 })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('★12')).toBeInTheDocument()
+    })
+
+    it('shows kinboshi given badge in summary bar when kinboshiGiven > 0', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, kinboshiGiven: 5 })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('★5')).toBeInTheDocument()
+    })
+
+    it('shows both kinboshi won and given badges when wrestler has both', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, kinboshiWon: 8, kinboshiGiven: 3 })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('★8')).toBeInTheDocument()
+      expect(screen.getByText('★3')).toBeInTheDocument()
+    })
+
+    it('omits kinboshi badges when counts are zero', () => {
+      useCareerStats.mockReturnValue(emptyCareerStats)
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.queryByText(/★\d/)).not.toBeInTheDocument()
+    })
+
+    it('kinboshi won badge shows correct tooltip on hover', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, kinboshiWon: 4 })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      fireEvent.mouseEnter(screen.getByText('★4').closest('[class*="tooltipWrapper"]'))
+      expect(screen.getByText('Kinboshi')).toBeInTheDocument()
+      expect(screen.getByText('Gold star for defeating a Yokozuna')).toBeInTheDocument()
+    })
+
+    it('kinboshi given badge shows correct tooltip on hover', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, kinboshiGiven: 6 })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      fireEvent.mouseEnter(screen.getByText('★6').closest('[class*="tooltipWrapper"]'))
+      expect(screen.getByText('Kinboshi Given')).toBeInTheDocument()
+      expect(screen.getByText('Gold star given to Maegashira opponent')).toBeInTheDocument()
     })
   })
 })
