@@ -33,6 +33,7 @@ const emptyCareerStats = {
   kantosho: 0, kantoshoBashos: [],
   ginosho: 0, ginoshoBashos: [],
   kinboshiWon: 0, kinboshiGiven: 0,
+  kinboshiWonByBasho: {}, kinboshiGivenByBasho: {},
   totalWins: 0, totalLosses: 0, totalAbsences: 0,
   bashosByDivision: {},
 }
@@ -676,6 +677,85 @@ describe('RikishiRankHistory', () => {
       fireEvent.mouseEnter(screen.getByText('★6').closest('[class*="tooltipWrapper"]'))
       expect(screen.getByText('Kinboshi Given')).toBeInTheDocument()
       expect(screen.getByText('Gold star given to Maegashira opponent')).toBeInTheDocument()
+    })
+
+    it('shows kinboshi won badge on the matching tournament row', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, kinboshiWonByBasho: { '202605': 1 } })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('★1')).toBeInTheDocument()
+    })
+
+    it('shows kinboshi won badge with count > 1 when wrestler earned multiple in same basho', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, kinboshiWonByBasho: { '202605': 3 } })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('★3')).toBeInTheDocument()
+    })
+
+    it('shows kinboshi given badge on the matching tournament row', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, kinboshiGivenByBasho: { '202603': 2 } })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('★2')).toBeInTheDocument()
+    })
+
+    it('shows kinboshi badges only on the rows where they occurred', () => {
+      useCareerStats.mockReturnValue({
+        ...emptyCareerStats,
+        kinboshiWonByBasho: { '202605': 1 },
+      })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      // Only one row-level kinboshi badge rendered
+      expect(screen.getAllByText('★1')).toHaveLength(1)
+    })
+
+    it('shows kinboshi won and given badges on different rows simultaneously', () => {
+      useCareerStats.mockReturnValue({
+        ...emptyCareerStats,
+        kinboshiWonByBasho:   { '202605': 1 },
+        kinboshiGivenByBasho: { '202603': 2 },
+      })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('★1')).toBeInTheDocument()
+      expect(screen.getByText('★2')).toBeInTheDocument()
+    })
+
+    it('omits per-row kinboshi badges when kinboshiWonByBasho is empty', () => {
+      useCareerStats.mockReturnValue(emptyCareerStats)
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.queryByText(/★\d/)).not.toBeInTheDocument()
+    })
+
+    it('omits per-row kinboshi badge when the basho does not match', () => {
+      // kinboshi was in 202601 but that basho is not in the fixture history
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, kinboshiWonByBasho: { '202601': 1 } })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.queryByText('★1')).not.toBeInTheDocument()
+    })
+
+    it('per-row kinboshi won badge shows correct tooltip on hover', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, kinboshiWonByBasho: { '202605': 1 } })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      fireEvent.mouseEnter(screen.getByText('★1').closest('[class*="tooltipWrapper"]'))
+      expect(screen.getByText('Kinboshi')).toBeInTheDocument()
+      expect(screen.getByText('Gold star for defeating a Yokozuna')).toBeInTheDocument()
+    })
+
+    it('per-row kinboshi given badge shows correct tooltip on hover', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, kinboshiGivenByBasho: { '202603': 1 } })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      fireEvent.mouseEnter(screen.getByText('★1').closest('[class*="tooltipWrapper"]'))
+      expect(screen.getByText('Kinboshi Given')).toBeInTheDocument()
+      expect(screen.getByText('Gold star given to Maegashira opponent')).toBeInTheDocument()
+    })
+
+    it('shows kinboshi row badge alongside yusho badge on the same row', () => {
+      useCareerStats.mockReturnValue({
+        ...emptyCareerStats,
+        yusho: 1, yushoBashos: ['202605'],
+        kinboshiWonByBasho: { '202605': 1 },
+      })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('🏆Y')).toBeInTheDocument()
+      expect(screen.getByText('★1')).toBeInTheDocument()
     })
   })
 })
