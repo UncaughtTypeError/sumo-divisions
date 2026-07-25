@@ -174,6 +174,7 @@ function ensureRecord(records, id) {
       kantosho: 0, kantoshoBashos: [],
       ginosho: 0, ginoshoBashos: [],
       kinboshiWon: 0, kinboshiGiven: 0,
+      kinboshiWonByBasho: {}, kinboshiGivenByBasho: {},
       totalWins: 0, totalLosses: 0, totalAbsences: 0,
       bashosByDivision: {},
     });
@@ -252,8 +253,10 @@ async function processBasho(bashoId, records) {
           const opponentRank = rankLookup.get(match.opponentID) ?? '';
           if (isMaegashira && match.result === 'win' && opponentRank.toLowerCase().startsWith('yokozuna')) {
             r.kinboshiWon++;
+            r.kinboshiWonByBasho[bashoId] = (r.kinboshiWonByBasho[bashoId] ?? 0) + 1;
           } else if (isYokozuna && match.result === 'loss' && opponentRank.toLowerCase().startsWith('maegashira')) {
             r.kinboshiGiven++;
+            r.kinboshiGivenByBasho[bashoId] = (r.kinboshiGivenByBasho[bashoId] ?? 0) + 1;
           }
         }
       }
@@ -289,8 +292,10 @@ async function main() {
         shukunshoBashos:  [...(stats.shukunshoBashos ?? [])],
         kantoshoBashos:   [...(stats.kantoshoBashos ?? [])],
         ginoshoBashos:    [...(stats.ginoshoBashos ?? [])],
-        kinboshiWon:      stats.kinboshiWon   ?? 0,
-        kinboshiGiven:    stats.kinboshiGiven ?? 0,
+        kinboshiWon:          stats.kinboshiWon          ?? 0,
+        kinboshiGiven:        stats.kinboshiGiven        ?? 0,
+        kinboshiWonByBasho:   { ...(stats.kinboshiWonByBasho   ?? {}) },
+        kinboshiGivenByBasho: { ...(stats.kinboshiGivenByBasho ?? {}) },
         bashosByDivision: { ...(stats.bashosByDivision ?? {}) },
       });
     }

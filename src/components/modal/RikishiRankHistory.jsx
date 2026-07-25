@@ -84,10 +84,12 @@ function RikishiRankHistory({ rikishiDetails }) {
 
   const careerStats = useCareerStats(rikishiId);
   const awardSets = useMemo(() => ({
-    yusho:     new Set(careerStats?.yushoBashos    ?? []),
-    shukunsho: new Set(careerStats?.shukunshoBashos ?? []),
-    kantosho:  new Set(careerStats?.kantoshoBashos  ?? []),
-    ginosho:   new Set(careerStats?.ginoshoBashos   ?? []),
+    yusho:              new Set(careerStats?.yushoBashos     ?? []),
+    shukunsho:          new Set(careerStats?.shukunshoBashos ?? []),
+    kantosho:           new Set(careerStats?.kantoshoBashos  ?? []),
+    ginosho:            new Set(careerStats?.ginoshoBashos   ?? []),
+    kinboshiWonByBasho:   careerStats?.kinboshiWonByBasho   ?? {},
+    kinboshiGivenByBasho: careerStats?.kinboshiGivenByBasho ?? {},
   }), [careerStats]);
 
   const recordByBasho = useMemo(() => {
@@ -215,14 +217,22 @@ function RikishiRankHistory({ rikishiDetails }) {
                 <tr key={entry.id ?? entry.bashoId} className={styles.row}>
                   <td className={`${styles.td} ${styles.tdTournament}`}>
                     {formatBashoId(entry.bashoId)}
-                    {(awardSets.yusho.has(entry.bashoId) || awardSets.shukunsho.has(entry.bashoId) || awardSets.kantosho.has(entry.bashoId) || awardSets.ginosho.has(entry.bashoId)) && (
-                      <span className={styles.awardBadges}>
-                        {awardSets.yusho.has(entry.bashoId) && <AwardBadge type={AWARD_TYPES.YUSHO} />}
-                        {awardSets.shukunsho.has(entry.bashoId) && <AwardBadge type={AWARD_TYPES.SHUKUN_SHO} />}
-                        {awardSets.kantosho.has(entry.bashoId) && <AwardBadge type={AWARD_TYPES.KANTO_SHO} />}
-                        {awardSets.ginosho.has(entry.bashoId) && <AwardBadge type={AWARD_TYPES.GINO_SHO} />}
-                      </span>
-                    )}
+                    {(() => {
+                      const wonCount   = awardSets.kinboshiWonByBasho[entry.bashoId]   ?? 0;
+                      const givenCount = awardSets.kinboshiGivenByBasho[entry.bashoId] ?? 0;
+                      const hasAward   = awardSets.yusho.has(entry.bashoId) || awardSets.shukunsho.has(entry.bashoId) || awardSets.kantosho.has(entry.bashoId) || awardSets.ginosho.has(entry.bashoId);
+                      if (!hasAward && wonCount === 0 && givenCount === 0) return null;
+                      return (
+                        <span className={styles.awardBadges}>
+                          {awardSets.yusho.has(entry.bashoId)     && <AwardBadge type={AWARD_TYPES.YUSHO} />}
+                          {awardSets.shukunsho.has(entry.bashoId) && <AwardBadge type={AWARD_TYPES.SHUKUN_SHO} />}
+                          {awardSets.kantosho.has(entry.bashoId)  && <AwardBadge type={AWARD_TYPES.KANTO_SHO} />}
+                          {awardSets.ginosho.has(entry.bashoId)   && <AwardBadge type={AWARD_TYPES.GINO_SHO} />}
+                          {wonCount   > 0 && <KinboshiBadge type={KINBOSHI_TYPES.WON}   count={wonCount} />}
+                          {givenCount > 0 && <KinboshiBadge type={KINBOSHI_TYPES.GIVEN} count={givenCount} />}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className={styles.td}>{entry.rank}</td>
                   <td className={`${styles.td} ${styles.tdRecord}`}>
