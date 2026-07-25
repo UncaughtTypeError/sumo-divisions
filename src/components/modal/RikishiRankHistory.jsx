@@ -180,6 +180,14 @@ function RikishiRankHistory({ rikishiDetails }) {
           <span className={`${styles.summaryValue} ${styles.summaryDown}`}>▼ {dropped}</span>
           <span className={styles.summaryLabel}> drops</span>
         </span>
+        {careerStats && (careerStats.totalWins + careerStats.totalLosses) > 0 && (
+          <span className={styles.summaryItem}>
+            <span className={styles.summaryLabel}>Overall win rate</span>
+            <span className={styles.summaryValue}>
+              {((careerStats.totalWins / (careerStats.totalWins + careerStats.totalLosses)) * 100).toFixed(1)}%
+            </span>
+          </span>
+        )}
       </div>
 
       <div className={styles.tableWrapper}>
