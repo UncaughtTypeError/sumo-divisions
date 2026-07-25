@@ -167,6 +167,31 @@ describe('RikishiRankHistory', () => {
       expect(screen.queryByText('climbs')).not.toBeInTheDocument()
       expect(screen.queryByText('drops')).not.toBeInTheDocument()
     })
+
+    it('shows overall win rate when career stats are available', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, totalWins: 600, totalLosses: 400 })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.getByText('Overall win rate')).toBeInTheDocument()
+      expect(screen.getByText('60.0%')).toBeInTheDocument()
+    })
+
+    it('shows win rate rounded to one decimal place', () => {
+      useCareerStats.mockReturnValue({ ...emptyCareerStats, totalWins: 573, totalLosses: 400 })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      const expected = ((573 / 973) * 100).toFixed(1) + '%'
+      expect(screen.getByText(expected)).toBeInTheDocument()
+    })
+
+    it('omits win rate when career stats are unavailable', () => {
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.queryByText('Overall win rate')).not.toBeInTheDocument()
+    })
+
+    it('omits win rate when career stats have no recorded bouts', () => {
+      useCareerStats.mockReturnValue(emptyCareerStats)
+      render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
+      expect(screen.queryByText('Overall win rate')).not.toBeInTheDocument()
+    })
   })
 
   describe('change column indicators', () => {
