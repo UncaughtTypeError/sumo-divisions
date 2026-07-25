@@ -15,6 +15,7 @@ async function fetchCareerStats() {
  *
  * @param {number|null} rikishiId
  * @returns {{ yusho, shukunsho, kantosho, ginosho,
+ *             kinboshiWon, kinboshiGiven,
  *             totalWins, totalLosses, totalAbsences,
  *             bashosByDivision } | null}
  */

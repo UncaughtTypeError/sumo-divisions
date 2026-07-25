@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { computeHistoryRowIndicators, getBanzukePosition } from '../../utils/rankMovement';
 import { RECORD_STATUS_INFO, RECORD_STATUS_TYPES } from '../../utils/records';
 import { AWARD_TYPES } from '../../utils/awards';
+import KinboshiBadge, { KINBOSHI_TYPES } from '../common/KinboshiBadge';
 import { BASHO_NICKNAMES, getCurrentBashoId } from '../../utils/bashoId';
 import Tooltip from '../common/Tooltip';
 import AwardBadge from '../common/AwardBadge';
@@ -97,7 +98,7 @@ function RikishiRankHistory({ rikishiDetails }) {
       const { bashoId, winnerId, division } = match;
       if (!map[bashoId]) {
         const upperDiv = division === 'Makuuchi' || division === 'Juryo';
-        map[bashoId] = { wins: 0, losses: 0, expectedBouts: upperDiv ? 15 : 7 };
+        map[bashoId] = { wins: 0, losses: 0, expectedBouts: upperDiv ? 15 : 7, division };
       }
       if (winnerId === rikishiId) map[bashoId].wins++;
       else map[bashoId].losses++;
@@ -110,16 +111,31 @@ function RikishiRankHistory({ rikishiDetails }) {
     return map;
   }, [allMatchesData, rikishiId]);
 
+  const bestRecord = useMemo(() => {
+    const entries = Object.values(recordByBasho);
+    if (entries.length === 0) return null;
+    return entries.reduce((best, rec) => {
+      if (!best) return rec;
+      if (rec.wins > best.wins) return rec;
+      if (rec.wins === best.wins && rec.losses < best.losses) return rec;
+      return best;
+    }, null);
+  }, [recordByBasho]);
+
   if (displayHistory.length === 0) {
     return <p className={styles.empty}>No rank history available.</p>;
   }
+
+  const bestRecordStr = bestRecord
+    ? `${bestRecord.wins}-${bestRecord.losses}${bestRecord.absences > 0 ? `-${bestRecord.absences}` : ''}`
+    : null;
 
   return (
     <>
       <div className={styles.summary}>
         {careerBestEntry && (
           <span className={styles.summaryItem}>
-            <span className={styles.summaryLabel}>Career best</span>
+            <span className={styles.summaryLabel}>Career highest rank</span>
             <span className={styles.summaryValue}>{careerBestEntry.rank}</span>
           </span>
         )}
@@ -127,16 +143,33 @@ function RikishiRankHistory({ rikishiDetails }) {
           <span className={styles.summaryLabel}>Bashos</span>
           <span className={styles.summaryValue}>{displayHistory.length}</span>
         </span>
-        {(careerStats?.yusho > 0 || careerStats?.shukunsho > 0 || careerStats?.kantosho > 0 || careerStats?.ginosho > 0) && (
+        {(careerStats?.yusho > 0 || careerStats?.shukunsho > 0 || careerStats?.kantosho > 0 || careerStats?.ginosho > 0 || careerStats?.kinboshiWon > 0 || careerStats?.kinboshiGiven > 0) && (
           <span className={styles.summaryItem}>
             <span className={styles.awardBadges}>
               {careerStats.yusho > 0 && <AwardBadge type={AWARD_TYPES.YUSHO} count={careerStats.yusho} />}
               {careerStats.shukunsho > 0 && <AwardBadge type={AWARD_TYPES.SHUKUN_SHO} count={careerStats.shukunsho} />}
               {careerStats.kantosho > 0 && <AwardBadge type={AWARD_TYPES.KANTO_SHO} count={careerStats.kantosho} />}
               {careerStats.ginosho > 0 && <AwardBadge type={AWARD_TYPES.GINO_SHO} count={careerStats.ginosho} />}
+              {careerStats.kinboshiWon > 0 && <KinboshiBadge type={KINBOSHI_TYPES.WON} count={careerStats.kinboshiWon} />}
+              {careerStats.kinboshiGiven > 0 && <KinboshiBadge type={KINBOSHI_TYPES.GIVEN} count={careerStats.kinboshiGiven} />}
             </span>
           </span>
         )}
+      </div>
+
+      <div className={styles.statsRow}>
+        {matchesLoading ? (
+          <span className={styles.summaryItem}>
+            <span className={styles.summaryLabel}>Career best record</span>
+            <span className={styles.recordLoading} aria-label="Loading record"><span /><span /><span /></span>
+          </span>
+        ) : bestRecord ? (
+          <span className={styles.summaryItem}>
+            <span className={styles.summaryLabel}>Career best record</span>
+            <span className={styles.summaryValue}>{bestRecordStr}</span>
+            <span className={styles.summaryLabel}>· {bestRecord.division}</span>
+          </span>
+        ) : null}
         <span className={styles.summaryItem}>
           <span className={`${styles.summaryValue} ${styles.summaryUp}`}>▲ {improved}</span>
           <span className={styles.summaryLabel}> climbs</span>

@@ -173,6 +173,7 @@ function ensureRecord(records, id) {
       shukunsho: 0, shukunshoBashos: [],
       kantosho: 0, kantoshoBashos: [],
       ginosho: 0, ginoshoBashos: [],
+      kinboshiWon: 0, kinboshiGiven: 0,
       totalWins: 0, totalLosses: 0, totalAbsences: 0,
       bashosByDivision: {},
     });
@@ -213,7 +214,16 @@ async function processBasho(bashoId, records) {
     else if (p.type === 'Gino-sho')   { r.ginosho++;   r.ginoshoBashos.push(bashoId); }
   }
 
-  // Banzuke — wins/losses/absences and division appearance counts
+  // Banzuke — wins/losses/absences, division counts, and kinboshi
+  // Build a full rank lookup across all divisions first (needed for kinboshi)
+  const rankLookup = new Map();
+  for (const banzuke of banzukes) {
+    for (const w of [...(banzuke?.east ?? []), ...(banzuke?.west ?? [])]) {
+      const id = wrestlerId(w);
+      if (id && w.rank) rankLookup.set(id, w.rank);
+    }
+  }
+
   for (let i = 0; i < ALL_DIVISIONS.length; i++) {
     const division = ALL_DIVISIONS[i];
     const banzuke  = banzukes[i];
@@ -232,6 +242,21 @@ async function processBasho(bashoId, records) {
       r.totalLosses   += w.losses   ?? 0;
       r.totalAbsences += w.absences ?? 0;
       r.bashosByDivision[division] = (r.bashosByDivision[division] ?? 0) + 1;
+
+      // Kinboshi — only Maegashira (won) and Yokozuna (given) qualify
+      const rank = w.rank ?? '';
+      const isMaegashira = rank.toLowerCase().startsWith('maegashira');
+      const isYokozuna   = rank.toLowerCase().startsWith('yokozuna');
+      if ((isMaegashira || isYokozuna) && Array.isArray(w.record)) {
+        for (const match of w.record) {
+          const opponentRank = rankLookup.get(match.opponentID) ?? '';
+          if (isMaegashira && match.result === 'win' && opponentRank.toLowerCase().startsWith('yokozuna')) {
+            r.kinboshiWon++;
+          } else if (isYokozuna && match.result === 'loss' && opponentRank.toLowerCase().startsWith('maegashira')) {
+            r.kinboshiGiven++;
+          }
+        }
+      }
     }
   }
 }
@@ -264,6 +289,8 @@ async function main() {
         shukunshoBashos:  [...(stats.shukunshoBashos ?? [])],
         kantoshoBashos:   [...(stats.kantoshoBashos ?? [])],
         ginoshoBashos:    [...(stats.ginoshoBashos ?? [])],
+        kinboshiWon:      stats.kinboshiWon   ?? 0,
+        kinboshiGiven:    stats.kinboshiGiven ?? 0,
         bashosByDivision: { ...(stats.bashosByDivision ?? {}) },
       });
     }
