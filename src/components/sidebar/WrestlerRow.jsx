@@ -11,6 +11,7 @@ import { getFlagData } from '../common/flags';
 import useDivisionStore from '../../store/divisionStore';
 import Tooltip from '../common/Tooltip';
 import AwardBadge from '../common/AwardBadge';
+import KinboshiBadge, { KINBOSHI_TYPES } from '../common/KinboshiBadge';
 import RikishiDetailModal from '../modal/RikishiDetailModal';
 import RankHistoryModal from '../modal/RankHistoryModal';
 import styles from './WrestlerRow.module.css';
@@ -109,31 +110,10 @@ function WrestlerRow({ wrestler, onClick, color, division, rikishiMap }) {
             ))}
             {/* Kinboshi badge */}
             {kinboshiCount > 0 && (
-              <Tooltip
-                content={
-                  <>
-                    <strong>
-                      {isYokozunaWrestler ? 'Kinboshi Given' : 'Kinboshi'}
-                    </strong>
-                    <span>金星</span>
-                    <span>
-                      {isYokozunaWrestler
-                        ? 'Gold star given to Maegashira opponent'
-                        : 'Gold star for defeating a Yokozuna'}
-                    </span>
-                  </>
-                }
-              >
-                <span
-                  className={`${styles.award} ${
-                    isYokozunaWrestler
-                      ? styles.reverseKinboshi
-                      : styles.kinboshi
-                  }`}
-                >
-                  ★{kinboshiCount}
-                </span>
-              </Tooltip>
+              <KinboshiBadge
+                type={isYokozunaWrestler ? KINBOSHI_TYPES.GIVEN : KINBOSHI_TYPES.WON}
+                count={kinboshiCount}
+              />
             )}
             {/* Kyujo (absent) badge — shown when day filter is active and wrestler withdrew */}
             {isKyujo && (

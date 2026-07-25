@@ -56,16 +56,6 @@
   color: var(--color-error);
 }
 
-.award.kinboshi {
-  background: var(--color-warning-bg);
-  color: var(--color-warning);
-}
-
-.award.reverseKinboshi {
-  background: var(--color-error-bg);
-  color: var(--color-error);
-}
-
 /* Rank movement indicators — same size/shape as award badges */
 .rankUp {
   font-size: 0.625rem;
