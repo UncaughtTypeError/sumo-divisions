@@ -2,10 +2,15 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import RikishiRankHistory from '../../../components/modal/RikishiRankHistory'
 import { useRikishiAllMatches } from '../../../hooks/useRikishi'
+import { useBashoResults } from '../../../hooks/useBashoResults'
 import { useCareerStats } from '../../../hooks/useCareerStats'
 
 vi.mock('../../../hooks/useRikishi', () => ({
   useRikishiAllMatches: vi.fn(() => ({ data: null, isLoading: false })),
+}))
+
+vi.mock('../../../hooks/useBashoResults', () => ({
+  useBashoResults: vi.fn(() => ({ data: null })),
 }))
 
 vi.mock('../../../hooks/useCareerStats', () => ({
@@ -15,6 +20,15 @@ vi.mock('../../../hooks/useCareerStats', () => ({
 vi.mock('../../../utils/bashoId', async (importOriginal) => {
   const actual = await importOriginal()
   return { ...actual, getCurrentBashoId: vi.fn().mockReturnValue('202607') }
+})
+
+// Fixture with a single Makuuchi basho — use when testing badge logic in isolation
+// so absent entries from other bashos don't generate extra MK badges.
+const singleMakuuchiRikishi = (id = 45) => ({
+  id,
+  rankHistory: [
+    { id: `202605-${id}`, bashoId: '202605', rank: 'Yokozuna 1 East', rankValue: 101 },
+  ],
 })
 
 const rikishiWithHistory = {
@@ -41,6 +55,7 @@ const emptyCareerStats = {
 describe('RikishiRankHistory', () => {
   afterEach(() => {
     useRikishiAllMatches.mockReturnValue({ data: null, isLoading: false })
+    useBashoResults.mockReturnValue({ data: null })
     useCareerStats.mockReturnValue(null)
   })
   it('renders empty message when rankHistory is empty', () => {
@@ -369,7 +384,6 @@ describe('RikishiRankHistory', () => {
     })
 
     it('shows MK badge when losses exceed wins', () => {
-      const rikishiWithId = { id: 45, ...rikishiWithHistory }
       useRikishiAllMatches.mockReturnValue({
         data: {
           records: [
@@ -379,7 +393,7 @@ describe('RikishiRankHistory', () => {
         },
         isLoading: false,
       })
-      render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
+      render(<RikishiRankHistory rikishiDetails={singleMakuuchiRikishi()} />)
       expect(screen.getByText('MK')).toBeInTheDocument()
     })
 
@@ -390,7 +404,6 @@ describe('RikishiRankHistory', () => {
     })
 
     it('shows MK badge for 7-7-1 in Makuuchi because absences count toward make-koshi', () => {
-      const rikishiWithId = { id: 45, ...rikishiWithHistory }
       useRikishiAllMatches.mockReturnValue({
         data: {
           records: [
@@ -400,7 +413,7 @@ describe('RikishiRankHistory', () => {
         },
         isLoading: false,
       })
-      render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
+      render(<RikishiRankHistory rikishiDetails={singleMakuuchiRikishi()} />)
       // 7-7-1 appears in stats row (best record) + table row
       expect(screen.getAllByText('7-7-1').length).toBeGreaterThanOrEqual(2)
       expect(screen.getByText('MK')).toBeInTheDocument()
@@ -441,7 +454,6 @@ describe('RikishiRankHistory', () => {
     })
 
     it('MK badge shows Make-koshi tooltip on hover', () => {
-      const rikishiWithId = { id: 45, ...rikishiWithHistory }
       useRikishiAllMatches.mockReturnValue({
         data: {
           records: [
@@ -451,14 +463,13 @@ describe('RikishiRankHistory', () => {
         },
         isLoading: false,
       })
-      render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
+      render(<RikishiRankHistory rikishiDetails={singleMakuuchiRikishi()} />)
       fireEvent.mouseEnter(screen.getByText('MK').closest('[class*="tooltipWrapper"]'))
       expect(screen.getByText('Make-koshi')).toBeInTheDocument()
       expect(screen.getByText('Losing Record')).toBeInTheDocument()
     })
 
     it('shows no badge when wins equal total losses exactly', () => {
-      const rikishiWithId = { id: 45, ...rikishiWithHistory }
       useRikishiAllMatches.mockReturnValue({
         data: {
           records: [
@@ -470,14 +481,14 @@ describe('RikishiRankHistory', () => {
         },
         isLoading: false,
       })
-      render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
+      render(<RikishiRankHistory rikishiDetails={singleMakuuchiRikishi()} />)
       // 8-8 appears in stats row (best record) + table row
       expect(screen.getAllByText('8-8').length).toBeGreaterThanOrEqual(2)
       expect(screen.queryByText('KK')).not.toBeInTheDocument()
       expect(screen.queryByText('MK')).not.toBeInTheDocument()
     })
 
-    it('still shows "—" for bashos with no match data', () => {
+    it('shows 0-0-N absent records for bashos with no matches instead of —', () => {
       const rikishiWithId = { id: 45, ...rikishiWithHistory }
       useRikishiAllMatches.mockReturnValue({
         data: {
@@ -486,9 +497,11 @@ describe('RikishiRankHistory', () => {
         isLoading: false,
       })
       render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
-      // 1-0-14: appears in stats row (best record) + table row
+      // 202605 has 1 win and 14 absences; appears in stats row + table row
       expect(screen.getAllByText('1-0-14').length).toBeGreaterThanOrEqual(2)
-      expect(screen.getAllByText('—').length).toBeGreaterThanOrEqual(2)
+      // 202603, 202011 (Makuuchi) → 0-0-15; 201911 (Makushita) → 0-0-7
+      expect(screen.getAllByText('0-0-15').length).toBeGreaterThanOrEqual(2)
+      expect(screen.getByText('0-0-7')).toBeInTheDocument()
     })
   })
 
@@ -781,6 +794,159 @@ describe('RikishiRankHistory', () => {
       render(<RikishiRankHistory rikishiDetails={rikishiWithHistory} />)
       expect(screen.getByText('🏆Y')).toBeInTheDocument()
       expect(screen.getByText('★1')).toBeInTheDocument()
+    })
+  })
+
+  describe('fully absent basho (0-0-N)', () => {
+    it('shows 0-0-15 and MK badge for a Makuuchi wrestler who was fully kyujo', () => {
+      // Two-basho fixture: one basho with match data, one fully absent — avoids multiple 0-0-15 entries
+      const twoBashoRikishi = {
+        id: 45,
+        rankHistory: [
+          { id: '202605-45', bashoId: '202605', rank: 'Maegashira 1 East', rankValue: 501 },
+          { id: '202603-45', bashoId: '202603', rank: 'Maegashira 1 East', rankValue: 501 },
+        ],
+      }
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          // 202603 has match data; 202605 has none → wrestler was fully absent
+          records: [
+            ...Array(10).fill({ bashoId: '202603', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(5).fill({ bashoId: '202603', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RikishiRankHistory rikishiDetails={twoBashoRikishi} />)
+      expect(screen.getByText('0-0-15')).toBeInTheDocument()
+      expect(screen.getByText('MK')).toBeInTheDocument()
+    })
+
+    it('shows 0-0-7 and MK badge for a lower division wrestler who was fully kyujo', () => {
+      const rikishiWithId = { id: 45, ...rikishiWithHistory }
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          // 201911 row (Makushita) has no matches → fully absent in that basho
+          records: [
+            ...Array(10).fill({ bashoId: '202605', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(5).fill({ bashoId: '202605', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RikishiRankHistory rikishiDetails={rikishiWithId} />)
+      expect(screen.getByText('0-0-7')).toBeInTheDocument()
+    })
+
+    it('does not create a fully-absent entry for the current in-progress basho', () => {
+      const inProgressRikishi = {
+        id: 45,
+        rankHistory: [
+          { id: '202607-45', bashoId: '202607', rank: 'Maegashira 1 East', rankValue: 501 },
+        ],
+      }
+      // No matches for the current basho (in-progress, wrestler hasn't fought yet)
+      useRikishiAllMatches.mockReturnValue({
+        data: { records: [] },
+        isLoading: false,
+      })
+      render(<RikishiRankHistory rikishiDetails={inProgressRikishi} />)
+      // Should show '—', not '0-0-15'
+      expect(screen.getByText('—')).toBeInTheDocument()
+      expect(screen.queryByText('0-0-15')).not.toBeInTheDocument()
+    })
+
+    it('shows 0-0-15 for concluded current basho where wrestler was fully absent', () => {
+      const concludedRikishi = {
+        id: 45,
+        rankHistory: [
+          { id: '202607-45', bashoId: '202607', rank: 'Maegashira 1 East', rankValue: 501 },
+        ],
+      }
+      useBashoResults.mockReturnValue({ data: { endDate: '2000-01-01T00:00:00Z' } })
+      useRikishiAllMatches.mockReturnValue({
+        data: { records: [] },
+        isLoading: false,
+      })
+      render(<RikishiRankHistory rikishiDetails={concludedRikishi} />)
+      // 0-0-15 appears in both stats row (no non-absent record, so shown) and the table row
+      expect(screen.getAllByText('0-0-15').length).toBeGreaterThanOrEqual(1)
+      expect(screen.getByText('MK')).toBeInTheDocument()
+    })
+  })
+
+  describe('concluded current basho', () => {
+    const concludedRikishi = {
+      id: 45,
+      rankHistory: [
+        { id: '202607-45', bashoId: '202607', rank: 'Maegashira 1 East', rankValue: 501 },
+      ],
+    }
+    // Use a clearly past endDate so bashoHasEnded is always true
+    const concludedBashoInfo = { data: { endDate: '2000-01-01T00:00:00Z' } }
+
+    it('shows absences and MK badge for 7-7-1 kyujo record when basho has ended', () => {
+      useBashoResults.mockReturnValue(concludedBashoInfo)
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(7).fill({ bashoId: '202607', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(7).fill({ bashoId: '202607', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RikishiRankHistory rikishiDetails={concludedRikishi} />)
+      expect(screen.getAllByText('7-7-1').length).toBeGreaterThanOrEqual(2)
+      expect(screen.getByText('MK')).toBeInTheDocument()
+    })
+
+    it('shows absences and MK badge for 5-2-8 early kyujo record when basho has ended', () => {
+      useBashoResults.mockReturnValue(concludedBashoInfo)
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(5).fill({ bashoId: '202607', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(2).fill({ bashoId: '202607', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RikishiRankHistory rikishiDetails={concludedRikishi} />)
+      expect(screen.getAllByText('5-2-8').length).toBeGreaterThanOrEqual(2)
+      expect(screen.getByText('MK')).toBeInTheDocument()
+    })
+
+    it('shows no absences when wrestler completed all 15 bouts in concluded basho', () => {
+      useBashoResults.mockReturnValue(concludedBashoInfo)
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(10).fill({ bashoId: '202607', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(5).fill({ bashoId: '202607', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RikishiRankHistory rikishiDetails={concludedRikishi} />)
+      expect(screen.getAllByText('10-5').length).toBeGreaterThanOrEqual(2)
+      expect(screen.queryByText(/10-5-\d/)).not.toBeInTheDocument()
+    })
+
+    it('defaults to no absences when bashoInfo has no endDate (safe in-progress fallback)', () => {
+      useBashoResults.mockReturnValue({ data: {} })
+      useRikishiAllMatches.mockReturnValue({
+        data: {
+          records: [
+            ...Array(5).fill({ bashoId: '202607', winnerId: 45, division: 'Makuuchi' }),
+            ...Array(3).fill({ bashoId: '202607', winnerId: 99, division: 'Makuuchi' }),
+          ],
+        },
+        isLoading: false,
+      })
+      render(<RikishiRankHistory rikishiDetails={concludedRikishi} />)
+      expect(screen.getAllByText('5-3').length).toBeGreaterThanOrEqual(2)
+      expect(screen.queryByText('MK')).not.toBeInTheDocument()
     })
   })
 })
