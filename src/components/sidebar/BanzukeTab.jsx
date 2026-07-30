@@ -38,7 +38,7 @@ function BanzukeTab({
           const dayRecord = computeRecordOnDay(w.record, selectedDay, currentApiDivision);
           return { ...w, ...dayRecord, isKyujo: dayResult === 'absent' && isAbsentKyujo(w.record, selectedDay, currentApiDivision) };
         }
-        return { ...w, isKyujo: isWithdrawn(w.record) };
+        return { ...w, isKyujo: isWithdrawn(w.record, currentApiDivision) };
       })
       .filter(Boolean);
 

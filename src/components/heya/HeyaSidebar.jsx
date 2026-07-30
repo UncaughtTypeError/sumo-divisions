@@ -164,7 +164,8 @@ function HeyaSidebar() {
           const dayRecord = computeRecordOnDay(w.record, selectedDay, apiDiv);
           return { ...w, ...dayRecord, isKyujo: dayResult === 'absent' && isAbsentKyujo(w.record, selectedDay, apiDiv) };
         }
-        return { ...w, isKyujo: isWithdrawn(w.record) };
+        const apiDiv = RANK_TO_API_DIVISION[w.rank?.split(' ')[0]];
+        return { ...w, isKyujo: isWithdrawn(w.record, apiDiv) };
       })
       .filter(Boolean);
 

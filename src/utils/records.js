@@ -115,8 +115,19 @@ export function isAbsentKyujo(record, day, division) {
  * @param {Array} record - Wrestler's full record array
  * @returns {boolean}
  */
-export function isWithdrawn(record) {
+export function isWithdrawn(record, division = null) {
   if (!Array.isArray(record)) return false;
+
+  // Lower division wrestlers fight 7 bouts across a 15-day basho; the remaining
+  // days are scheduled rest days, not kyujo. Once all 7 bouts are fought, any
+  // trailing 'absent' entries must not be treated as withdrawal.
+  if (division && !SEKITORI_DIVISIONS.includes(division)) {
+    const boutsFought = record.filter(
+      (r) => r.result === 'win' || r.result === 'loss' || r.result === 'fusen win' || r.result === 'fusen loss'
+    ).length;
+    if (boutsFought >= 7) return false;
+  }
+
   return record.some(
     (entry, i) =>
       entry.result === 'absent' &&
