@@ -521,5 +521,40 @@ describe('records utilities', () => {
     it('treats fusen loss after absent as non-bout (does not count as return)', () => {
       expect(isWithdrawn([r('win'), r('absent'), r('fusen loss')])).toBe(true)
     })
+
+    describe('lower division (non-sekitori)', () => {
+      const lowerDiv = 'Makushita'
+
+      it('returns false when all 7 bouts have been fought despite trailing absent days', () => {
+        // Wrestler fought 7 bouts spread across 15 days; rest days are not kyujo
+        const record = [r('win'), r('absent'), r('win'), r('absent'), r('loss'), r('absent'), r('win'), r('absent'), r('win'), r('absent'), r('loss'), r('absent'), r('win'), r('absent'), r('loss')]
+        expect(isWithdrawn(record, lowerDiv)).toBe(false)
+      })
+
+      it('returns false when exactly 7 bouts fought with trailing absences', () => {
+        const record = [...Array(7).fill(r('win')), ...Array(8).fill(r('absent'))]
+        expect(isWithdrawn(record, lowerDiv)).toBe(false)
+      })
+
+      it('returns true when fewer than 7 bouts fought and wrestler has trailing absences (genuine kyujo)', () => {
+        // Only 3 bouts fought then withdrew
+        const record = [r('win'), r('absent'), r('loss'), r('absent'), r('win'), r('absent'), r('absent'), r('absent')]
+        expect(isWithdrawn(record, lowerDiv)).toBe(true)
+      })
+
+      it('returns true when lower division wrestler never fought at all', () => {
+        expect(isWithdrawn(Array(15).fill(r('absent')), lowerDiv)).toBe(true)
+      })
+
+      it('returns false when no absences at all', () => {
+        expect(isWithdrawn(Array(7).fill(r('win')), lowerDiv)).toBe(false)
+      })
+
+      it('falls back to heuristic when division is not provided (legacy behaviour)', () => {
+        // Without division, trailing absences after last bout still trigger isWithdrawn
+        const record = [...Array(7).fill(r('win')), ...Array(8).fill(r('absent'))]
+        expect(isWithdrawn(record)).toBe(true)
+      })
+    })
   })
 })
