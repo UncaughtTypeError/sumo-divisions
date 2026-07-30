@@ -3,10 +3,12 @@ import { computeHistoryRowIndicators, getBanzukePosition } from '../../utils/ran
 import { RECORD_STATUS_INFO, RECORD_STATUS_TYPES } from '../../utils/records';
 import { AWARD_TYPES } from '../../utils/awards';
 import KinboshiBadge, { KINBOSHI_TYPES } from '../common/KinboshiBadge';
+import { RANK_TO_API_DIVISION } from '../../utils/constants';
 import { BASHO_NICKNAMES, getCurrentBashoId } from '../../utils/bashoId';
 import Tooltip from '../common/Tooltip';
 import AwardBadge from '../common/AwardBadge';
 import { useRikishiAllMatches } from '../../hooks/useRikishi';
+import { useBashoResults } from '../../hooks/useBashoResults';
 import { useCareerStats } from '../../hooks/useCareerStats';
 import styles from './RankHistoryModal.module.css';
 
@@ -80,7 +82,9 @@ function RikishiRankHistory({ rikishiDetails }) {
       })
     : null;
 
+  const currentBashoId = getCurrentBashoId();
   const { data: allMatchesData, isLoading: matchesLoading } = useRikishiAllMatches(rikishiId, { enabled: !!rikishiId && displayHistory.length > 0 });
+  const { data: currentBashoInfo } = useBashoResults(currentBashoId);
 
   const careerStats = useCareerStats(rikishiId);
   const awardSets = useMemo(() => ({
@@ -94,7 +98,8 @@ function RikishiRankHistory({ rikishiDetails }) {
 
   const recordByBasho = useMemo(() => {
     if (!allMatchesData?.records || !rikishiId) return {};
-    const currentBashoId = getCurrentBashoId();
+    const bashoEndDate = currentBashoInfo?.endDate ? new Date(currentBashoInfo.endDate) : null;
+    const bashoHasEnded = bashoEndDate !== null && new Date() > bashoEndDate;
     const map = {};
     for (const match of allMatchesData.records) {
       const { bashoId, winnerId, division } = match;
@@ -106,15 +111,33 @@ function RikishiRankHistory({ rikishiDetails }) {
       else map[bashoId].losses++;
     }
     for (const [bashoId, rec] of Object.entries(map)) {
-      rec.absences = bashoId === currentBashoId
-        ? 0
-        : Math.max(0, rec.expectedBouts - rec.wins - rec.losses);
+      if (bashoId === currentBashoId && !bashoHasEnded) {
+        // Basho still in progress: unplayed bouts are not absences
+        rec.absences = 0;
+      } else {
+        rec.absences = Math.max(0, rec.expectedBouts - rec.wins - rec.losses);
+      }
+    }
+    // Add fully-absent basho entries for rank history rows with no match records at all
+    const historyEntries = rikishiDetails?.rankHistory?.filter(
+      (h) => h.rankValue != null && h.rankValue < 2000
+    ) ?? [];
+    for (const entry of historyEntries) {
+      if (map[entry.bashoId]) continue;
+      if (entry.bashoId === currentBashoId && !bashoHasEnded) continue;
+      const rankBase = entry.rank?.split(' ')[0];
+      const division = RANK_TO_API_DIVISION[rankBase] ?? null;
+      if (!division) continue;
+      const upperDiv = division === 'Makuuchi' || division === 'Juryo';
+      const expectedBouts = upperDiv ? 15 : 7;
+      map[entry.bashoId] = { wins: 0, losses: 0, absences: expectedBouts, expectedBouts, division };
     }
     return map;
-  }, [allMatchesData, rikishiId]);
+  }, [allMatchesData, rikishiId, currentBashoId, currentBashoInfo, rikishiDetails]);
 
   const bestRecord = useMemo(() => {
-    const entries = Object.values(recordByBasho);
+    // Exclude fully-absent entries (0-0-N) so a kyujo basho never ranks as "best"
+    const entries = Object.values(recordByBasho).filter((rec) => rec.wins > 0 || rec.losses > 0);
     if (entries.length === 0) return null;
     return entries.reduce((best, rec) => {
       if (!best) return rec;
