@@ -611,4 +611,19 @@ describe('isYushoDecided', () => {
     expect(result.decided).toBe(false);
     expect(result.winner).toBeNull();
   });
+
+  it('returns decided: false on day 4 when leader is merely first to reach MIN_LEADER_WINS', () => {
+    // Day 4: leader is 4-0 (just hit the threshold), with 11 bouts still to fight.
+    // Everyone else is naturally at ≤4 wins this early — none of them are actually
+    // mathematically eliminated, so the field is very much still open.
+    const wrestlers = [
+      makeWrestler(4, 0, 0, 1), // leader
+      makeWrestler(3, 1, 0, 5), // 3+11=14 >= 4 — still alive
+      makeWrestler(2, 2, 0, 9), // 2+11=13 >= 4 — still alive
+      makeWrestler(0, 4, 0, 15), // 0+11=11 >= 4 — still alive
+    ];
+    const result = isYushoDecided(wrestlers, 4, 'Makuuchi');
+    expect(result.decided).toBe(false);
+    expect(result.winner).toBeNull();
+  });
 });
