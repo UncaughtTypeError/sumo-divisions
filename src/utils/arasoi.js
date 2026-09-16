@@ -150,6 +150,14 @@ export function computeYushoContenders(wrestlers, currentDay, division) {
  * everyone who can no longer tie the current leader — meaning their lead
  * cannot be matched even if they lose every remaining bout.
  *
+ * This performs its own strict elimination pass rather than reusing
+ * computeYushoContenders: that function also drops anyone below
+ * MIN_LEADER_WINS to keep the *displayed* race list meaningful, but a
+ * wrestler with few wins and many bouts left is still mathematically alive
+ * and must not be discarded when checking whether the title is decided
+ * (otherwise a leader who simply reached the threshold first, e.g. 4-0 on
+ * day 4 with 11 bouts still to fight, would be wrongly declared "clinched").
+ *
  * Returns { decided: false, winner: null } when:
  *   - No results exist yet
  *   - Two or more wrestlers are tied at the top
@@ -161,12 +169,20 @@ export function computeYushoContenders(wrestlers, currentDay, division) {
  * @returns {{ decided: boolean, winner: object | null }}
  */
 export function isYushoDecided(wrestlers, currentDay, division) {
-  const groups = computeYushoContenders(wrestlers, currentDay, division);
+  if (!wrestlers?.length || !currentDay) return { decided: false, winner: null };
 
-  if (!groups.length) return { decided: false, winner: null };
+  const withRemaining = wrestlers.map((w) => ({
+    ...w,
+    remainingBouts: getRemainingBouts(w, currentDay, division),
+  }));
 
-  if (groups.length === 1 && groups[0].wrestlers.length === 1) {
-    return { decided: true, winner: groups[0].wrestlers[0] };
+  const leaderWins = Math.max(0, ...withRemaining.map((w) => w.wins));
+  if (leaderWins < getMinLeaderWins(division)) return { decided: false, winner: null };
+
+  const stillAlive = withRemaining.filter((w) => w.wins + w.remainingBouts >= leaderWins);
+
+  if (stillAlive.length === 1) {
+    return { decided: true, winner: stillAlive[0] };
   }
 
   return { decided: false, winner: null };
