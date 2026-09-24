@@ -353,7 +353,7 @@ describe('RikishiDetailModal', () => {
           bashosByDivision: { Makuuchi: 30 },
         })
         renderCareerTab()
-        expect(screen.getByText('Yusho')).toBeInTheDocument()
+        expect(screen.getByText('Yusho (2)')).toBeInTheDocument()
         for (const d of ['Makuuchi', 'Juryo', 'Makushita', 'Sandanme', 'Jonidan', 'Jonokuchi']) {
           expect(screen.getAllByText(d).length).toBeGreaterThanOrEqual(1)
         }
@@ -389,7 +389,7 @@ describe('RikishiDetailModal', () => {
           bashosByDivision: {},
         })
         renderCareerTab()
-        expect(screen.getByText('Special Prizes')).toBeInTheDocument()
+        expect(screen.getByText('Special Prizes (3)')).toBeInTheDocument()
       })
 
     })

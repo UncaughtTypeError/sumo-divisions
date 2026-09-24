@@ -212,7 +212,7 @@ describe('RikishiOverview', () => {
       expect(screen.queryByText('Absences')).not.toBeInTheDocument()
     })
 
-    it('renders Yusho and Special Prizes sub-headers', () => {
+    it('renders Yusho and Special Prizes sub-headers with zero totals', () => {
       useCareerStats.mockReturnValue({
         totalWins: 50,
         totalLosses: 30,
@@ -224,8 +224,24 @@ describe('RikishiOverview', () => {
         ginosho: 0,
       })
       render(<RikishiOverview rikishiDetails={mockDetails} />)
-      expect(screen.getByText('Yusho')).toBeInTheDocument()
-      expect(screen.getByText('Special Prizes')).toBeInTheDocument()
+      expect(screen.getByText('Yusho (0)')).toBeInTheDocument()
+      expect(screen.getByText('Special Prizes (0)')).toBeInTheDocument()
+    })
+
+    it('sums yusho counts across divisions and prize counts in the sub-headers', () => {
+      useCareerStats.mockReturnValue({
+        totalWins: 50,
+        totalLosses: 30,
+        totalAbsences: 0,
+        yushoByDivision: { Makuuchi: 2, Juryo: 1 },
+        bashosByDivision: {},
+        shukunsho: 3,
+        kantosho: 1,
+        ginosho: 0,
+      })
+      render(<RikishiOverview rikishiDetails={mockDetails} />)
+      expect(screen.getByText('Yusho (3)')).toBeInTheDocument()
+      expect(screen.getByText('Special Prizes (4)')).toBeInTheDocument()
     })
   })
 
