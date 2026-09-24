@@ -257,11 +257,12 @@ sumo-divisions/
 │   │   │   ├── HeyaGrid.jsx        # Sortable table (one row per stable)
 │   │   │   ├── HeyaCardGrid.jsx    # Responsive card grid wrapper
 │   │   │   ├── HeyaCard.jsx        # Individual stable card
-│   │   │   ├── HeyaRankBadge.jsx   # Coloured rank badge with tooltip
 │   │   │   └── HeyaSidebar.jsx     # Sidebar listing all wrestlers in a stable
 │   │   ├── sidebar/           # Shared wrestler list sidebar
 │   │   │   ├── WrestlerSidebar.jsx
-│   │   │   ├── WrestlerGrid.jsx
+│   │   │   ├── WrestlerGrid.jsx        # Card layout (default)
+│   │   │   ├── WrestlerCompactGrid.jsx # Grid layout — East/West paired rows
+│   │   │   ├── ViewToggle.jsx          # Card/Grid layout switch
 │   │   │   ├── WrestlerRow.jsx
 │   │   │   ├── BashoSelector.jsx
 │   │   │   └── BashoWinners.jsx
@@ -277,6 +278,7 @@ sumo-divisions/
 │   │       ├── ErrorMessage.jsx
 │   │       ├── NoDataMessage.jsx
 │   │       ├── Tooltip.jsx
+│   │       ├── RankBadge.jsx  # Coloured rank badge with tooltip (heya count or banzuke East/West side)
 │   │       └── flags/         # Country flag SVG components
 │   ├── services/
 │   │   ├── api/               # API client & services
