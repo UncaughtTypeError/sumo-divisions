@@ -3,6 +3,7 @@ import { computeRecordOnDay, isAbsentKyujo, isWithdrawn } from '../../utils/reco
 import WrestlerGrid from './WrestlerGrid';
 import BashoWinners from './BashoWinners';
 import YushoArasoi from './YushoArasoi';
+import WinLossChart from './WinLossChart';
 import Loading from '../common/Loading';
 import ErrorMessage from '../common/ErrorMessage';
 import NoDataMessage from '../common/NoDataMessage';
@@ -75,6 +76,12 @@ function BanzukeTab({
         maxDay={maxDay}
         division={currentApiDivision}
         bashoResults={bashoResults}
+        onWrestlerClick={openModal}
+      />
+
+      <WinLossChart
+        wrestlers={allWrestlers}
+        division={currentApiDivision}
         onWrestlerClick={openModal}
       />
 

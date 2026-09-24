@@ -1,0 +1,343 @@
+.container {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Section header (collapse toggle) ──────────────────────────────────────── */
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 0 0.5rem;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.header:hover .headerJp,
+.header:hover .headerEn {
+  opacity: 0.7;
+}
+
+.headerCollapsed {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.headerJp {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.headerEn {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-accent);
+  flex: 1;
+}
+
+.chevron {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  transition: transform var(--transition-fast);
+  display: inline-block;
+  transform: rotate(-90deg);
+}
+
+.chevronOpen {
+  transform: rotate(0deg);
+}
+
+/* ── Accordion body ─────────────────────────────────────────────────────────── */
+
+.body {
+  display: grid;
+  transition: grid-template-rows 220ms ease;
+}
+
+.bodyOpen {
+  grid-template-rows: 1fr;
+}
+
+.bodyCollapsed {
+  grid-template-rows: 0fr;
+}
+
+.bodyInner {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ── Legend ─────────────────────────────────────────────────────────────────── */
+/* Mirrors .chartRow's [yAxis][scrollArea] split with a spacer, so the zone
+   labels (positioned by the same fractions as the dividers/bars below) line
+   up with their sections without touching .chartRow's own layout at all.
+   .winLossLegend is pulled out of this flex flow (absolutely positioned)
+   rather than sitting as a third flex sibling — otherwise it eats into
+   .zoneLegend's width and the fractions stop matching .scrollArea's, which
+   is exactly one sibling (.yAxis) narrower. */
+
+.legend {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.legendSpacer {
+  flex-shrink: 0;
+  width: 1.5rem;
+}
+
+.zoneLegend {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 0.875rem;
+}
+
+.zoneLegendItem {
+  position: absolute;
+  top: 0;
+  text-align: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.winLossLegend {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-text-accent);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.legendSwatch {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.legendWin     { background: var(--color-win); }
+.legendLoss    { background: var(--color-loss); }
+.legendAbsence { background: var(--color-text-muted); }
+
+/* ── Chart layout ───────────────────────────────────────────────────────────── */
+
+.chartRow {
+  display: flex;
+  align-items: flex-start;
+}
+
+.yAxis {
+  position: relative;
+  flex-shrink: 0;
+  width: 1.5rem;
+}
+
+.yAxisLabel {
+  position: absolute;
+  right: 0.35rem;
+  transform: translateY(-50%);
+  font-size: 0.6rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}
+
+.yAxisLabelKk {
+  color: var(--color-win);
+  font-weight: 700;
+}
+
+.yAxisLabelMk {
+  color: var(--color-loss);
+  font-weight: 700;
+}
+
+.scrollArea {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.plotWrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: max-content;
+}
+
+.columns {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.gridlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+}
+
+.gridline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.gridlineZero {
+  background: var(--color-text-muted);
+}
+
+.gridlineKk,
+.gridlineMk {
+  opacity: 0.4;
+}
+
+.gridlineKk {
+  background: var(--color-win);
+}
+
+.gridlineMk {
+  background: var(--color-loss);
+}
+
+.vGridline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-border);
+}
+
+/* Tooltip renders its trigger inside its own wrapper <span> — that span, not
+   the button, is the actual flex child of .columns, so the grow/basis has to
+   live here for the column to stretch and fill spare horizontal space. */
+.columns > span {
+  position: relative;
+  z-index: 1;
+  flex: 1 0 0.65rem;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.statusIcon {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.55rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.statusIconKk { color: var(--color-win); }
+.statusIconMk { color: var(--color-loss); }
+
+.barsWrap {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.topHalf {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+}
+
+.bottomHalf {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.winBar {
+  width: 0.4rem;
+  background: var(--color-win);
+  border-radius: 3px 3px 0 0;
+  transition: opacity var(--transition-fast);
+}
+
+.lossBar {
+  width: 0.4rem;
+  background: var(--color-loss);
+  transition: opacity var(--transition-fast);
+}
+
+.absenceBar {
+  width: 0.4rem;
+  background: var(--color-text-muted);
+  transition: opacity var(--transition-fast);
+}
+
+.barEnd {
+  border-radius: 0 0 3px 3px;
+}
+
+.column:hover .winBar,
+.column:hover .lossBar,
+.column:hover .absenceBar {
+  opacity: 0.7;
+}
+
+.xLabel {
+  margin-top: 0.75rem;
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--color-text-accent);
+  white-space: nowrap;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
