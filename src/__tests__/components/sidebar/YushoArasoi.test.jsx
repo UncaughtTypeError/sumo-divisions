@@ -132,19 +132,19 @@ describe('YushoArasoi', () => {
       expect(screen.getByRole('button', { name: /Wrestler2/ })).toBeInTheDocument()
     })
 
-    it('renders at most 4 challenger groups', () => {
-      // Day 7, remaining=8. Leader 9W. Five contender groups (8W–4W); 4W group hidden by slice(0,4).
+    it('renders at most 2 challenger groups', () => {
+      // Day 7, remaining=8. Leader 9W. Five contender groups (8W–4W); 6W and below hidden by slice(0,2).
       const wrestlers = [
         makeWrestler(1, 9, 0, 0, 1), // leader
         makeWrestler(2, 8, 0, 0, 2), // challenger 1 — 8+8=16≥9 ✓
-        makeWrestler(3, 7, 1, 0, 3), // challenger 2
-        makeWrestler(4, 6, 2, 0, 4), // challenger 3
-        makeWrestler(5, 5, 3, 0, 5), // challenger 4 (last visible)
-        makeWrestler(6, 4, 4, 0, 6), // challenger 5 — 4+8=12≥9 ✓ but slice(0,4) hides it
+        makeWrestler(3, 7, 1, 0, 3), // challenger 2 (last visible)
+        makeWrestler(4, 6, 2, 0, 4), // challenger 3 — hidden by slice(0,2)
+        makeWrestler(5, 5, 3, 0, 5), // challenger 4 — hidden by slice(0,2)
+        makeWrestler(6, 4, 4, 0, 6), // challenger 5 — 4+8=12≥9 ✓ but hidden by slice(0,2)
       ]
       render(<YushoArasoi {...defaultProps} wrestlers={wrestlers} maxDay={7} />)
-      expect(screen.queryByText('4 Wins')).not.toBeInTheDocument()
-      expect(screen.getByText('5 Wins')).toBeInTheDocument()
+      expect(screen.queryByText('6 Wins')).not.toBeInTheDocument()
+      expect(screen.getByText('7 Wins')).toBeInTheDocument()
     })
 
     it('does not show the playoff badge when leaders have remaining bouts', () => {
