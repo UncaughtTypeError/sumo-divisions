@@ -1,7 +1,7 @@
 import useDivisionStore from '../../store/divisionStore';
 import { RANK_ORDER, RANK_ABBREVIATIONS, RANK_INFO } from '../../utils/constants';
 import Tooltip from '../common/Tooltip';
-import HeyaRankBadge from './HeyaRankBadge';
+import RankBadge from '../common/RankBadge';
 import IchimonBadge from './IchimonBadge';
 import styles from './HeyaGrid.module.css';
 
@@ -55,7 +55,7 @@ function HeyaGridRow({ heya }) {
         return (
           <td key={rank} className={styles.td} data-testid={`rank-cell-${rank}`}>
             {count > 0 ? (
-              <HeyaRankBadge rank={rank} count={count} />
+              <RankBadge rank={rank} count={count} />
             ) : (
               <span className={styles.zero}>–</span>
             )}

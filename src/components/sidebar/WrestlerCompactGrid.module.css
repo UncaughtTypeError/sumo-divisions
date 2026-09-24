@@ -1,0 +1,196 @@
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: white;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+  font-size: 0.75rem;
+}
+
+/* Rank labels vary a lot by division (Makuuchi tops out at 2 digits,
+   Makushita/Sandanme/Jonidan/Jonokuchi can reach 3 — "Ms60"), so these
+   columns size to their actual content instead of a fixed guess that
+   overflows on the wider divisions. */
+.colName {
+  width: 30%;
+}
+
+/* Row treatment matches HeyaGrid: a hairline separator between rows and a
+   hover highlight, rather than zebra striping. */
+.row {
+  transition: background var(--transition-fast);
+}
+
+.row:hover {
+  background: var(--color-background-alt);
+}
+
+.row:not(:last-child) td {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.td {
+  padding: 0.35rem 0.4rem;
+  vertical-align: middle;
+  color: var(--color-text-accent);
+}
+
+.right {
+  text-align: right;
+}
+
+/* ── Header row — matches HeyaGrid's sticky .th treatment ─────────────────── */
+
+.th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 0.4rem 0.4rem;
+  text-align: center;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-accent);
+  background: var(--color-background-alt);
+  /* box-shadow travels with the sticky element; border-bottom does not */
+  box-shadow: inset 0 -2px 0 var(--color-border);
+  white-space: nowrap;
+}
+
+.thLeft {
+  text-align: left;
+}
+
+.thRight {
+  text-align: right;
+}
+
+/* ── Record cell (outer columns): KK/MK badge + W-L-A record ─────────────── */
+
+.recordInner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+}
+
+.recordAlignEnd {
+  align-items: flex-end;
+}
+
+.statusSlot {
+  display: inline-flex;
+  min-height: 0.9rem;
+}
+
+.statusBadge {
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 0.0625rem 0.25rem;
+  border-radius: 3px;
+}
+
+.kachiKoshi {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.makeKoshi {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.recordText {
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+  color: var(--color-text-accent);
+  white-space: nowrap;
+}
+
+/* ── Name cell: name on top, stable + flag/country below ──────────────────── */
+
+.nameCellInner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.nameAlignEnd {
+  align-items: flex-end;
+}
+
+.nameBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-text);
+  cursor: pointer;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nameBtn:hover {
+  text-decoration: underline;
+  opacity: 0.75;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+/* East's meta row is right-aligned (hugging the centre column boundary), so
+   its element order is reversed here — the stable badge stays closest to
+   the centre and the country code stays outermost on both sides, instead
+   of both sides reading stable→flag→code in the same screen direction. */
+.metaRowReverse {
+  flex-direction: row-reverse;
+}
+
+.stableBadge {
+  font-size: 0.625rem;
+  color: var(--color-text-accent);
+  background: var(--color-background);
+  padding: 0.0625rem 0.3rem;
+  border-radius: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.flag {
+  width: 12px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 1px;
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+.countryCode {
+  font-size: 0.625rem;
+  color: var(--color-text-accent);
+  flex-shrink: 0;
+}
+
+.empty {
+  color: var(--color-text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: 3rem;
+}
+
+.empty p {
+  margin: 0;
+}

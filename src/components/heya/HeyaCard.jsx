@@ -1,6 +1,6 @@
 import useDivisionStore from '../../store/divisionStore';
 import { SEKITORI_RANK_ORDER, APPRENTICE_RANK_ORDER } from '../../utils/constants';
-import HeyaRankBadge from './HeyaRankBadge';
+import RankBadge from '../common/RankBadge';
 import IchimonBadge from './IchimonBadge';
 import styles from './HeyaCard.module.css';
 
@@ -29,7 +29,7 @@ function HeyaCard({ heya }) {
 
       <div className={styles.badgeRow} aria-label="Sekitori ranks">
         {SEKITORI_RANK_ORDER.map((rank) => (
-          <HeyaRankBadge
+          <RankBadge
             key={rank}
             rank={rank}
             count={heya.byRank[rank]?.length ?? 0}
@@ -39,7 +39,7 @@ function HeyaCard({ heya }) {
 
       <div className={styles.badgeRow} aria-label="Apprentice ranks">
         {APPRENTICE_RANK_ORDER.map((rank) => (
-          <HeyaRankBadge
+          <RankBadge
             key={rank}
             rank={rank}
             count={heya.byRank[rank]?.length ?? 0}
