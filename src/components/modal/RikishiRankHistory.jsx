@@ -30,7 +30,7 @@ function formatBashoId(bashoId) {
 
 function RowIndicators({ movement, delta, debutType, isCareerHigh }) {
   const hasAny = movement === 'up' || movement === 'down' || debutType || isCareerHigh;
-  if (!hasAny) return null;
+  if (!hasAny) return <span className={styles.noChange}>—</span>;
   return (
     <span className={styles.indicators}>
       {movement === 'up' && (

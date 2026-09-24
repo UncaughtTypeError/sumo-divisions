@@ -228,6 +228,10 @@
   gap: 0.25rem;
 }
 
+.noChange {
+  color: var(--color-text-muted);
+}
+
 .rankUp {
   font-size: 0.625rem;
   font-weight: 700;
