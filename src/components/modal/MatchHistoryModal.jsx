@@ -266,7 +266,7 @@ function MatchHistoryModal() {
                           </Tooltip>
                         )}
                       </span>
-                      {' '}• <strong>{record}</strong>{' '}
+                      {' '}• <span>{record}</span>{' '}
                       <small className={styles.modalWinRate}>
                         ({getWinPercentage({ wins, losses })}% Win Rate)
                       </small>
