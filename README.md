@@ -27,11 +27,12 @@ An interactive React application for visualizing sumo wrestling divisions, ranki
 
 ### Wrestler sidebar — Banzuke & Torikumi tabs
 
-- **Yusho Arasoi (優勝争い)**: Live title-race tracker shown above the banzuke during an ongoing tournament — displays contenders grouped by win count, highlights the leader(s), and automatically transitions to a "Yusho — Clinched" state when one wrestler has mathematically secured the championship; shows a 決定戦 (Ketteisen / Playoff) indicator when multiple wrestlers are tied with no bouts remaining; collapses via an accordion toggle
 - **Banzuke tab**: Full wrestler roster for the selected rank or division, with search, sort, day filter, KK/MK badges, rank movement indicators, and match-history access
 - **Torikumi tab**: Scheduled and completed bout matchups for each tournament day — East vs West layout with kimarite (winning technique), result icons (shiroboshi/kuroboshi/fusen), and running W-L records per wrestler
 - **Live results**: A refresh button appears on the current tournament day whenever results are still pending; auto-refresh fires every 3 minutes while pending results remain, backing off exponentially after three missed updates and stopping after five back-off attempts
 - **Rank filter**: Selecting a specific Makuuchi rank (e.g. Sekiwake) filters torikumi to bouts involving wrestlers at that rank; Makuuchi shows all bouts
+- **Yusho Arasoi (優勝争い)**: Live title-race tracker shown above the banzuke during an ongoing tournament — displays contenders grouped by win count, highlights the leader(s), and automatically transitions to a "Yusho — Clinched" state when one wrestler has mathematically secured the championship; shows a 決定戦 (Ketteisen / Playoff) indicator when multiple wrestlers are tied with no bouts remaining; collapses via an accordion toggle
+- **Win/Loss Chart (勝敗表)**: Collapsible bar chart, below Yusho Arasoi, plotting every wrestler in the division — wins (green) rising above a zero line and losses plus kyujo/absences (red and grey) extending below it; a kachi-koshi/make-koshi threshold line marks the winning-record cutoff (8 wins for Makuuchi/Juryo, 4 for lower divisions), with a green checkmark or red cross above/below each bar once a wrestler clinches it; Makuuchi additionally divides the chart into Sanyaku and Joi zones with labelled vertical dividers; hover any bar for the wrestler's name, rank, and record, or click to open their match history
 
 ### Heya (Stable) dashboard
 
