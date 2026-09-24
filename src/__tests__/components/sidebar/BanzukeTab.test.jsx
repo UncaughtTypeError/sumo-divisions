@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import BanzukeTab from '../../../components/sidebar/BanzukeTab'
 
@@ -33,6 +33,16 @@ vi.mock('../../../components/common/ErrorMessage', () => ({
 
 vi.mock('../../../components/common/NoDataMessage', () => ({
   default: () => <div data-testid="no-data">No data</div>,
+}))
+
+vi.mock('../../../components/sidebar/WrestlerCompactGrid', () => ({
+  default: ({ rankGroups, sortOrder, onWrestlerClick }) => (
+    <div data-testid="wrestler-compact-grid" data-sort-order={sortOrder}>
+      {rankGroups.flatMap((g) => [...g.east, ...g.west]).map((w) => (
+        <div key={w.rikishiID} onClick={() => onWrestlerClick(w)}>{w.shikonaEn}</div>
+      ))}
+    </div>
+  ),
 }))
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -72,7 +82,11 @@ const defaultProps = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('BanzukeTab', () => {
-  beforeEach(() => vi.clearAllMocks())
+  beforeEach(() => {
+    vi.clearAllMocks()
+    localStorage.clear() // useLocalStorage persists view mode; reset between tests
+  })
+  afterEach(() => localStorage.clear())
 
   // ── State guards ──────────────────────────────────────────────────────────
 
@@ -346,5 +360,89 @@ describe('BanzukeTab', () => {
     const emptyGroup = baseGroup('Yokozuna', [], [])
     render(<BanzukeTab {...defaultProps} rankGroups={[emptyGroup]} />)
     expect(screen.getByText(/No rikishi found for Yokozuna/)).toBeInTheDocument()
+  })
+
+  it('does not show the card-view empty message in grid view (grid has its own)', () => {
+    const emptyGroup = baseGroup('Yokozuna', [], [])
+    render(<BanzukeTab {...defaultProps} rankGroups={[emptyGroup]} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
+    expect(screen.queryByText(/No rikishi found for Yokozuna/)).not.toBeInTheDocument()
+  })
+
+  // ── View mode (card/grid toggle) ────────────────────────────────────────────
+
+  describe('view mode', () => {
+    const group = baseGroup('Yokozuna',
+      [baseWrestler({ rikishiID: 1, shikonaEn: 'Terunofuji' })],
+      [baseWrestler({ rikishiID: 2, shikonaEn: 'Hoshoryu', rank: 'Yokozuna 1 West', rankValue: 1 })],
+    )
+
+    it('renders the view toggle buttons', () => {
+      render(<BanzukeTab {...defaultProps} rankGroups={[group]} />)
+      expect(screen.getByRole('button', { name: 'Card view' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Grid view' })).toBeInTheDocument()
+    })
+
+    it('renders card view (WrestlerGrid) by default', () => {
+      render(<BanzukeTab {...defaultProps} rankGroups={[group]} />)
+      expect(screen.getByTestId('wrestler-grid-east')).toBeInTheDocument()
+      expect(screen.queryByTestId('wrestler-compact-grid')).not.toBeInTheDocument()
+    })
+
+    it('switches to grid view on button click', () => {
+      render(<BanzukeTab {...defaultProps} rankGroups={[group]} />)
+      fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
+      expect(screen.getByTestId('wrestler-compact-grid')).toBeInTheDocument()
+      expect(screen.queryByTestId('wrestler-grid-east')).not.toBeInTheDocument()
+      expect(screen.getByText('Terunofuji')).toBeInTheDocument()
+    })
+
+    it('switches back to card view', () => {
+      render(<BanzukeTab {...defaultProps} rankGroups={[group]} />)
+      fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Card view' }))
+      expect(screen.getByTestId('wrestler-grid-east')).toBeInTheDocument()
+      expect(screen.queryByTestId('wrestler-compact-grid')).not.toBeInTheDocument()
+    })
+
+    it('calls openModal when a wrestler is clicked in grid view', () => {
+      const openModal = vi.fn()
+      render(<BanzukeTab {...defaultProps} rankGroups={[group]} openModal={openModal} />)
+      fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
+      fireEvent.click(screen.getByText('Terunofuji'))
+      expect(openModal).toHaveBeenCalledWith(
+        expect.objectContaining({ rikishiID: 1, shikonaEn: 'Terunofuji' }),
+      )
+    })
+
+    it('persists the view mode selection to localStorage', () => {
+      render(<BanzukeTab {...defaultProps} rankGroups={[group]} />)
+      fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
+      expect(localStorage.getItem('sumo-banzuke-layout')).toBe(JSON.stringify('grid'))
+    })
+
+    it('initializes from a previously persisted view mode', () => {
+      localStorage.setItem('sumo-banzuke-layout', JSON.stringify('grid'))
+      render(<BanzukeTab {...defaultProps} rankGroups={[group]} />)
+      expect(screen.getByTestId('wrestler-compact-grid')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Grid view' })).toHaveAttribute('aria-pressed', 'true')
+    })
+
+    it('hides Wins sort options in grid view but shows them in card view', () => {
+      render(<BanzukeTab {...defaultProps} rankGroups={[group]} />)
+      const select = screen.getByLabelText('Sort order')
+      expect(select).toHaveTextContent('Wins ↑')
+      fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
+      expect(select).not.toHaveTextContent('Wins ↑')
+      expect(select).not.toHaveTextContent('Wins ↓')
+    })
+
+    it('falls back to Rank ↑ when switching to grid view while sorted by wins', () => {
+      render(<BanzukeTab {...defaultProps} rankGroups={[group]} />)
+      const select = screen.getByLabelText('Sort order')
+      fireEvent.change(select, { target: { value: 'wins-desc' } })
+      fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
+      expect(select).toHaveValue('rank-asc')
+    })
   })
 })
