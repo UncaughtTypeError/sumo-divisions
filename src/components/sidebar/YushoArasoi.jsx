@@ -67,7 +67,7 @@ function YushoArasoi({ wrestlers, maxDay, division, bashoResults, onWrestlerClic
 
   const { decided, winner } = isYushoDecided(wrestlers, maxDay, division);
   const [leaderGroup, ...challengerGroups] = groups;
-  const visibleChallengers = challengerGroups.slice(0, 4);
+  const visibleChallengers = challengerGroups.slice(0, 2);
 
   // Playoff when leaders are tied and none have bouts left (can't change their record).
   const isPlayoff = !decided &&
