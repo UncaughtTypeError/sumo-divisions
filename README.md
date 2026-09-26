@@ -42,6 +42,7 @@ An interactive React application for visualizing sumo wrestling divisions, ranki
 - **Dual Search**: Filter stables by name or by any rikishi within them
 - **Sort Controls**: Sort by heya name, any individual rank, or total count (ascending/descending) in both grid and card layouts
 - **Heya Sidebar**: Click any stable to open a sidebar listing all its wrestlers for the current basho, grouped by rank/division — same wrestler rows, awards, records, rank movement indicators, and match-history as the rankings sidebar
+- **Heya Sidebar Table View**: Toggle the stable roster to a flat table — one row per wrestler across every rank in the stable, with rank, record, KK/MK status, country, and awards/rank-movement badges all as columns; a red divider line splits wrestlers with a winning record from those with a losing record so the stable's overall form is visible at a glance, staying in place regardless of whether the roster is sorted by rank or by wins
 
 ### General
 
@@ -75,7 +76,7 @@ An interactive React application for visualizing sumo wrestling divisions, ranki
 3. **Search**: Type in the heya search box to filter by stable name, or use the rikishi search to find the stable any wrestler belongs to
 4. **Sort**: In card layout use the sort dropdown; in grid layout click any column header to sort ascending or descending
 5. **Open a Stable**: Click any card or grid row to open the heya sidebar — all rikishi in that stable for the current basho, grouped by rank, with rank movement indicators
-6. **Explore Wrestlers**: The heya sidebar behaves identically to the rankings sidebar — click any wrestler for full match history, use search and sort, switch basho via the selector
+6. **Explore Wrestlers**: The heya sidebar behaves identically to the rankings sidebar — click any wrestler for full match history, use search and sort, switch basho via the selector; toggle between the grouped card layout and a flat table listing every wrestler in the stable with a red line dividing winning from losing records — your chosen layout is remembered between visits
 7. **Navigate**: Close the heya sidebar to return to the dashboard
 
 ## License

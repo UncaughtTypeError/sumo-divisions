@@ -257,7 +257,8 @@ sumo-divisions/
 │   │   │   ├── HeyaGrid.jsx        # Sortable table (one row per stable)
 │   │   │   ├── HeyaCardGrid.jsx    # Responsive card grid wrapper
 │   │   │   ├── HeyaCard.jsx        # Individual stable card
-│   │   │   └── HeyaSidebar.jsx     # Sidebar listing all wrestlers in a stable
+│   │   │   ├── HeyaSidebar.jsx     # Sidebar listing all wrestlers in a stable
+│   │   │   └── HeyaWrestlerTable.jsx # Sidebar table layout — one row per wrestler, winning/losing divider
 │   │   ├── sidebar/           # Shared wrestler list sidebar
 │   │   │   ├── WrestlerSidebar.jsx
 │   │   │   ├── WrestlerGrid.jsx        # Card layout (default)
