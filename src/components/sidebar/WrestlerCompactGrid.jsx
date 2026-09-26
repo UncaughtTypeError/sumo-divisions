@@ -1,17 +1,9 @@
-import { abbreviateRank } from '../../utils/constants';
+import { abbreviateRank, getRankTier, stripRankSide } from '../../utils/constants';
 import { getRecordStatus, RECORD_STATUS_INFO } from '../../utils/records';
 import { getFlagData } from '../common/flags';
 import RankBadge from '../common/RankBadge';
 import Tooltip from '../common/Tooltip';
 import styles from './WrestlerCompactGrid.module.css';
-
-function stripSide(rank) {
-  return rank?.replace(/ (East|West)$/, '') ?? rank;
-}
-
-function tierOf(rank) {
-  return rank?.split(' ')[0];
-}
 
 // East/West are independently rank-sorted, so pairing them by index lines up
 // the same rank number on each side — mirroring how the card view's two
@@ -150,9 +142,9 @@ function WrestlerCompactGrid({ rankGroups, enrichForDay, searchQuery, sortOrder,
               <td className={`${styles.td} ${styles.right}`}>
                 {east && (
                   <RankBadge
-                    rank={tierOf(east.rank)}
+                    rank={getRankTier(east.rank)}
                     side="East"
-                    label={abbreviateRank(stripSide(east.rank))}
+                    label={abbreviateRank(stripRankSide(east.rank))}
                     compact
                   />
                 )}
@@ -162,9 +154,9 @@ function WrestlerCompactGrid({ rankGroups, enrichForDay, searchQuery, sortOrder,
               <td className={styles.td}>
                 {west && (
                   <RankBadge
-                    rank={tierOf(west.rank)}
+                    rank={getRankTier(west.rank)}
                     side="West"
-                    label={abbreviateRank(stripSide(west.rank))}
+                    label={abbreviateRank(stripRankSide(west.rank))}
                     compact
                   />
                 )}

@@ -4,14 +4,17 @@ import { useAllDivisionsBanzuke } from '../../hooks/useAllDivisionsBanzuke';
 import { useRikishiList } from '../../hooks/useRikishi';
 import useBashoResults from '../../hooks/useBashoResults';
 import { useHeyaData } from '../../hooks/useHeyaData';
+import useLocalStorage from '../../hooks/useLocalStorage';
 import { getCurrentBashoId } from '../../utils/bashoId';
 import { RANK_ORDER, RANK_INFO, RANK_TO_API_DIVISION, RANK_COLORS } from '../../utils/constants';
 import { getWrestlerAwards } from '../../utils/awards';
 import { computeRecordOnDay, isAbsentKyujo, isWithdrawn } from '../../utils/records';
 import { getPreviousBashoId, computeWrestlerRankIndicators } from '../../utils/rankMovement';
 import IchimonBadge from './IchimonBadge';
+import HeyaWrestlerTable from './HeyaWrestlerTable';
 import WrestlerGrid from '../sidebar/WrestlerGrid';
 import BashoSelector from '../sidebar/BashoSelector';
+import ViewToggle from '../sidebar/ViewToggle';
 import MatchHistoryModal from '../modal/MatchHistoryModal';
 import Loading from '../common/Loading';
 import ErrorMessage from '../common/ErrorMessage';
@@ -34,6 +37,7 @@ function HeyaSidebar() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState('rank-asc');
   const [selectedDay, setSelectedDay] = useState(0);
+  const [viewMode, setViewMode] = useLocalStorage('sumo-heya-sidebar-layout', 'card');
 
   // Local heya selection — initialised from store, updated when user switches in-sidebar
   const [currentHeyaName, setCurrentHeyaName] = useState(selectedHeya);
@@ -130,6 +134,13 @@ function HeyaSidebar() {
     }
     return groups;
   }, [heyaWrestlers, bashoResults, rankHistoryMap, currentBashoId, previousBashoId]);
+
+  // Flat (unpaired) roster for the table view — one row per wrestler across
+  // every rank in the stable, rather than grouped/split by rank and side.
+  const flatWrestlers = useMemo(
+    () => rankGroups.flatMap((g) => [...g.east, ...g.west]),
+    [rankGroups],
+  );
 
   // Derive rank colour + API division from the wrestler's rank string so the
   // modal header and record-status badge render correctly for heya-view clicks.
@@ -304,47 +315,57 @@ function HeyaSidebar() {
                     ))}
                   </select>
                 )}
+                <ViewToggle value={viewMode} onChange={setViewMode} />
               </div>
 
-              {rankGroups.length === 0 && (
+              {viewMode === 'card' && rankGroups.length === 0 && (
                 <div className={styles.noData}>
                   <p>No rikishi found in {currentHeyaName} for this basho</p>
                 </div>
               )}
 
-              <div className={styles.rankGroupsContainer}>
-                {rankGroups.map((group, index) => (
-                  <div key={group.rank} className={styles.rankSection}>
-                    {index > 0 && <div className={styles.rankDivider} />}
-                    <div className={styles.rankSectionHeader}>
-                      <h3 className={styles.rankSectionTitle}>{group.rank}</h3>
-                      {group.rankInfo && (
-                        <span className={styles.rankSectionKanji}>
-                          {group.rankInfo.nameJp}
-                        </span>
-                      )}
+              {viewMode === 'grid' ? (
+                <HeyaWrestlerTable
+                  wrestlers={filterAndSort(flatWrestlers)}
+                  sortOrder={sortOrder}
+                  onWrestlerClick={handleWrestlerClick}
+                  rikishiMap={rikishiMap}
+                />
+              ) : (
+                <div className={styles.rankGroupsContainer}>
+                  {rankGroups.map((group, index) => (
+                    <div key={group.rank} className={styles.rankSection}>
+                      {index > 0 && <div className={styles.rankDivider} />}
+                      <div className={styles.rankSectionHeader}>
+                        <h3 className={styles.rankSectionTitle}>{group.rank}</h3>
+                        {group.rankInfo && (
+                          <span className={styles.rankSectionKanji}>
+                            {group.rankInfo.nameJp}
+                          </span>
+                        )}
+                      </div>
+                      <div className={styles.gridContainer}>
+                        <WrestlerGrid
+                          wrestlers={filterAndSort(group.east)}
+                          side="East"
+                          onWrestlerClick={handleWrestlerClick}
+                          color="text"
+                          division={RANK_TO_API_DIVISION[group.rank]}
+                          rikishiMap={rikishiMap}
+                        />
+                        <WrestlerGrid
+                          wrestlers={filterAndSort(group.west)}
+                          side="West"
+                          onWrestlerClick={handleWrestlerClick}
+                          color="text"
+                          division={RANK_TO_API_DIVISION[group.rank]}
+                          rikishiMap={rikishiMap}
+                        />
+                      </div>
                     </div>
-                    <div className={styles.gridContainer}>
-                      <WrestlerGrid
-                        wrestlers={filterAndSort(group.east)}
-                        side="East"
-                        onWrestlerClick={handleWrestlerClick}
-                        color="text"
-                        division={RANK_TO_API_DIVISION[group.rank]}
-                        rikishiMap={rikishiMap}
-                      />
-                      <WrestlerGrid
-                        wrestlers={filterAndSort(group.west)}
-                        side="West"
-                        onWrestlerClick={handleWrestlerClick}
-                        color="text"
-                        division={RANK_TO_API_DIVISION[group.rank]}
-                        rikishiMap={rikishiMap}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </>
           )}
         </div>

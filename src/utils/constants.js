@@ -348,6 +348,34 @@ export function abbreviateRank(rank) {
   return `${abbr}${numStr}${suffix}`;
 }
 
+/**
+ * Rank tier without the numeric position or East/West suffix.
+ * @param {string|null} rank  e.g. "Maegashira 3 East"
+ * @returns {string|null}     e.g. "Maegashira"
+ */
+export function getRankTier(rank) {
+  return rank?.split(' ')[0] ?? null;
+}
+
+/**
+ * East/West side parsed from a full rank string, or null when absent
+ * (e.g. Yokozuna/Ozeki ranks carry no side).
+ * @param {string|null} rank  e.g. "Maegashira 3 East"
+ * @returns {'East'|'West'|null}
+ */
+export function getRankSide(rank) {
+  return rank?.match(/ (East|West)$/)?.[1] ?? null;
+}
+
+/**
+ * Rank string with the trailing East/West suffix removed.
+ * @param {string|null} rank  e.g. "Maegashira 3 East"
+ * @returns {string|null}     e.g. "Maegashira 3"
+ */
+export function stripRankSide(rank) {
+  return rank?.replace(/ (East|West)$/, '') ?? rank ?? null;
+}
+
 // CSS variable color name per rank (matches --color-* variables)
 export const RANK_COLORS = {
   [RANKS.YOKOZUNA]: 'yokozuna',
