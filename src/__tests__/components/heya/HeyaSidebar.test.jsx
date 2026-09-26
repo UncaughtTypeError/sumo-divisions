@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { screen, fireEvent, waitFor } from '@testing-library/react'
 import HeyaSidebar from '../../../components/heya/HeyaSidebar'
 import { renderWithQueryClient } from '../../testUtils'
@@ -38,6 +38,16 @@ vi.mock('../../../components/sidebar/WrestlerGrid', () => ({
           {w.shikonaEn}
           {w.isKyujo && <span>Kyujo</span>}
         </div>
+      ))}
+    </div>
+  ),
+}))
+
+vi.mock('../../../components/heya/HeyaWrestlerTable', () => ({
+  default: ({ wrestlers, sortOrder, onWrestlerClick }) => (
+    <div data-testid="heya-wrestler-table" data-sort-order={sortOrder}>
+      {wrestlers.map((w) => (
+        <div key={w.rikishiID} onClick={() => onWrestlerClick?.(w)}>{w.shikonaEn}</div>
       ))}
     </div>
   ),
@@ -121,6 +131,7 @@ function setupStore(overrides = {}) {
 describe('HeyaSidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.clear() // useLocalStorage persists view mode; reset between tests
     useBashoResults.mockReturnValue({ data: null })
     useAllDivisionsBanzuke.mockReturnValue({
       allWrestlers: [],
@@ -128,6 +139,7 @@ describe('HeyaSidebar', () => {
       isError: false,
     })
   })
+  afterEach(() => localStorage.clear())
 
   describe('when closed', () => {
     it('returns null when isHeyaSidebarOpen is false', () => {
@@ -581,6 +593,91 @@ describe('HeyaSidebar', () => {
       // by switching back to Isegahama and checking the reset
       fireEvent.change(screen.getByLabelText('Select heya'), { target: { value: 'Isegahama' } })
       expect(screen.getByLabelText('Filter by day')).toHaveValue('0')
+    })
+  })
+
+  describe('view mode', () => {
+    beforeEach(() => {
+      setupStore()
+      useAllDivisionsBanzuke.mockReturnValue({
+        allWrestlers: [makuuchiWrestler, juryoWrestler],
+        isLoading: false,
+        isError: false,
+      })
+    })
+
+    it('renders the view toggle buttons', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      expect(screen.getByRole('button', { name: 'Card view' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Grid view' })).toBeInTheDocument()
+    })
+
+    it('renders card view (WrestlerGrid) by default', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      expect(screen.getByTestId('wrestler-grid-east')).toBeInTheDocument()
+      expect(screen.queryByTestId('heya-wrestler-table')).not.toBeInTheDocument()
+    })
+
+    it('switches to the table view on button click', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
+      expect(screen.getByTestId('heya-wrestler-table')).toBeInTheDocument()
+      expect(screen.queryByTestId('wrestler-grid-east')).not.toBeInTheDocument()
+      expect(screen.getByText('Terunofuji')).toBeInTheDocument()
+    })
+
+    it('switches back to card view', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Card view' }))
+      expect(screen.getByTestId('wrestler-grid-east')).toBeInTheDocument()
+      expect(screen.queryByTestId('heya-wrestler-table')).not.toBeInTheDocument()
+    })
+
+    it('passes every wrestler in the heya to the table view, flattened across ranks', () => {
+      setupStore({ selectedHeyaRikishiIds: [1, 2] })
+      renderWithQueryClient(<HeyaSidebar />)
+      fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
+      expect(screen.getByText('Terunofuji')).toBeInTheDocument()
+      expect(screen.getByText('Mitoryu')).toBeInTheDocument()
+    })
+
+    it('calls openModal when a wrestler is clicked in table view', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
+      fireEvent.click(screen.getByText('Terunofuji'))
+      expect(mockOpenModal).toHaveBeenCalledWith(
+        expect.objectContaining({ rikishiID: 1, shikonaEn: 'Terunofuji' }),
+        'yokozuna',
+        'Makuuchi',
+      )
+    })
+
+    it('persists the view mode selection to localStorage', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
+      expect(localStorage.getItem('sumo-heya-sidebar-layout')).toBe(JSON.stringify('grid'))
+    })
+
+    it('initializes from a previously persisted view mode', () => {
+      localStorage.setItem('sumo-heya-sidebar-layout', JSON.stringify('grid'))
+      renderWithQueryClient(<HeyaSidebar />)
+      expect(screen.getByTestId('heya-wrestler-table')).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Grid view' })).toHaveAttribute('aria-pressed', 'true')
+    })
+
+    it('does not show the card-view empty message in table view', () => {
+      setupStore({ selectedHeyaRikishiIds: [99] })
+      renderWithQueryClient(<HeyaSidebar />)
+      fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
+      expect(screen.queryByText(/No rikishi found in Isegahama/)).not.toBeInTheDocument()
+    })
+
+    it('still applies the chosen sort order in table view', () => {
+      renderWithQueryClient(<HeyaSidebar />)
+      fireEvent.click(screen.getByRole('button', { name: 'Grid view' }))
+      fireEvent.change(screen.getByLabelText('Sort order'), { target: { value: 'wins-desc' } })
+      expect(screen.getByTestId('heya-wrestler-table')).toHaveAttribute('data-sort-order', 'wins-desc')
     })
   })
 })

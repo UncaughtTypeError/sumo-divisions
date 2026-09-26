@@ -14,6 +14,9 @@ import {
   RANK_COLORS,
   RANK_TO_API_DIVISION,
   abbreviateRank,
+  getRankTier,
+  getRankSide,
+  stripRankSide,
 } from '../../utils/constants'
 
 describe('constants', () => {
@@ -283,6 +286,47 @@ describe('constants', () => {
     it('handles rank string with no number or side', () => {
       expect(abbreviateRank('Yokozuna')).toBe('Y')
       expect(abbreviateRank('Makushita')).toBe('Ms')
+    })
+  })
+
+  describe('getRankTier', () => {
+    it('returns the rank name without number or side', () => {
+      expect(getRankTier('Maegashira 3 East')).toBe('Maegashira')
+      expect(getRankTier('Yokozuna 1 East')).toBe('Yokozuna')
+    })
+
+    it('returns null for null input', () => {
+      expect(getRankTier(null)).toBeNull()
+    })
+  })
+
+  describe('getRankSide', () => {
+    it('returns the East/West side from a full rank string', () => {
+      expect(getRankSide('Maegashira 3 East')).toBe('East')
+      expect(getRankSide('Maegashira 4 West')).toBe('West')
+    })
+
+    it('returns null when there is no side suffix', () => {
+      expect(getRankSide('Yokozuna')).toBeNull()
+    })
+
+    it('returns null for null input', () => {
+      expect(getRankSide(null)).toBeNull()
+    })
+  })
+
+  describe('stripRankSide', () => {
+    it('removes the trailing East/West suffix', () => {
+      expect(stripRankSide('Maegashira 3 East')).toBe('Maegashira 3')
+      expect(stripRankSide('Maegashira 4 West')).toBe('Maegashira 4')
+    })
+
+    it('leaves a rank string with no side unchanged', () => {
+      expect(stripRankSide('Yokozuna')).toBe('Yokozuna')
+    })
+
+    it('returns null for null input', () => {
+      expect(stripRankSide(null)).toBeNull()
     })
   })
 
