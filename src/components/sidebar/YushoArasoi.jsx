@@ -89,6 +89,9 @@ function YushoArasoi({ wrestlers, maxDay, division, bashoResults, onWrestlerClic
   );
 
   if (decided && winner) {
+    const winnerAbbr = abbreviateRank(winner.rank);
+    const winnerRecord = `${winner.wins ?? 0}-${winner.losses ?? 0}-${winner.absences ?? 0}`;
+
     return (
       <div className={styles.container}>
         {header}
@@ -106,8 +109,12 @@ function YushoArasoi({ wrestlers, maxDay, division, bashoResults, onWrestlerClic
                   onClick={() => onWrestlerClick?.(winner)}
                 >
                   {winner.shikonaEn}
+                  {winnerAbbr && <span className={styles.clinchedRankAbbr}> {winnerAbbr}</span>}
                 </button>
-                <RecordSymbols record={winner.record} />
+                <div className={styles.clinchedRecordRow}>
+                  <RecordSymbols record={winner.record} />
+                  <span className={styles.clinchedRecordText}>{winnerRecord}</span>
+                </div>
               </div>
             </div>
           </div>

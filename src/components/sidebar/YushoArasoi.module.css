@@ -112,6 +112,25 @@
   text-decoration: underline;
 }
 
+.clinchedRankAbbr {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--color-gold-text);
+}
+
+.clinchedRecordRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.clinchedRecordText {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-gold-text-dark);
+}
+
 /* ── Accordion body ─────────────────────────────────────────────────────────── */
 
 .body {
