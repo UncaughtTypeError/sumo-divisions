@@ -176,7 +176,18 @@ describe('YushoArasoi', () => {
 
     it('renders the winner name', () => {
       render(<YushoArasoi {...clinchedProps} />)
-      expect(screen.getByRole('button', { name: 'Wrestler1' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Wrestler1/ })).toBeInTheDocument()
+    })
+
+    it('renders the winner rank abbreviation, same as the leader/challenger rows', () => {
+      render(<YushoArasoi {...clinchedProps} />)
+      // makeWrestler(1, ...) defaults to rank "Maegashira 1 East" → "M1e"
+      expect(screen.getByText('M1e')).toBeInTheDocument()
+    })
+
+    it('renders the winner final win-loss-absence record', () => {
+      render(<YushoArasoi {...clinchedProps} />)
+      expect(screen.getByText('13-1-0')).toBeInTheDocument()
     })
 
     it('does not render challenger group labels', () => {
@@ -188,7 +199,7 @@ describe('YushoArasoi', () => {
       const onWrestlerClick = vi.fn()
       const user = userEvent.setup()
       render(<YushoArasoi {...clinchedProps} onWrestlerClick={onWrestlerClick} />)
-      await user.click(screen.getByRole('button', { name: 'Wrestler1' }))
+      await user.click(screen.getByRole('button', { name: /Wrestler1/ }))
       expect(onWrestlerClick).toHaveBeenCalledTimes(1)
       expect(onWrestlerClick).toHaveBeenCalledWith(
         expect.objectContaining({ rikishiID: 1, wins: 13 })
@@ -308,7 +319,7 @@ describe('YushoArasoi', () => {
 
   describe('rank abbreviation', () => {
     // defaultProps is day 7, Makuuchi — 6W leader vs 4W challenger (not decided).
-    // Rank abbreviation only appears in WrestlerBtn (leader/challenger rows), not clinched view.
+    // (The clinched view's own rank abbreviation is covered under "clinched" above.)
 
     it('abbreviates East suffix to "e"', () => {
       const wrestler = makeWrestler(1, 6, 1, 0, 1, { rank: 'Yokozuna 1 East' })
