@@ -168,10 +168,10 @@ describe('YushoArasoi', () => {
       onWrestlerClick: vi.fn(),
     }
 
-    it('renders trophy icon and "Yusho — Clinched" label', () => {
+    it('renders trophy icon and "Yusho" label', () => {
       render(<YushoArasoi {...clinchedProps} />)
       expect(screen.getByText('🏆')).toBeInTheDocument()
-      expect(screen.getByText('Yusho — Clinched')).toBeInTheDocument()
+      expect(screen.getByText('Yusho')).toBeInTheDocument()
     })
 
     it('renders the winner name', () => {

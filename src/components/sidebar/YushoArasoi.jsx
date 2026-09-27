@@ -100,7 +100,7 @@ function YushoArasoi({ wrestlers, maxDay, division, bashoResults, onWrestlerClic
             <div className={styles.clinched}>
               <div className={styles.clinchedHeader}>
                 <span className={styles.trophyIcon}>🏆</span>
-                <span className={styles.clinchedLabel}>Yusho — Clinched</span>
+                <span className={styles.clinchedLabel}>Yusho</span>
               </div>
               <div className={styles.clinchedWrestler}>
                 <button
